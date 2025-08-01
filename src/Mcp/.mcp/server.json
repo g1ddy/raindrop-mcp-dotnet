@@ -5,14 +5,14 @@
   "packages": [
     {
       "registry_name": "nuget",
-      "name": "<your package ID here>",
+      "name": "Raindrop.Mcp.DotNet",
       "version": "0.1.0-beta",
       "package_arguments": [],
       "environment_variables": []
     }
   ],
   "repository": {
-    "url": "https://github.com/<your GitHub username here>/<your repo name>",
+    "url": "https://github.com/g1ddy/raindrop-mcp-dotnet/",
     "source": "github"
   },
   "version_detail": {

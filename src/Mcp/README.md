@@ -29,7 +29,7 @@ To test this MCP server from source code (locally) without using a built MCP ser
       "args": [
         "run",
         "--project",
-        "<PATH TO PROJECT DIRECTORY>"
+        "./src/Mcp"
       ]
     }
   }
@@ -61,9 +61,9 @@ For both VS Code and Visual Studio, the configuration file uses the following se
       "type": "stdio",
       "command": "dnx",
       "args": [
-        "<your package ID here>",
+        "Raindrop.Mcp.DotNet",
         "--version",
-        "<your package version here>",
+        "0.1.0-beta",
         "--yes"
       ]
     }
