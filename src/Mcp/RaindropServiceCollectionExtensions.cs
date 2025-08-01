@@ -29,7 +29,7 @@ public static class RaindropServiceCollectionExtensions
             })
         };
 
-        void Configure(HttpClient client, IServiceProvider sp)
+        void Configure(IServiceProvider sp, HttpClient client)
         {
             var options = sp.GetRequiredService<IOptions<RaindropOptions>>().Value;
 
@@ -47,7 +47,7 @@ public static class RaindropServiceCollectionExtensions
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.ApiToken);
         }
 
-        services.AddRefitClient<ICollectionsApi>(settings).ConfigureHttpClient((sp, client) => Configure(client, sp));
+        services.AddRefitClient<ICollectionsApi>(settings).ConfigureHttpClient(Configure);
 
         return services;
     }
