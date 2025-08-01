@@ -4,6 +4,11 @@ using Microsoft.Extensions.Options;
 using Refit;
 using System.Net.Http.Headers;
 using Mcp.Collections;
+using Mcp.Raindrops;
+using Mcp.Highlights;
+using Mcp.Filters;
+using Mcp.Tags;
+using Mcp.User;
 
 namespace Mcp;
 
@@ -48,6 +53,11 @@ public static class RaindropServiceCollectionExtensions
         }
 
         services.AddRefitClient<ICollectionsApi>(settings).ConfigureHttpClient(Configure);
+        services.AddRefitClient<IRaindropsApi>(settings).ConfigureHttpClient(Configure);
+        services.AddRefitClient<IHighlightsApi>(settings).ConfigureHttpClient(Configure);
+        services.AddRefitClient<IFiltersApi>(settings).ConfigureHttpClient(Configure);
+        services.AddRefitClient<ITagsApi>(settings).ConfigureHttpClient(Configure);
+        services.AddRefitClient<IUserApi>(settings).ConfigureHttpClient(Configure);
 
         return services;
     }
