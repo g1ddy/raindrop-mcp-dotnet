@@ -1,7 +1,7 @@
 {
   "$schema": "https://modelcontextprotocol.io/schemas/draft/2025-07-09/server.json",
-  "description": "<your description here>",
-  "name": "io.github.<your GitHub username here>/<your repo name>",
+  "description": "Raindrop MCP Server implementation in dotnet.",
+  "name": "io.github.g1ddy/raindrop-mcp-dotnet",
   "packages": [
     {
       "registry_name": "nuget",
@@ -12,7 +12,7 @@
     }
   ],
   "repository": {
-    "url": "https://github.com/g1ddy/raindrop-mcp-dotnet/",
+    "url": "https://github.com/g1ddy/raindrop-mcp-dotnet",
     "source": "github"
   },
   "version_detail": {
