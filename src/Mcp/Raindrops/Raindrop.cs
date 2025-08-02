@@ -15,6 +15,7 @@ public record Raindrop
     [Description("Unique identifier of the bookmark")]
     public long Id { get; init; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [Description("Title of the bookmarked page")]
     public string? Title { get; init; }
 
