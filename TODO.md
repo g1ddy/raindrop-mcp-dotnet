@@ -30,7 +30,7 @@ The goal is to make this tool easily installable for other .NET developers via N
 
 ---
 
-### **3. Update Documentation for NuGet and `ndx` Usage**
+### **2. Update Documentation for NuGet and `ndx` Usage**
 
 The goal is to provide clear instructions for end-users on how to consume the published NuGet package using the standard `ndx` tool.
 
@@ -61,6 +61,7 @@ The goal is to provide clear instructions for end-users on how to consume the pu
     -   [Use MCP servers in Visual Studio (Preview)](https://learn.microsoft.com/visualstudio/ide/mcp-servers)
     -   [Official MCP Documentation](https://modelcontextprotocol.io/)
 
+### **3. Implement Secure Token Configuration for `ndx`**
 
 The goal is to provide a secure and standard way for `ndx` users to provide their API token without hardcoding it in `appsettings.json`.
 
