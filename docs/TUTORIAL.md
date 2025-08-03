@@ -53,7 +53,11 @@ To interact with the server, you need an MCP-compatible client. Here’s how to 
         "RaindropMcp": {
           "type": "stdio",
           "command": "dotnet",
-          "args": ["run", "--project", "C:/path/to/your/raindrop-mcp-dotnet/src/Mcp"]
+          "args": ["run", "--project", "C:/path/to/your/raindrop-mcp-dotnet/src/Mcp"],
+          "env": {
+            "Raindrop:ApiToken": "PASTE_YOUR_TOKEN_HERE",
+            "Raindrop:BaseUrl": "https://api.raindrop.io/rest/v1"
+          }
         }
       }
     }
@@ -76,5 +80,5 @@ Now for the fun part! Open the Copilot chat in VS Code and try asking it to perf
 
 Now that you have the basics down, you can explore more advanced topics:
 
--   **[How-To Guides](./HOW_TO.md):** Learn how to perform other tasks, like adding a new custom tool.
+-   **[User How-To Guide](./how-to-guides/for-users.md):** Discover more recipes for managing your bookmarks with natural language.
 -   **[Technical Reference](./REFERENCE.md):** Explore the full list of available tools and their parameters.

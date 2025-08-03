@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -5,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Mcp;
 
 var builder = Host.CreateApplicationBuilder(args);
+// var builder = WebApplication.CreateBuilder(args);
 
 // Configure all logs to go to stderr (stdout is used for the MCP protocol messages).
 builder.Logging.AddConsole(o => o.LogToStandardErrorThreshold = LogLevel.Trace);
@@ -26,6 +28,7 @@ builder.Services
         """;
     })
     .WithStdioServerTransport()
+    // .WithHttpTransport()
     .WithPromptsFromAssembly()
     .WithToolsFromAssembly();
 

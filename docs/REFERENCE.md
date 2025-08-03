@@ -20,9 +20,103 @@ This is a high-level overview of the most important files and directories in the
 
 ### **MCP Tools**
 
-_This section is auto-generated. To update it, please see the **[developer how-to guide](./how-to-guides/for-developers.md)** for instructions._
+_**Note:** This section is currently being updated manually. The `scripts/generate-docs.ps1` script is temporarily unavailable and needs to be fixed._
 
+#### `list_collections`
+- **Description:** Retrieves all top-level (root) collections. Use this to understand your collection hierarchy before making structural changes.
+- **Usage:** `list_collections `
 
+#### `list_child_collections`
+- **Description:** Retrieves all nested (child) collections.
+- **Usage:** `list_child_collections `
+
+#### `get_collection`
+- **Description:** Retrieves a single collection by its unique ID.
+- **Usage:** `get_collection [id]`
+
+#### `create_collection`
+- **Description:** Creates a new collection. To create a subcollection, include a parent object in the collection parameter.
+- **Usage:** `create_collection [collection]`
+
+#### `update_collection`
+- **Description:** Updates an existing collection.
+- **Usage:** `update_collection [id] [collection]`
+
+#### `delete_collection`
+- **Description:** Removes a collection. Bookmarks within it are moved to the Trash.
+- **Usage:** `delete_collection [id]`
+
+#### `merge_collections`
+- **Description:** Merge multiple collections into a destination collection. Requires both the target collection ID and an array of source collection IDs to merge.
+- **Usage:** `merge_collections [to] [ids]`
+
+#### `get_available_filters`
+- **Description:** Retrieves available filters for a specific collection or all bookmarks.
+- **Usage:** `get_available_filters [collectionId] [search] [tagsSort]`
+
+#### `list_highlights`
+- **Description:** Retrieves all highlights across all bookmarks.
+- **Usage:** `list_highlights [page] [perPage]`
+
+#### `list_highlights_by_collection`
+- **Description:** Retrieves highlights in a specific collection.
+- **Usage:** `list_highlights_by_collection [collectionId] [page] [perPage]`
+
+#### `get_bookmark_highlights`
+- **Description:** Retrieves all highlights for a specific bookmark.
+- **Usage:** `get_bookmark_highlights [raindropId]`
+
+#### `create_highlight`
+- **Description:** Adds a new highlight to a bookmark.
+- **Usage:** `create_highlight [raindropId] [request]`
+
+#### `update_highlight`
+- **Description:** Updates an existing highlight on a bookmark.
+- **Usage:** `update_highlight [raindropId] [request]`
+
+#### `delete_highlight`
+- **Description:** Removes a highlight from a bookmark.
+- **Usage:** `delete_highlight [raindropId] [highlightId]`
+
+#### `list_bookmarks`
+- **Description:** Retrieves a list of bookmarks from a specific collection. For large collections, use pagination with perPage=50 to retrieve all bookmarks.
+- **Usage:** `list_bookmarks [collectionId] [page] [perPage] [search] [sort] [nested]`
+
+#### `get_bookmark`
+- **Description:** Retrieves a single bookmark by its unique ID.
+- **Usage:** `get_bookmark [id]`
+
+#### `create_bookmark`
+- **Description:** Creates a new bookmark.
+- **Usage:** `create_bookmark [request]`
+
+#### `update_bookmark`
+- **Description:** Updates an existing bookmark.
+- **Usage:** `update_bookmark [id] [request]`
+
+#### `delete_bookmark`
+- **Description:** Moves a bookmark to the Trash.
+- **Usage:** `delete_bookmark [id]`
+
+#### `update_bookmarks`
+- **Description:** Bulk update bookmarks in a collection. For precise targeting, use the ids parameter in the update object.
+- **Usage:** `update_bookmarks [collectionId] [update] [search] [nested]`
+
+#### `list_tags`
+- **Description:** Retrieves all tags, optionally filtered by a collection.
+- **Usage:** `list_tags [collectionId]`
+
+#### `rename_tag`
+- **Description:** Renames a tag across all bookmarks.
+- **Usage:** `rename_tag [oldTag] [newTag] [collectionId]`
+
+#### `delete_tag`
+- **Description:** Removes a tag from all bookmarks.
+- **Usage:** `delete_tag [tag] [collectionId]`
+
+#### `get_user_info`
+- **Description:** Retrieves the details of the currently authenticated user.
+- **Usage:** `get_user_info `
 
 ---
 
@@ -30,8 +124,7 @@ _This section is auto-generated. To update it, please see the **[developer how-t
 
 | Key                     | Type     | Description                                                       |
 | :---------------------- | :------- | :---------------------------------------------------------------- |
-| `Raindrop:ClientId`     | `string` | **Required.** The Client ID for your Raindrop.io application.     |
-| `Raindrop:ClientSecret` | `string` | **Required.** The Client Secret for your Raindrop.io application. |
+| `Raindrop:ApiToken` | `string` | **Required.** Your personal API token from the Raindrop.io developer settings. |
 
 ---
 
