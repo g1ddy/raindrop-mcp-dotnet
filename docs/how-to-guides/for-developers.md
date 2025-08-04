@@ -21,11 +21,10 @@ The `IUserApi.cs` interface already defines a `GetCurrentUserAsync` method, so w
 Open `src/Mcp/User/UserTools.cs` and add the following method:
 
 ```csharp
-[Tool("Gets information about the current authenticated user.")]
-public async Task<UserInfo> GetCurrentUser(CancellationToken cancellationToken) {
-    var response = await _userApi.GetCurrentUserAsync(cancellationToken);
-    return response.User;
-}
+[McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
+    Title = "Get User Info"),
+    Description("Retrieves the details of the currently authenticated user.")]
+public Task<ItemResponse<UserInfo>> GetUserInfoAsync() => Api.GetAsync();
 ```
 
 -   The `[Tool]` attribute makes the method discoverable to the MCP server and provides the description that will be shown to the AI model.
