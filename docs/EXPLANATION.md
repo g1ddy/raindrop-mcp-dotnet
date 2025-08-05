@@ -3,7 +3,7 @@
 This document explains the "why" behind the technical choices made in this project. It's intended to give contributors and developers a deeper understanding of the project's design.
 
 -   [Back to Home](../README.md)
--   [Technical Reference](./REFERENCE.md)
+-   [How-To Guide](./HOW_TO.md)
 
 ---
 

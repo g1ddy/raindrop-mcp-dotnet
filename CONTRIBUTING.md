@@ -34,7 +34,7 @@ We love pull requests! Here’s how to submit one:
 1.  **Fork the repository** and create your branch from `main`.
 2.  **Make your changes.** Please adhere to the existing code style.
 3.  **Add tests** for any new functionality.
-4.  **Update the documentation** if you are changing a feature or adding a new one. If you add a new tool, you must regenerate the reference documentation. See the [developer how-to guide](./docs/how-to-guides/for-developers.md) for instructions.
+4.  **Update the documentation** if you are changing a feature or adding a new one. If you add a new tool, you must regenerate the reference documentation. See the [Developer How-To Guide](./docs/HOW_TO.md) for instructions.
 5.  **Ensure all tests pass** by running `dotnet test`.
 6.  **Submit your pull request.**
 
