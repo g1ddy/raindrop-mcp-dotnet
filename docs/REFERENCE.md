@@ -1,6 +1,6 @@
 # Technical Reference
 
-This document provides a detailed reference for the technical components of the Raindrop MCP server. For a more hands-on guide, see the [Tutorial](./TUTORIAL.md).
+This document provides a detailed reference for the technical components of the Raindrop MCP server. For a more hands-on guide, see the [Tutorial](./TUTORIAL.md) or [How-To Guide](./HOW_TO.md).
 
 -   [Back to Home](../README.md)
 

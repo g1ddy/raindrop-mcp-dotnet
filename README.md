@@ -5,8 +5,9 @@
 **A robust, high-quality Model Context Protocol (MCP) server for the Raindrop.io API, built with C# and .NET.**
 
 This project provides a bridge, allowing AI models and development tools to securely and intelligently interact with your Raindrop.io bookmarks, collections, and highlights. It's designed for AI integrators, power users, and .NET developers looking to build powerful, context-aware applications.
+Once connected, you can interact with the server using natural language. The server also includes pre-built sample prompts to help you discover its capabilities. In many clients, like the Gemini CLI tool, you can access these by typing `/` and selecting a command from the list that appears.
 
-![High-level diagram showing AI models connecting to the MCP Server, which in turn communicates with the Raindrop.io API.](https://i.imgur.com/example.png)
+![High-level diagram showing AI models connecting to the MCP Server, which in turn communicates with the Raindrop.io API.](assets/README/gemini-raindrop-mcp-usage.png)
 
 ---
 
@@ -23,36 +24,21 @@ This project provides a bridge, allowing AI models and development tools to secu
 
 This project's documentation is structured using the [Diátaxis framework](https://diataxis.fr) to help you find what you need quickly.
 
-| I want to...                                | Documentation                                                                | Description                                                                     |
-| :------------------------------------------ | :--------------------------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| **...get started quickly.**                 | 📖 **[Tutorial](./docs/TUTORIAL.md)**                                         | A hands-on guide to get the server running and make your first API call.        |
-| **...use the tool to manage my bookmarks.** | 🧑‍💻 **[How-To Guides for Users](./docs/how-to-guides/for-users.md)**           | Practical recipes for managing your Raindrop.io data using natural language.    |
-| **...add new functionality to the code.**   | 👩‍💻 **[How-To Guides for Developers](./docs/how-to-guides/for-developers.md)** | Technical recipes for extending the server with new tools and features.         |
-| **...understand the technical details.**    | 🔬 **[Technical Reference](./docs/REFERENCE.md)**                             | The encyclopedia of the project: API schemas, configuration, and class details. |
-| **...understand the project's design.**     | 🧠 **[Explanation](./docs/EXPLANATION.md)**                                   | The "why" behind the project's architecture and design choices.                 |
-| **...contribute to the project.**           | ❤️ **[Contributing Guide](./CONTRIBUTING.md)**                                | Our guide for how to contribute code, documentation, or bug reports.            |
+| I want to...                              | Documentation                                    | Description                                                                     |
+| :---------------------------------------- | :----------------------------------------------- | :------------------------------------------------------------------------------ |
+| **...get started quickly.**               | 📖 **[Tutorial](./docs/TUTORIAL.md)**             | A hands-on guide to get the server running and make your first API call.        |
+| **...add new functionality to the code.** | 🛠️ **[Developer How-To Guide](./docs/HOW_TO.md)** | Technical recipes for extending the server with new tools and features.         |
+| **...understand the technical details.**  | 🔬 **[Technical Reference](./docs/REFERENCE.md)** | The encyclopedia of the project: API schemas, configuration, and class details. |
+| **...understand the project's design.**   | 🧠 **[Explanation](./docs/EXPLANATION.md)**       | The "why" behind the project's architecture and design choices.                 |
+| **...contribute to the project.**         | ❤️ **[Contributing Guide](./CONTRIBUTING.md)**    | Our guide for how to contribute code, documentation, or bug reports.            |
 
 ---
 
-## quick-start-guide Quick Start
+## 🚀 Getting Started
 
-**Prerequisites:** [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+The best way to begin is by following our hands-on **[Tutorial](./docs/TUTORIAL.md)**.
 
-1. **Clone the repository:**
-
-    ```sh
-    git clone https://github.com/g1ddy/raindrop-mcp-dotnet.git
-    cd raindrop-mcp-dotnet
-    ```
-
-2. **Run the server:**
-
-    ```sh
-    dotnet run --project ./src/Mcp
-    ```
-
-3. **Connect your client:**
-    For details on configuring your IDE or agent, see the **[Tutorial](./docs/TUTORIAL.md)**.
+It provides a complete walkthrough for configuring the server and connecting it to an AI client, allowing you to start managing your bookmarks right away.
 
 ---
 

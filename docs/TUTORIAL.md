@@ -1,76 +1,52 @@
 # Tutorial: Your First Raindrop.io Automation
 
-**Welcome!** This tutorial will guide you through setting up the Raindrop MCP server and using it to perform a simple automation: finding and tagging a bookmark.
-
-This guide assumes you have already cloned the repository and have the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) installed.
+**Welcome!** This tutorial will guide you through using the Raindrop MCP server to perform a simple automation after you have completed the initial setup.
 
 ---
 
-### **Step 1: Configure Authentication**
+### **Step 1: Choose Your Setup Path**
 
-Before you can use the server, you need to give it access to your Raindrop.io account using a secure token.
+Before you can use the server, it must be configured. Please select the guide that matches your goal:
 
-1.  **Go to your Raindrop.io settings** and navigate to the [**For Developers**](https://app.raindrop.io/settings/integrations) section.
-2.  Click **+ Create new app**, give it a name (e.g., "My MCP Server"), and click **Create**.
-3.  In the app settings, find the **Test token** section and click **Create**. This will generate a secure API token for you.
-4.  **Copy the generated token.**
-5.  **Configure `appsettings.json`:** Open the `src/Mcp/appsettings.json` file and paste your token into the `ApiToken` field.
+-   **For Users (Recommended):**
+    If you want to use the server without modifying its code, follow the quick and easy setup instructions in the **[Package README](../../src/Mcp/README.md)**. This guide covers the recommended installation methods.
 
-    ```json
-    {
-      // ... other settings
-      "Raindrop": {
-        "ApiToken": "PASTE_YOUR_TOKEN_HERE",
-        "BaseUrl": "https://api.raindrop.io/rest/v1"
-      }
-    }
-    ```
+-   **For Developers:**
+    If you want to run the server from source to debug, modify, or contribute to the project, follow the **[How to Set Up a Development Environment](./HOW_TO.md)** guide.
 
-*Note: For better security, we recommend using the .NET Secret Manager instead of pasting the token directly. See our [Developer How-To Guide](./how-to-guides/for-developers.md) for details.*
+**Once you have completed one of these setup guides, return here to continue.**
 
-### **Step 2: Run the MCP Server**
+---
 
-With authentication configured, you can now start the server.
+### **Step 2: Interact with Your Bookmarks!**
 
-```sh
-cd raindrop-mcp-dotnet
-dotnet run --project ./src/Mcp
-```
+Now for the fun part! With the server configured, you can open the Copilot chat in VS Code and try asking it to perform a task. The agent will use your configured MCP server to interact with your Raindrop.io data.
 
-The server is now running and waiting for a client to connect.
+Here are some examples to get you started:
 
-### **Step 3: Connect Your Client (Example: VS Code)**
+**Managing Bookmarks**
 
-To interact with the server, you need an MCP-compatible client. Here’s how to configure the VS Code Copilot Agent:
+*   **Find a specific bookmark:**
+    > "@RaindropMcp Find my bookmark about 'Model Context Protocol'."
 
-1.  **Open VS Code Settings:** Go to `File > Preferences > Settings` and search for "mcp".
-2.  **Edit `mcp.json`:** Click the "Edit in settings.json" link for the MCP configuration.
-3.  **Add the Server:** Add the following configuration to your `mcp.json` file. This tells the agent how to start and communicate with your server.
+*   **Add a tag to a bookmark:**
+    > "@RaindropMcp Find my bookmark about 'Gemini CLI' and add the tag '#ai-tool' to it."
 
-    ```json
-    {
-      "servers": {
-        "RaindropMcp": {
-          "type": "stdio",
-          "command": "dotnet",
-          "args": ["run", "--project", "C:/path/to/your/raindrop-mcp-dotnet/src/Mcp"],
-          "env": {
-            "Raindrop:ApiToken": "PASTE_YOUR_TOKEN_HERE",
-            "Raindrop:BaseUrl": "https://api.raindrop.io/rest/v1"
-          }
-        }
-      }
-    }
-    ```
-    *Make sure to replace the path with the absolute path to the `src/Mcp` directory on your machine.*
+*   **Update the title of a bookmark:**
+    > "@RaindropMcp Change the title of my bookmark with id 12345 to 'My New Title'."
 
-### **Step 4: Interact with Your Bookmarks!**
+**Managing Collections**
 
-Now for the fun part! Open the Copilot chat in VS Code and try asking it to perform a task. The agent will use your running MCP server to interact with your Raindrop.io data.
+*   **List all of your collections:**
+    > "@RaindropMcp List all of my collections."
 
-**Example Prompt:**
+*   **Create a new collection:**
+    > "@RaindropMcp Create a new collection named 'AI Research'."
 
-> "@RaindropMcp Find my bookmark about 'Gemini CLI' and add the tag '#ai-tool' to it."
+**Working with Highlights**
+
+*   **Add a highlight to a bookmark:**
+    > "@RaindropMcp Add a highlight with the text 'This is a key insight' to my bookmark with id 12345."
 
 **Congratulations!** You have successfully set up and used the Raindrop MCP server.
 
@@ -80,5 +56,5 @@ Now for the fun part! Open the Copilot chat in VS Code and try asking it to perf
 
 Now that you have the basics down, you can explore more advanced topics:
 
--   **[User How-To Guide](./how-to-guides/for-users.md):** Discover more recipes for managing your bookmarks with natural language.
+-   **[Developer How-To Guide](./HOW_TO.md):** Learn how to contribute, add new tools, and set up a development environment.
 -   **[Technical Reference](./REFERENCE.md):** Explore the full list of available tools and their parameters.
