@@ -18,7 +18,7 @@
         {
           "name": "Raindrop:BaseUrl",
           "description": "Optional: Raindrop base URL override for the API.",
-          "is_required": true,
+          "is_required": false,
           "is_secret": false
         }
       ]
