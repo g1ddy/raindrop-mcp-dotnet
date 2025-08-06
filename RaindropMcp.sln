@@ -5,11 +5,11 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{CFFD3E6E-17EE-40A1-B0F6-A8EDA945C347}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mcp", "src\Mcp\Mcp.csproj", "{84AE10F4-DB93-4A95-9171-7EF8D1B97C1A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaindropMcp", "src\Mcp\RaindropMcp.csproj", "{84AE10F4-DB93-4A95-9171-7EF8D1B97C1A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{5262DDFB-BCBE-45A9-9C4C-C0F2CCFEB5B6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mcp.Tests", "tests\Mcp.Tests\Mcp.Tests.csproj", "{AA1DFE07-FF4A-4641-806F-AB789D9DADF4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaindropMcp.Tests", "tests\Mcp.Tests\RaindropMcp.Tests.csproj", "{AA1DFE07-FF4A-4641-806F-AB789D9DADF4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
