@@ -122,8 +122,8 @@ _**Note:** This section is currently being updated manually. The `scripts/genera
 
 ## **Configuration (`appsettings.json`)**
 
-| Key                     | Type     | Description                                                       |
-| :---------------------- | :------- | :---------------------------------------------------------------- |
+| Key                 | Type     | Description                                                                    |
+| :------------------ | :------- | :----------------------------------------------------------------------------- |
 | `Raindrop:ApiToken` | `string` | **Required.** Your personal API token from the Raindrop.io developer settings. |
 
 ---

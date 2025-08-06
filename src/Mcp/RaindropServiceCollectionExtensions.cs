@@ -17,6 +17,8 @@ namespace Mcp;
 /// </summary>
 public static class RaindropServiceCollectionExtensions
 {
+    private const string DefaultBaseUrl = "https://api.raindrop.io/rest/v1";
+
     /// <summary>
     /// Registers Raindrop API clients using configuration from the
     /// "Raindrop" section of <see cref="IConfiguration"/>.
@@ -40,7 +42,7 @@ public static class RaindropServiceCollectionExtensions
 
             if (string.IsNullOrWhiteSpace(options.BaseUrl))
             {
-                throw new InvalidOperationException("Raindrop BaseUrl is required");
+                options.BaseUrl = DefaultBaseUrl;
             }
 
             if (string.IsNullOrWhiteSpace(options.ApiToken))
