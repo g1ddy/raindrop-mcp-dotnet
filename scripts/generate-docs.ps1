@@ -4,18 +4,26 @@
 # and generates a Markdown representation of them.
 
 param (
-    [string]$assemblyPath = ".\src\Mcp\bin\Debug\net8.0\Mcp.dll",
+    [string]$mcpAssemblyPath = ".\src\Mcp\bin\Debug\net8.0\RaindropMcp.dll",
+    [string]$mcpProtocolAssemblyPath = ".\src\Mcp\bin\Debug\net8.0\ModelContextProtocol.Core.dll",
     [string]$outputPath = ".\docs\REFERENCE.md"
 )
 
-# 1. Load the assembly
-Write-Host "Loading assembly from: $assemblyPath"
-Add-Type -Path $assemblyPath
+# 1. Load the assemblies
+try {
+    [System.Reflection.Assembly]::LoadFrom((Resolve-Path $mcpProtocolAssemblyPath))
+    [System.Reflection.Assembly]::LoadFrom((Resolve-Path $mcpAssemblyPath))
+}
+catch {
+    Write-Error "Failed to load assemblies: $_"
+    exit 1
+}
 
 # 2. Find all tool methods using reflection
-$toolMethods = [Mcp.Common.RaindropToolBase].Assembly.GetTypes() `
-    | Where-Object { $_.IsSubclassOf([Mcp.Common.RaindropToolBase]) } `
-    | ForEach-Object { $_.GetMethods() } `
+$toolMethods = [AppDomain]::CurrentDomain.GetAssemblies() `
+    | ForEach-Object { $_.GetTypes() } `
+    | Where-Object { $_.GetCustomAttributes([ModelContextProtocol.Server.McpServerToolTypeAttribute], $false).Length -gt 0 } `
+    | Sort-Object -Property BaseType, FullName | ForEach-Object { $_.GetMethods() | Sort-Object -Property Name -Descending } `
     | Where-Object { $_.GetCustomAttributes([ModelContextProtocol.Server.McpServerToolAttribute], $false).Length -gt 0 }
 
 # 3. Generate Markdown content
@@ -25,14 +33,16 @@ $markdown += ""
 
 foreach ($method in $toolMethods) {
     $toolAttribute = $method.GetCustomAttributes([ModelContextProtocol.Server.McpServerToolAttribute], $false)[0]
-    $toolName = $method.Name
-    $toolDescription = $toolAttribute.Description
-    
-    $parameters = $method.GetParameters() | ForEach-Object { "`[$($_.Name)]`" } | Join-String -Separator " "
+    $descriptionAttribute = $method.GetCustomAttributes([System.ComponentModel.DescriptionAttribute], $false) | Select-Object -First 1
 
-    $markdown += "#### `$toolName`"
+    $toolName = if ($toolAttribute.Title) { $toolAttribute.Title } else { $method.Name }
+    $toolDescription = if ($descriptionAttribute) { $descriptionAttribute.Description } else { "" }
+
+    $parameters = $method.GetParameters() | ForEach-Object { "[$($_.Name)]" } | Join-String -Separator " "
+
+    $markdown += "#### ``$($toolName)``"
     $markdown += "- **Description:** $toolDescription"
-    $markdown += "- **Usage:** `$toolName $parameters`"
+    $markdown += "- **Usage:** ``$($method.Name) $($parameters)``"
     $markdown += ""
 }
 
