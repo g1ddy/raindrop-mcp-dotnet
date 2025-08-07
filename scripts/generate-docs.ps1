@@ -61,6 +61,6 @@ $part2 = $referenceContent.Substring($endIndex)
 
 $newContent = $part1 + ($markdown | Out-String) + $part2
 
-$newContent | Set-Content $outputPath
+$newContent | Set-Content $outputPath -NoNewline
 
 Write-Host "Documentation generation complete!"
