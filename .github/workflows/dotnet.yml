@@ -27,7 +27,7 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal
     - name: Generate reference documentation
-      run: pwsh ./scripts/generate-docs.ps1 -Configuration Release
+      run: pwsh ./scripts/generate-docs.ps1 -Configuration Debug
     - name: Check for documentation changes
       id: git-check
       run: |
