@@ -26,17 +26,3 @@ jobs:
       run: dotnet build --no-restore
     - name: Test
       run: dotnet test --no-build --verbosity normal
-    - name: Generate reference documentation
-      run: pwsh ./scripts/generate-docs.ps1 -Configuration Debug
-    - name: Check for documentation changes
-      id: git-check
-      run: |
-        echo "changed=$(if git diff --exit-code --quiet; then echo "false"; else echo "true"; fi)" >> $GITHUB_OUTPUT
-    - name: Commit and push documentation changes
-      if: steps.git-check.outputs.changed == 'true'
-      run: |
-        git config --global user.name 'github-actions[bot]'
-        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-        git add docs/REFERENCE.md
-        git commit -m "docs: auto-generate reference documentation"
-        git push
