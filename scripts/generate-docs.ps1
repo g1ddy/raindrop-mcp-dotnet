@@ -4,10 +4,15 @@
 # and generates a Markdown representation of them.
 
 param (
-    [string]$mcpAssemblyPath = ".\src\Mcp\bin\Debug\net8.0\RaindropMcp.dll",
-    [string]$mcpProtocolAssemblyPath = ".\src\Mcp\bin\Debug\net8.0\ModelContextProtocol.Core.dll",
-    [string]$outputPath = ".\docs\REFERENCE.md"
+    [string]$Configuration = "Debug",
+    [string]$TargetFramework = "net8.0",
+    [string]$McpProjectName = "RaindropMcp",
+    [string]$McpProtocolProjectName = "ModelContextProtocol.Core",
+    [string]$OutputPath = ".\docs\REFERENCE.md"
 )
+
+$mcpAssemblyPath = ".\src\Mcp\bin\$Configuration\$TargetFramework\$McpProjectName.dll"
+$mcpProtocolAssemblyPath = ".\src\Mcp\bin\$Configuration\$TargetFramework\$McpProtocolProjectName.dll"
 
 # 1. Load the assemblies
 try {
@@ -50,8 +55,8 @@ foreach ($method in $toolMethods) {
 Write-Host "Updating documentation file: $outputPath"
 $referenceContent = Get-Content $outputPath -Raw
 
-$startMarker = "### **MCP Tools**"
-$endMarker = "---"
+$startMarker = "<!-- START: MCP_TOOLS -->"
+$endMarker = "<!-- END: MCP_TOOLS -->"
 
 $startIndex = $referenceContent.IndexOf($startMarker)
 $endIndex = $referenceContent.IndexOf($endMarker, $startIndex)
