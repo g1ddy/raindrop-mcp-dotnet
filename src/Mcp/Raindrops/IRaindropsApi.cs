@@ -19,18 +19,19 @@ public interface IRaindropsApi : ICommonApi<Raindrop, long>
 
     [Get("/raindrops/{collectionId}")]
     Task<ItemsResponse<Raindrop>> ListAsync(int collectionId,
-        string? search = null,
-        string? sort = null,
-        int? page = null,
-        [AliasAs("perpage")] int? perPage = null,
-        bool? nested = null,
-        CancellationToken cancellationToken = default);
+        string? search,
+        string? sort,
+        int? page,
+        [AliasAs("perpage")] int? perPage,
+        bool? nested,
+        CancellationToken cancellationToken);
 
     [Post("/raindrops")]
     Task<ItemsResponse<Raindrop>> CreateManyAsync([Body] RaindropCreateManyRequest payload, CancellationToken cancellationToken);
 
     [Put("/raindrops/{collectionId}")]
     Task<SuccessResponse> UpdateManyAsync(int collectionId, [Body] RaindropBulkUpdate update,
-        bool? nested = null, string? search = null,
-        CancellationToken cancellationToken = default);
+        bool? nested,
+        string? search,
+        CancellationToken cancellationToken);
 }

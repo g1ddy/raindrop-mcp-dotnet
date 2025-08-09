@@ -6,7 +6,7 @@ public interface IFiltersApi
 {
     [Get("/filters/{collectionId}")]
     Task<AvailableFilters> GetAsync(long collectionId,
-        string? tagsSort = null,
-        string? search = null,
-        CancellationToken cancellationToken = default);
+        string? tagsSort,
+        string? search,
+        CancellationToken cancellationToken);
 }
