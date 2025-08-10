@@ -429,7 +429,7 @@ jobs:
           if echo "${RESP}" | grep -Eiq '^AUTO_APPROVAL:\s*APPROVE'; then
             APPROVE="true"
           fi
-          echo "approve=${APPROVE}" >> "${GITHUB_OUTPUT}"
+          echo "approve=${APPROVE}" >> GITHUB_OUTPUT
 
       - name: 'Approve PR if review passes'
         id: 'approve_if_pass'
