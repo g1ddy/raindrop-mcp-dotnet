@@ -337,7 +337,7 @@ jobs:
             - Comments about testing or on tests are usually low severity.
             - Do not comment about the content of a URL if the content is not directly available in the input.
             Keep comments bodies concise and to the point.
-            Keep each comment focused on one issue....
+            Keep each comment focused on one issue...
 
             ## Context
 
