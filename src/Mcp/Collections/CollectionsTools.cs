@@ -1,4 +1,9 @@
 using System.ComponentModel;
+using System.Linq;
+using System.Text.Json;
+using System.Threading;
+using ModelContextProtocol.Protocol;
+using Mcp.Raindrops;
 
 using ModelContextProtocol.Server;
 
@@ -7,9 +12,10 @@ using Mcp.Common;
 namespace Mcp.Collections;
 
 [McpServerToolType]
-public class CollectionsTools(ICollectionsApi api) :
+public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
     RaindropToolBase<ICollectionsApi>(api)
 {
+    private readonly IRaindropsApi _raindropsApi = raindropsApi;
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
     Title = "List Collections"),
     Description("Retrieves all top-level (root) collections. Use this to understand your collection hierarchy before making structural changes.")]
@@ -59,5 +65,67 @@ public class CollectionsTools(ICollectionsApi api) :
 
         var payload = new CollectionsMergeRequest { To = to, Ids = ids };
         return Api.MergeAsync(payload);
+    }
+
+    [McpServerTool(Title = "Suggest Collection for Bookmark"),
+     Description("Suggests the best three collections for a bookmark and moves it to the selected collection.")]
+    public async Task<SuccessResponse> SuggestCollectionForBookmarkAsync(
+        [Description("ID of the bookmark to move")] long bookmarkId,
+        IMcpServer server,
+        CancellationToken token)
+    {
+        // 1. Get all collections
+        var collectionsResponse = await Api.ListAsync();
+        if (collectionsResponse?.Items == null || collectionsResponse.Items.Count == 0)
+        {
+            return new SuccessResponse(false);
+        }
+
+        // 2. Take the top 3 as suggestions
+        var suggestions = collectionsResponse.Items.Take(3).ToList();
+        if (suggestions.Count == 0)
+        {
+            return new SuccessResponse(false);
+        }
+
+        // 3. Elicit choice from user
+        var message = "Here are the top 3 suggested collections for your bookmark:\\n" +
+                      string.Join("\\n", suggestions.Select(c => $"- {c.Title}"));
+        message += "\\n\\nPlease type the name of the collection you want to move the bookmark to.";
+
+        var confirmationRequest = new ElicitRequestParams
+        {
+            Message = message,
+            RequestedSchema = new ElicitRequestParams.RequestSchema
+            {
+                Properties =
+                {
+                    ["collectionName"] = new ElicitRequestParams.StringSchema { Description = "Collection name" }
+                }
+            }
+        };
+
+        var confirmationResponse = await server.ElicitAsync(confirmationRequest, token);
+
+        if (confirmationResponse.Action != "accept" ||
+            confirmationResponse.Content?.TryGetValue("collectionName", out var value) != true ||
+            value.ValueKind != JsonValueKind.String)
+        {
+            return new SuccessResponse(false);
+        }
+
+        // 4. Find the chosen collection
+        var chosenCollectionName = value.GetString();
+        var chosenCollection = suggestions.FirstOrDefault(c => string.Equals(c.Title, chosenCollectionName, StringComparison.OrdinalIgnoreCase));
+
+        if (chosenCollection == null)
+        {
+            return new SuccessResponse(false);
+        }
+
+        // 5. Move the bookmark
+        var updateRequest = new Raindrop { Collection = new IdRef { Id = chosenCollection.Id } };
+        var updateResponse = await _raindropsApi.UpdateAsync(bookmarkId, updateRequest);
+        return new SuccessResponse(updateResponse.Result);
     }
 }

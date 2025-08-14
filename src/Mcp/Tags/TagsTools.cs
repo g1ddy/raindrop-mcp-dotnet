@@ -1,6 +1,9 @@
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using System.Threading;
+using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using Mcp.Common;
 
@@ -38,22 +41,47 @@ public class TagsTools(ITagsApi api) : RaindropToolBase<ITagsApi>(api)
             : Api.UpdateForCollectionAsync(collectionId.Value, payload);
     }
 
-    [McpServerTool(Idempotent = true, Title = "Delete Tag"),
+    [McpServerTool(Idempotent = true, Title = "Delete Tag", Destructive = true),
      Description("Removes a tag from all bookmarks.")]
     public Task<SuccessResponse> DeleteTagAsync(
         [Description("The name of the tag to remove.")] string tag,
+        IMcpServer server,
+        CancellationToken token,
         [Description("Collection ID if scoped")] int? collectionId = null)
-        => DeleteTagsAsync([tag], collectionId);
+        => DeleteTagsAsync([tag], server, token, collectionId);
 
-    [McpServerTool(Idempotent = true, Title = "Delete Tags"),
+    [McpServerTool(Idempotent = true, Title = "Delete Tags", Destructive = true),
      Description("Removes one or more tags from all bookmarks.")]
-    public Task<SuccessResponse> DeleteTagsAsync(
+    public async Task<SuccessResponse> DeleteTagsAsync(
         [Description("A collection of tag names to be removed.")] IEnumerable<string> tags,
+        IMcpServer server,
+        CancellationToken token,
         [Description("Collection ID if scoped")] int? collectionId = null)
     {
+        // Elicit confirmation from the user.
+        var confirmationRequest = new ElicitRequestParams
+        {
+            Message = "Are you sure you want to delete these tags? This action cannot be undone.",
+            RequestedSchema = new ElicitRequestParams.RequestSchema
+            {
+                Properties =
+                {
+                    ["confirm"] = new ElicitRequestParams.BooleanSchema { Description = "Confirm deletion" }
+                }
+            }
+        };
+
+        var confirmationResponse = await server.ElicitAsync(confirmationRequest, token);
+
+        if (confirmationResponse.Action != "accept" ||
+            (confirmationResponse.Content?.TryGetValue("confirm", out var value) != true || value.ValueKind != JsonValueKind.True))
+        {
+            return new SuccessResponse(false);
+        }
+
         var payload = new TagDeleteRequest { Tags = tags.ToList() };
         return collectionId is null
-            ? Api.DeleteAsync(payload)
-            : Api.DeleteForCollectionAsync(collectionId.Value, payload);
+            ? await Api.DeleteAsync(payload)
+            : await Api.DeleteForCollectionAsync(collectionId.Value, payload);
     }
 }
