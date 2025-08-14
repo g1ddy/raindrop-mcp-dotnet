@@ -70,4 +70,18 @@ public static class RaindropPrompts
             Recommend clearer descriptions and ensure no branch is nested more than three levels deep.
             Present the optimized hierarchy using unicode box-drawing character to render the tree.
         """;
+
+    [McpServerPrompt, Description("Remove a tag from all bookmarks.")]
+    public static string RemoveTagFromAllBookmarks() =>
+        """
+            Find all bookmarks with the tag '#obsolete' and remove it.
+            This is a destructive action, so you must ask for confirmation before proceeding.
+        """;
+
+    [McpServerPrompt, Description("Suggest a collection for a bookmark.")]
+    public static string SuggestCollection() =>
+        """
+            Given a bookmark, find the best three collections to put it in.
+            Ask the user to select a collection and then move the bookmark to the selected collection.
+        """;
 }
