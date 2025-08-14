@@ -99,8 +99,9 @@ jobs:
           echo "pr_data=${PR_DATA}" >> "${GITHUB_OUTPUT}"
           # Get file changes
           CHANGED_FILES="$(gh pr diff "${PR_NUMBER}" --name-only)"
-
-          echo "changed_files<> ${GITHUB_OUTPUT}"
+          echo "changed_files<<EOF" >> "${GITHUB_OUTPUT}"
+          echo "${CHANGED_FILES}" >> "${GITHUB_OUTPUT}"
+          echo "EOF" >> "${GITHUB_OUTPUT}"
 
       - name: 'Get PR details (issue_comment)'
         id: 'get_pr_comment'
@@ -123,8 +124,14 @@ jobs:
           echo "pr_data=${PR_DATA}" >> "${GITHUB_OUTPUT}"
           # Get file changes
           CHANGED_FILES="$(gh pr diff "${PR_NUMBER}" --name-only)"
+          echo "changed_files<<EOF" >> "${GITHUB_OUTPUT}"
+          echo "${CHANGED_FILES}" >> "${GITHUB_OUTPUT}"
+          echo "EOF" >> "${GITHUB_OUTPUT}"
 
-          echo "changed_files<> ${GITHUB_OUTPUT}"
+      - name: 'Log PR details'
+        run: |-
+          echo "PR_DATA: ${{ steps.get_pr.outputs.pr_data || steps.get_pr_comment.outputs.pr_data }}"
+          echo "CHANGED_FILES: ${{ steps.get_pr.outputs.changed_files || steps.get_pr_comment.outputs.changed_files }}"
 
       - name: 'Run Gemini PR Review'
         uses: 'google-github-actions/run-gemini-cli@v0'
