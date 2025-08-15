@@ -1,7 +1,5 @@
 using System.ComponentModel;
-
 using ModelContextProtocol.Server;
-
 using Mcp.Common;
 
 namespace Mcp.Raindrops;
@@ -17,34 +15,34 @@ public class RaindropsTools(IRaindropsApi api) :
     [McpServerTool(Title = "Create Bookmark"),
          Description("Creates a new bookmark.")]
     public Task<ItemResponse<Raindrop>> CreateBookmarkAsync(
-            [Description("Bookmark creation details")] RaindropCreateRequest request)
+            [Description("Bookmark creation details")] RaindropCreateRequest request, CancellationToken cancellationToken)
     {
         var payload = request.ToRaindrop();
-        return Api.CreateAsync(payload);
+        return Api.CreateAsync(payload, cancellationToken);
     }
 
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
             Title = "Get Bookmark"),
          Description("Retrieves a single bookmark by its unique ID.")]
     public Task<ItemResponse<Raindrop>> GetBookmarkAsync([
-            Description("ID of the bookmark to retrieve")] long id)
-            => Api.GetAsync(id);
+            Description("ID of the bookmark to retrieve")] long id, CancellationToken cancellationToken)
+            => Api.GetAsync(id, cancellationToken);
 
     [McpServerTool(Idempotent = true, Title = "Update Bookmark"),
          Description("Updates an existing bookmark.")]
     public Task<ItemResponse<Raindrop>> UpdateBookmarkAsync(
             [Description("ID of the bookmark to update")] long id,
-            [Description("Updated bookmark data")] RaindropUpdateRequest request)
+            [Description("Updated bookmark data")] RaindropUpdateRequest request, CancellationToken cancellationToken)
     {
         var payload = request.ToRaindrop();
-        return Api.UpdateAsync(id, payload);
+        return Api.UpdateAsync(id, payload, cancellationToken);
     }
 
     [McpServerTool(Idempotent = true, Title = "Delete Bookmark"),
          Description("Moves a bookmark to the Trash.")]
     public Task<SuccessResponse> DeleteBookmarkAsync([
-            Description("ID of the bookmark to delete")] long id)
-            => Api.DeleteAsync(id);
+            Description("ID of the bookmark to delete")] long id, CancellationToken cancellationToken)
+            => Api.DeleteAsync(id, cancellationToken);
 
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
             Title = "List Bookmarks"),
@@ -55,7 +53,8 @@ public class RaindropsTools(IRaindropsApi api) :
             [Description("Sorting order: '-created' (newest, default), 'created', 'score' (relevance when searching), 'sort', 'title', '-title', 'domain', '-domain'.")] string? sort = null,
             [Description("Page index starting from 0.")] int? page = null,
             [Description("How many raindrops per page, up to 50.")] int? perPage = null,
-            [Description("Include bookmarks from nested collections (true/false).")] bool? nested = null)
+            [Description("Include bookmarks from nested collections (true/false).")] bool? nested = null,
+            CancellationToken cancellationToken = default)
     {
         if (page is < 0)
             throw new ArgumentOutOfRangeException(nameof(page), "Page number cannot be negative.");
@@ -72,17 +71,18 @@ public class RaindropsTools(IRaindropsApi api) :
                 throw new ArgumentException("Sort 'score' is only allowed when using a search query.", nameof(sort));
         }
 
-        return Api.ListAsync(collectionId, search, sort, page, perPage, nested);
+        return Api.ListAsync(collectionId, search, sort, page, perPage, nested, cancellationToken);
     }
 
     [McpServerTool(Title = "Create Bookmarks"),
          Description("Creates multiple bookmarks in a single request.")]
     public Task<ItemsResponse<Raindrop>> CreateBookmarksAsync(
             [Description("Collection ID for the new bookmarks")] int collectionId,
-            [Description("A collection of bookmark details to create.")] IEnumerable<Raindrop> raindrops)
+            [Description("A collection of bookmark details to create.")] IEnumerable<Raindrop> raindrops,
+            CancellationToken cancellationToken = default)
     {
         var payload = new RaindropCreateManyRequest { CollectionId = collectionId, Items = raindrops.ToList() };
-        return Api.CreateManyAsync(payload);
+        return Api.CreateManyAsync(payload, cancellationToken);
     }
 
     [McpServerTool(Idempotent = true, Title = "Update Bookmarks"),
@@ -91,6 +91,7 @@ public class RaindropsTools(IRaindropsApi api) :
         [Description("Collection to update")] int collectionId,
         [Description("Update operations to apply")] RaindropBulkUpdate update,
         [Description("Apply to nested collections")] bool? nested = null,
-        [Description("Optional search filter. Use cautiously as it may affect more bookmarks than intended.")] string? search = null)
-        => Api.UpdateManyAsync(collectionId, update, nested, search);
+        [Description("Optional search filter. Use cautiously as it may affect more bookmarks than intended.")] string? search = null,
+        CancellationToken cancellationToken = default)
+        => Api.UpdateManyAsync(collectionId, update, nested, search, cancellationToken);
 }
