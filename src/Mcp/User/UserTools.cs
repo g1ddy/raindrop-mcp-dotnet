@@ -1,7 +1,6 @@
 using System.ComponentModel;
-using System.Threading;
-using ModelContextProtocol.Server;
 using Mcp.Common;
+using ModelContextProtocol.Server;
 
 namespace Mcp.User;
 
