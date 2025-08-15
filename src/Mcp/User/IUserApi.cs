@@ -6,5 +6,5 @@ namespace Mcp.User;
 public interface IUserApi
 {
     [Get("/user")]
-    Task<ItemResponse<UserInfo>> GetAsync();
+    Task<ItemResponse<UserInfo>> GetAsync(CancellationToken cancellationToken);
 }

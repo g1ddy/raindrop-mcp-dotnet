@@ -1,44 +1,44 @@
 using System.ComponentModel;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
-using System.Threading;
+using Mcp.Common;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
-using Mcp.Common;
 
 namespace Mcp.Tags;
 
 [McpServerToolType]
 public class TagsTools(ITagsApi api) : RaindropToolBase<ITagsApi>(api)
 {
-    [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
-        Title = "List Tags"),
+    [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true, Title = "List Tags"),
      Description("Retrieves all tags, optionally filtered by a collection.")]
-    public Task<ItemsResponse<TagInfo>> ListTagsAsync([Description("Optional collection ID to filter tags by.")] int? collectionId = null)
+    public Task<ItemsResponse<TagInfo>> ListTagsAsync(
+        [Description("Optional collection ID to filter tags by.")] int? collectionId = null,
+        CancellationToken cancellationToken = default)
         => collectionId is null
-            ? Api.ListAsync()
-            : Api.ListForCollectionAsync(collectionId.Value);
+            ? Api.ListAsync(cancellationToken)
+            : Api.ListForCollectionAsync(collectionId.Value, cancellationToken);
 
     [McpServerTool(Idempotent = true, Title = "Rename Tag"),
      Description("Renames a tag across all bookmarks.")]
     public Task<SuccessResponse> RenameTagAsync(
         [Description("The current name of the tag to rename.")] string oldTag,
         [Description("The new name for the tag.")] string newTag,
-        [Description("Collection ID if scoped")] int? collectionId = null)
-        => RenameTagsAsync([oldTag], newTag, collectionId);
+        [Description("Collection ID if scoped")] int? collectionId = null,
+        CancellationToken cancellationToken = default)
+        => RenameTagsAsync([oldTag], newTag, collectionId, cancellationToken);
 
     [McpServerTool(Idempotent = true, Title = "Rename Tags"),
      Description("Merges multiple tags into a single destination tag.")]
     public Task<SuccessResponse> RenameTagsAsync(
         [Description("A collection of tag names to be merged.")] IEnumerable<string> tags,
         [Description("The name of the tag that the source tags will be merged into.")] string newTag,
-        [Description("Collection ID if scoped")] int? collectionId = null)
+        [Description("Collection ID if scoped")] int? collectionId = null,
+        CancellationToken cancellationToken = default)
     {
         var payload = new TagRenameRequest { Replace = newTag, Tags = tags.ToList() };
         return collectionId is null
-            ? Api.UpdateAsync(payload)
-            : Api.UpdateForCollectionAsync(collectionId.Value, payload);
+            ? Api.UpdateAsync(payload, cancellationToken)
+            : Api.UpdateForCollectionAsync(collectionId.Value, payload, cancellationToken);
     }
 
     [McpServerTool(Idempotent = true, Title = "Delete Tag", Destructive = true),
@@ -47,8 +47,9 @@ public class TagsTools(ITagsApi api) : RaindropToolBase<ITagsApi>(api)
         [Description("The name of the tag to remove.")] string tag,
         IMcpServer server,
         CancellationToken token,
-        [Description("Collection ID if scoped")] int? collectionId = null)
-        => DeleteTagsAsync([tag], server, token, collectionId);
+        [Description("Collection ID if scoped")] int? collectionId = null,
+        CancellationToken cancellationToken = default)
+        => DeleteTagsAsync([tag], server, token, collectionId, cancellationToken);
 
     [McpServerTool(Idempotent = true, Title = "Delete Tags", Destructive = true),
      Description("Removes one or more tags from all bookmarks.")]
@@ -56,7 +57,8 @@ public class TagsTools(ITagsApi api) : RaindropToolBase<ITagsApi>(api)
         [Description("A collection of tag names to be removed.")] IEnumerable<string> tags,
         IMcpServer server,
         CancellationToken token,
-        [Description("Collection ID if scoped")] int? collectionId = null)
+        [Description("Collection ID if scoped")] int? collectionId = null,
+        CancellationToken cancellationToken = default)
     {
         // Elicit confirmation from the user.
         var confirmationRequest = new ElicitRequestParams
@@ -81,7 +83,7 @@ public class TagsTools(ITagsApi api) : RaindropToolBase<ITagsApi>(api)
 
         var payload = new TagDeleteRequest { Tags = tags.ToList() };
         return collectionId is null
-            ? await Api.DeleteAsync(payload)
-            : await Api.DeleteForCollectionAsync(collectionId.Value, payload);
+            ? await Api.DeleteAsync(payload, cancellationToken)
+            : await Api.DeleteForCollectionAsync(collectionId.Value, payload, cancellationToken);
     }
 }
