@@ -44,19 +44,17 @@ public class TagsTools(ITagsApi api) : RaindropToolBase<ITagsApi>(api)
     [McpServerTool(Idempotent = true, Title = "Delete Tag", Destructive = true),
      Description("Removes a tag from all bookmarks.")]
     public Task<SuccessResponse> DeleteTagAsync(
-        [Description("The name of the tag to remove.")] string tag,
         IMcpServer server,
-        CancellationToken token,
+        [Description("The name of the tag to remove.")] string tag,
         [Description("Collection ID if scoped")] int? collectionId = null,
         CancellationToken cancellationToken = default)
-        => DeleteTagsAsync([tag], server, token, collectionId, cancellationToken);
+        => DeleteTagsAsync(server, [tag], collectionId, cancellationToken);
 
     [McpServerTool(Idempotent = true, Title = "Delete Tags", Destructive = true),
      Description("Removes one or more tags from all bookmarks.")]
     public async Task<SuccessResponse> DeleteTagsAsync(
-        [Description("A collection of tag names to be removed.")] IEnumerable<string> tags,
         IMcpServer server,
-        CancellationToken token,
+        [Description("A collection of tag names to be removed.")] IEnumerable<string> tags,
         [Description("Collection ID if scoped")] int? collectionId = null,
         CancellationToken cancellationToken = default)
     {
@@ -73,10 +71,12 @@ public class TagsTools(ITagsApi api) : RaindropToolBase<ITagsApi>(api)
             }
         };
 
-        var confirmationResponse = await server.ElicitAsync(confirmationRequest, token);
+        var confirmationResponse = await server.ElicitAsync(confirmationRequest, cancellationToken);
 
         if (confirmationResponse.Action != "accept" ||
-            (confirmationResponse.Content?.TryGetValue("confirm", out var value) != true || value.ValueKind != JsonValueKind.True))
+            confirmationResponse.Content == null ||
+            !confirmationResponse.Content.TryGetValue("confirm", out var value) ||
+            value.ValueKind != JsonValueKind.True)
         {
             return new SuccessResponse(false);
         }

@@ -67,28 +67,74 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
     [McpServerTool(Title = "Suggest Collection for Bookmark"),
      Description("Suggests the best three collections for a bookmark and moves it to the selected collection.")]
     public async Task<SuccessResponse> SuggestCollectionForBookmarkAsync(
-        [Description("ID of the bookmark to move")] long bookmarkId,
         IMcpServer server,
-        CancellationToken token)
+        [Description("ID of the bookmark to move")] long bookmarkId,
+        CancellationToken cancellationToken)
     {
-        // 1. Get all collections
-        var collectionsResponse = await Api.ListAsync(token);
+        // 1. Get the bookmark
+        var bookmarkResponse = await _raindropsApi.GetAsync(bookmarkId, cancellationToken);
+        if (bookmarkResponse?.Item == null)
+        {
+            return new SuccessResponse(false);
+        }
+        var bookmark = bookmarkResponse.Item;
+
+        // 2. Get all collections
+        var collectionsResponse = await Api.ListAsync(cancellationToken);
         if (collectionsResponse?.Items == null || collectionsResponse.Items.Count == 0)
         {
             return new SuccessResponse(false);
         }
+        var allCollections = collectionsResponse.Items
+            .Where(c => !string.IsNullOrEmpty(c.Title));
 
-        // 2. Take the top 3 as suggestions
-        var suggestions = collectionsResponse.Items.Take(3).ToList();
-        if (suggestions.Count == 0)
+        // 3. Use the LLM to get the top 3 suggestions
+        var prompt = $"""
+            Given the following bookmark:
+            - Title: {bookmark.Title}
+            - URL: {bookmark.Link}
+            - Excerpt: {bookmark.Excerpt}
+
+            And the following list of collections:
+            {string.Join("\n", allCollections.Select(c => $"- {c.Title}"))}
+
+            Please suggest the top 3 most relevant collections for this bookmark.
+            Return a comma-separated list of the collection titles.
+        """;
+
+        var sampleRequest = new CreateMessageRequestParams
+        {
+            Messages =
+            [
+                new SamplingMessage
+                {
+                    Role = Role.User,
+                    Content = new TextContentBlock { Text = prompt }
+                }
+            ]
+        };
+
+        var llmResponse = await server.SampleAsync(sampleRequest, cancellationToken);
+        if (llmResponse?.Content is not TextContentBlock textContent || string.IsNullOrWhiteSpace(textContent.Text))
         {
             return new SuccessResponse(false);
         }
 
-        // 3. Elicit choice from user
-        var message = "Here are the top 3 suggested collections for your bookmark:\\n" +
-                      string.Join("\\n", suggestions.Select(c => $"- {c.Title}"));
-        message += "\\n\\nPlease type the name of the collection you want to move the bookmark to.";
+        var suggestedTitles = textContent.Text.Split(',')
+            .Select(t => t.Trim())
+            .Where(t => allCollections.Any(c => string.Equals(c.Title, t, StringComparison.OrdinalIgnoreCase)))
+            .Take(3)
+            .ToList();
+
+        if (suggestedTitles.Count == 0)
+        {
+            return new SuccessResponse(false);
+        }
+
+        // 4. Elicit choice from user
+        var message = "Here are the top 3 suggested collections for your bookmark:\n" +
+                      string.Join("\n", suggestedTitles.Select(st => $"- {st}"));
+        message += "\n\nPlease select the collection you want to move the bookmark to.";
 
         var confirmationRequest = new ElicitRequestParams
         {
@@ -97,12 +143,16 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
             {
                 Properties =
                 {
-                    ["collectionName"] = new ElicitRequestParams.StringSchema { Description = "Collection name" }
+                    ["collectionName"] = new ElicitRequestParams.EnumSchema
+                    {
+                        Description = "Collection name",
+                        Enum = suggestedTitles
+                    }
                 }
             }
         };
 
-        var confirmationResponse = await server.ElicitAsync(confirmationRequest, token);
+        var confirmationResponse = await server.ElicitAsync(confirmationRequest, cancellationToken);
 
         if (confirmationResponse.Action != "accept" ||
             confirmationResponse.Content?.TryGetValue("collectionName", out var value) != true ||
@@ -111,18 +161,18 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
             return new SuccessResponse(false);
         }
 
-        // 4. Find the chosen collection
+        // 5. Find the chosen collection
         var chosenCollectionName = value.GetString();
-        var chosenCollection = suggestions.FirstOrDefault(c => string.Equals(c.Title, chosenCollectionName, StringComparison.OrdinalIgnoreCase));
+        var chosenCollection = allCollections.FirstOrDefault(c => string.Equals(c.Title, chosenCollectionName, StringComparison.OrdinalIgnoreCase));
 
         if (chosenCollection == null)
         {
             return new SuccessResponse(false);
         }
 
-        // 5. Move the bookmark
+        // 6. Move the bookmark
         var updateRequest = new Raindrop { Collection = new IdRef { Id = chosenCollection.Id } };
-        var updateResponse = await _raindropsApi.UpdateAsync(bookmarkId, updateRequest, token);
+        var updateResponse = await _raindropsApi.UpdateAsync(bookmarkId, updateRequest, cancellationToken);
         return new SuccessResponse(updateResponse.Result);
     }
 }
