@@ -145,7 +145,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
                     ["collectionName"] = new ElicitRequestParams.EnumSchema
                     {
                         Description = "Collection name",
-                        Enum = suggestions.Select(c => c.Title).ToList()
+                        Enum = suggestions.Select(c => c.Title!).ToList()
                     }
                 }
             }

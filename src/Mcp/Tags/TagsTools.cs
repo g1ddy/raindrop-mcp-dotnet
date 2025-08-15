@@ -74,7 +74,9 @@ public class TagsTools(ITagsApi api) : RaindropToolBase<ITagsApi>(api)
         var confirmationResponse = await server.ElicitAsync(confirmationRequest, cancellationToken);
 
         if (confirmationResponse.Action != "accept" ||
-            (confirmationResponse.Content?.TryGetValue("confirm", out var value) != true || value.ValueKind != JsonValueKind.True))
+            confirmationResponse.Content == null ||
+            !confirmationResponse.Content.TryGetValue("confirm", out var value) ||
+            value.ValueKind != JsonValueKind.True)
         {
             return new SuccessResponse(false);
         }
