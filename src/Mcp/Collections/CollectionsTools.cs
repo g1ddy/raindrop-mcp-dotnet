@@ -85,20 +85,21 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
         {
             return new SuccessResponse(false);
         }
-        var allCollections = collectionsResponse.Items;
+        var allCollections = collectionsResponse.Items
+            .Where(c => !string.IsNullOrEmpty(c.Title));
 
         // 3. Use the LLM to get the top 3 suggestions
         var prompt = $"""
-        Given the following bookmark:
-        - Title: {bookmark.Title}
-        - URL: {bookmark.Link}
-        - Excerpt: {bookmark.Excerpt}
+            Given the following bookmark:
+            - Title: {bookmark.Title}
+            - URL: {bookmark.Link}
+            - Excerpt: {bookmark.Excerpt}
 
-        And the following list of collections:
-        {string.Join("\n", allCollections.Select(c => $"- {c.Title}"))}
+            And the following list of collections:
+            {string.Join("\n", allCollections.Select(c => $"- {c.Title}"))}
 
-        Please suggest the top 3 most relevant collections for this bookmark.
-        Return a comma-separated list of the collection titles.
+            Please suggest the top 3 most relevant collections for this bookmark.
+            Return a comma-separated list of the collection titles.
         """;
 
         var sampleRequest = new CreateMessageRequestParams
@@ -119,20 +120,20 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
             return new SuccessResponse(false);
         }
 
-        var suggestedTitles = textContent.Text.Split(',').Select(t => t.Trim()).ToList();
-        var suggestions = allCollections
-            .Where(c => suggestedTitles.Contains(c.Title, StringComparer.OrdinalIgnoreCase))
+        var suggestedTitles = textContent.Text.Split(',')
+            .Select(t => t.Trim())
+            .Where(t => allCollections.Any(c => string.Equals(c.Title, t, StringComparison.OrdinalIgnoreCase)))
             .Take(3)
             .ToList();
 
-        if (suggestions.Count == 0)
+        if (suggestedTitles.Count == 0)
         {
             return new SuccessResponse(false);
         }
 
         // 4. Elicit choice from user
         var message = "Here are the top 3 suggested collections for your bookmark:\n" +
-                      string.Join("\n", suggestions.Select(c => $"- {c.Title}"));
+                      string.Join("\n", suggestedTitles.Select(st => $"- {st}"));
         message += "\n\nPlease select the collection you want to move the bookmark to.";
 
         var confirmationRequest = new ElicitRequestParams
@@ -145,7 +146,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
                     ["collectionName"] = new ElicitRequestParams.EnumSchema
                     {
                         Description = "Collection name",
-                        Enum = suggestions.Select(c => c.Title!).ToList()
+                        Enum = suggestedTitles
                     }
                 }
             }
@@ -162,7 +163,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
 
         // 5. Find the chosen collection
         var chosenCollectionName = value.GetString();
-        var chosenCollection = suggestions.FirstOrDefault(c => string.Equals(c.Title, chosenCollectionName, StringComparison.OrdinalIgnoreCase));
+        var chosenCollection = allCollections.FirstOrDefault(c => string.Equals(c.Title, chosenCollectionName, StringComparison.OrdinalIgnoreCase));
 
         if (chosenCollection == null)
         {
