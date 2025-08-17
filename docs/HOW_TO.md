@@ -27,9 +27,7 @@ cd raindrop-mcp-dotnet
 
 **3. Configure Your API Token:**
 
-The MCP server is already configured in `.vscode/settings/mcp.json` for VS Code users. When you first use the server, VS Code will securely prompt you for your Raindrop.io API key and store it safely.
-
-*   **For VS Code Users (Recommended):** The MCP configuration in `.vscode/settings/mcp.json` uses VS Code's secure input system. Simply use the MCP server in chat and VS Code will prompt for your API key on first use.
+*   **For VS Code Users (Recommended):** The MCP configuration in `.vscode/mcp.json` uses VS Code's secure input system. Simply use the MCP server in chat and VS Code will prompt for your API key on first use.
 
 *   **Alternative - .NET User Secrets:** If your MCP client doesn't support secure credential storage, you can use .NET's built-in secret manager:
     ```sh
