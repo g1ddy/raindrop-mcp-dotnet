@@ -26,6 +26,9 @@ bld/
 # Visual Studio 2015/2017 cache/options directory
 .vs/
 
+# Kiro MCP Settings
+.kiro/settings/mcp.json
+
 # .NET Core
 project.lock.json
 project.fragment.lock.json

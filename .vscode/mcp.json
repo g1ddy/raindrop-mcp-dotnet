@@ -1,0 +1,25 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "raindrop-api-key",
+      "description": "Raindrop.io API Key",
+      "password": true
+    }
+  ],
+  "servers": {
+    "raindrop": {
+      "type": "stdio",
+      "command": "dotnet",
+      "args": [
+        "run",
+        "--project",
+        "src/Mcp"
+      ],
+      "env": {
+        "Raindrop:BaseUrl": "https://api.raindrop.io/rest/v1",
+        "Raindrop:ApiToken": "${input:raindrop-api-key}"
+      }
+    }
+  }
+}

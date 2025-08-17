@@ -19,26 +19,24 @@ git clone https://github.com/g1ddy/raindrop-mcp-dotnet.git
 cd raindrop-mcp-dotnet
 ```
 
-**2. Securely Store Your API Token:**
+**2. Get Your Raindrop.io API Token:**
 
-Pasting secrets in configuration files is not secure. .NET provides a "Secret Manager" tool to keep secrets separate from your project code.
+*   Go to https://app.raindrop.io/settings/integrations
+*   Create a new app or use an existing one
+*   Copy the "Test token" for development use
 
-*   **Initialize User Secrets:** In the `src/Mcp` directory, run:
+**3. Configure Your API Token:**
+
+*   **For VS Code Users (Recommended):** The MCP configuration in `.vscode/mcp.json` uses VS Code's secure input system. Simply use the MCP server in chat and VS Code will prompt for your API key on first use.
+
+*   **Alternative - .NET User Secrets:** If your MCP client doesn't support secure credential storage, you can use .NET's built-in secret manager:
     ```sh
+    # In the src/Mcp directory
     dotnet user-secrets init
-    ```
-
-*   **Set Your API Token Secret:** Use this command to securely store your token. The application is already configured to read this key.
-    ```sh
     dotnet user-secrets set "Raindrop:ApiToken" "PASTE_YOUR_TOKEN_HERE"
     ```
 
-**3. Connect Your Client to the Local Source:**
-
-Configure your MCP-compatible client to run the server directly from your local project file.
-
-*   **Open VS Code Settings** (`File > Preferences > Settings`) and find the `mcp.json` file.
-*   **Add the Server Configuration:**
+*   **Add the Server Configuration to your MCP client:**
 
     ```json
     {
@@ -59,6 +57,18 @@ Configure your MCP-compatible client to run the server directly from your local 
     }
     ```
     *Replace `C:/path/to/your/raindrop-mcp-dotnet/src/Mcp` with the absolute path to the `src/Mcp` directory on your machine.*
+
+**4. Debug the MCP Server:**
+
+To debug the running MCP server:
+
+1. **Start the MCP server** by using it in VS Code chat (e.g., ask "@raindrop list my collections")
+2. **Set breakpoints** in your code where you want to debug
+3. **Attach the debugger:**
+   - Press `F5` or go to Run and Debug view
+   - Select ".NET Core Attach" configuration
+   - Choose the `dotnet.exe` process that's running `RaindropMcp.dll`
+   - Look for the process with command line arguments containing `src/Mcp`
 
 ---
 
