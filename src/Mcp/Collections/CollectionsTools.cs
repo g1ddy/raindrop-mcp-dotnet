@@ -120,9 +120,14 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
             return new SuccessResponse(false);
         }
 
+        // Using a HashSet for efficient lookups (O(1) average time complexity).
+        var validCollectionTitles = new HashSet<string>(allCollections.Select(c => c.Title), StringComparer.OrdinalIgnoreCase);
+
+        // More robust parsing of the LLM's response.
         var suggestedTitles = textContent.Text.Split(',')
             .Select(t => t.Trim())
-            .Where(t => allCollections.Any(c => string.Equals(c.Title, t, StringComparison.OrdinalIgnoreCase)))
+            .Where(t => !string.IsNullOrEmpty(t) && validCollectionTitles.Contains(t))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
             .Take(3)
             .ToList();
 
