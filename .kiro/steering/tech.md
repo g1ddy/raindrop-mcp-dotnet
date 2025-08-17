@@ -37,8 +37,6 @@ dotnet test RaindropMcp.sln --no-build --no-restore
 # Run from source (development)
 dotnet run --project src/Mcp
 
-# Set API token securely
-dotnet user-secrets set "Raindrop:ApiToken" "YOUR_TOKEN" --project src/Mcp
 # Set API token securely (run from solution root)
 dotnet user-secrets set "Raindrop:ApiToken" "YOUR_TOKEN" --project src/Mcp
 # Generate documentation
