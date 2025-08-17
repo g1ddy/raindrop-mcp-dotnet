@@ -9,7 +9,7 @@
 Before you can use the server, it must be configured. Please select the guide that matches your goal:
 
 -   **For Users (Recommended):**
-    If you want to use the server without modifying its code, follow the quick and easy setup instructions in the **[Package README](../../src/Mcp/README.md)**. This guide covers the recommended installation methods.
+    If you want to use the server without modifying its code, follow the quick and easy setup instructions in the **[Package README](../src/Mcp/README.md)**. This guide covers the recommended installation methods.
 
 -   **For Developers:**
     If you want to run the server from source to debug, modify, or contribute to the project, follow the **[How to Set Up a Development Environment](./HOW_TO.md)** guide.
