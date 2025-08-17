@@ -39,7 +39,8 @@ dotnet run --project src/Mcp
 
 # Set API token securely
 dotnet user-secrets set "Raindrop:ApiToken" "YOUR_TOKEN" --project src/Mcp
-
+# Set API token securely (run from solution root)
+dotnet user-secrets set "Raindrop:ApiToken" "YOUR_TOKEN" --project src/Mcp
 # Generate documentation
 powershell -File ./scripts/generate-docs.ps1
 ```
