@@ -4,7 +4,7 @@ This guide provides recipes for developers who want to set up a local developmen
 
 **Prerequisite:** You have the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) or later installed.
 
--   [Back to Home](../../README.md)
+-   [Back to Home](../README.md)
 
 ---
 
@@ -94,4 +94,4 @@ powershell -File ./scripts/generate-docs.ps1
 
 ### **Next Steps: Contributing**
 
-Now that you know how to extend the server, please review our **[Contributing Guide](../../CONTRIBUTING.md)** before you submit a pull request.
+Now that you know how to extend the server, please review our **[Contributing Guide](../CONTRIBUTING.md)** before you submit a pull request.
