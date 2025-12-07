@@ -86,7 +86,12 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
             return new SuccessResponse(false);
         }
         var allCollections = collectionsResponse.Items
-            .Where(c => !string.IsNullOrEmpty(c.Title));
+            .Where(c => !string.IsNullOrEmpty(c.Title))
+            .ToList();
+
+        var collectionTitles = new HashSet<string>(
+            allCollections.Select(c => c.Title!),
+            StringComparer.OrdinalIgnoreCase);
 
         // 3. Use the LLM to get the top 3 suggestions
         var prompt = $"""
@@ -99,7 +104,9 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
             {string.Join("\n", allCollections.Select(c => $"- {c.Title}"))}
 
             Please suggest the top 3 most relevant collections for this bookmark.
-            Return a comma-separated list of the collection titles.
+            Return ONLY a pipe-separated list of the collection titles, exactly as they appear in the list above.
+            Do not include any explanations, numbering, or bullet points.
+            Example: Title1 | Title2 | Title3
         """;
 
         var sampleRequest = new CreateMessageRequestParams
@@ -120,9 +127,10 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
             return new SuccessResponse(false);
         }
 
-        var suggestedTitles = textContent.Text.Split(',')
-            .Select(t => t.Trim())
-            .Where(t => allCollections.Any(c => string.Equals(c.Title, t, StringComparison.OrdinalIgnoreCase)))
+        var separators = new[] { '|', '\n' };
+        var suggestedTitles = textContent.Text.Split(separators, StringSplitOptions.RemoveEmptyEntries)
+            .Select(t => t.Trim().Trim('-', '*', ' ', '\'', '"', '.'))
+            .Where(t => collectionTitles.Contains(t))
             .Take(3)
             .ToList();
 
