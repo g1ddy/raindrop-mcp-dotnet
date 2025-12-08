@@ -6,7 +6,7 @@ namespace Mcp.Raindrops;
 /// Request payload for updating an existing bookmark.
 /// </summary>
 [Description("Request payload for updating an existing bookmark")]
-public record RaindropUpdateRequest
+public record RaindropUpdateRequest : IRaindropRequest
 {
     [Description("The new URL for the bookmark.")]
     public string? Link { get; init; }
