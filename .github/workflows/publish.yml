@@ -1,0 +1,38 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Get Version
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+
+    - name: Update server.json version
+      run: |
+        jq --arg v "${{ env.VERSION }}" '.packages[0].version = $v | .version_detail.version = $v' src/Mcp/.mcp/server.json > src/Mcp/.mcp/server.json.tmp && mv src/Mcp/.mcp/server.json.tmp src/Mcp/.mcp/server.json
+        cat src/Mcp/.mcp/server.json
+
+    - name: Restore dependencies
+      run: dotnet restore src/Mcp/RaindropMcp.csproj
+
+    - name: Build
+      run: dotnet build src/Mcp/RaindropMcp.csproj --no-restore --configuration Release /p:PackageVersion=${{ env.VERSION }}
+
+    - name: Pack
+      run: dotnet pack src/Mcp/RaindropMcp.csproj --no-build --configuration Release /p:PackageVersion=${{ env.VERSION }} --output .
+
+    - name: Push to NuGet
+      run: dotnet nuget push *.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
