@@ -58,3 +58,6 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# Generated MCP config
+src/Mcp/.mcp/server.json
