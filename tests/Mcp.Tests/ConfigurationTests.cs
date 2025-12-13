@@ -80,4 +80,29 @@ public class ConfigurationTests
         // Assert
         Assert.Equal("https://custom.api.com", options.BaseUrl);
     }
+
+    [Fact]
+    public void InvalidBaseUrl_ShouldThrowValidationException()
+    {
+        // Arrange
+        var configData = new Dictionary<string, string?>
+        {
+            {"Raindrop:ApiToken", "valid-token"},
+            {"Raindrop:BaseUrl", "invalid-url"}
+        };
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(configData)
+            .Build();
+
+        var services = new ServiceCollection();
+        services.AddRaindropApiClient(configuration);
+
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Act & Assert
+        Assert.Throws<OptionsValidationException>(() =>
+        {
+            var options = serviceProvider.GetRequiredService<IOptions<RaindropOptions>>().Value;
+        });
+    }
 }
