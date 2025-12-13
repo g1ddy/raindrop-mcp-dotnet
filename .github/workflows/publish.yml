@@ -20,11 +20,6 @@ jobs:
       id: get_version
       run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
 
-    - name: Update server.json version
-      run: |
-        jq --arg v "${{ env.VERSION }}" '.packages[0].version = $v | .version_detail.version = $v' src/Mcp/.mcp/server.json > src/Mcp/.mcp/server.json.tmp && mv src/Mcp/.mcp/server.json.tmp src/Mcp/.mcp/server.json
-        cat src/Mcp/.mcp/server.json
-
     - name: Restore dependencies
       run: dotnet restore src/Mcp/RaindropMcp.csproj
 

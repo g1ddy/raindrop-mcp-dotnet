@@ -21,9 +21,52 @@
     <Description>An MCP server using the MCP C# SDK.</Description>
   </PropertyGroup>
 
+  <!-- Inline Task for file replacement -->
+  <UsingTask TaskName="ReplaceFileText" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <InputFilename ParameterType="System.String" Required="true" />
+      <OutputFilename ParameterType="System.String" Required="true" />
+      <MatchExpression ParameterType="System.String" Required="true" />
+      <ReplacementText ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Text.RegularExpressions" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+          Log.LogMessage(MessageImportance.High, "Replacing text in " + InputFilename);
+          if (!File.Exists(InputFilename)) {
+              Log.LogError("Input file not found: " + InputFilename);
+              return false;
+          }
+          string content = File.ReadAllText(InputFilename);
+          content = Regex.Replace(content, MatchExpression, ReplacementText);
+          // Ensure directory exists
+          string dir = Path.GetDirectoryName(OutputFilename);
+          if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
+          Log.LogMessage(MessageImportance.High, "Writing to " + OutputFilename);
+          File.WriteAllText(OutputFilename, content);
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="GenerateServerJson" BeforeTargets="Build;Pack">
+    <Message Text="Generating server.json with version $(PackageVersion) to $(MSBuildProjectDirectory)/.mcp/server.json" Importance="high" />
+    <ReplaceFileText
+      InputFilename="$(MSBuildProjectDirectory)/.mcp/server.template.json"
+      OutputFilename="$(MSBuildProjectDirectory)/.mcp/server.json"
+      MatchExpression="\{\{VERSION\}\}"
+      ReplacementText="$(PackageVersion)" />
+
+    <ItemGroup>
+      <None Include=".mcp/server.json" Pack="true" PackagePath="/.mcp/" />
+    </ItemGroup>
+  </Target>
+
   <!-- Include additional files for browsing the MCP server. -->
   <ItemGroup>
-    <None Include=".mcp\server.json" Pack="true" PackagePath="/.mcp/" />
     <None Include="README.md" Pack="true" PackagePath="/" />
     <None Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

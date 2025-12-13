@@ -6,7 +6,7 @@
     {
       "registry_name": "nuget",
       "name": "Raindrop.Mcp.DotNet",
-      "version": "0.0.0-dev",
+      "version": "{{VERSION}}",
       "package_arguments": [],
       "environment_variables": [
         {
@@ -30,6 +30,6 @@
     "id": "1030035620"
   },
   "version_detail": {
-    "version": "0.0.0-dev"
+    "version": "{{VERSION}}"
   }
 }
