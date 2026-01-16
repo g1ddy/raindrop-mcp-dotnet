@@ -31,6 +31,7 @@ This project's documentation is structured using the [Diátaxis framework](https
 | **...understand the technical details.**  | 🔬 **[Technical Reference](./docs/REFERENCE.md)** | The encyclopedia of the project: API schemas, configuration, and class details. |
 | **...understand the project's design.**   | 🧠 **[Explanation](./docs/EXPLANATION.md)**       | The "why" behind the project's architecture and design choices.                 |
 | **...contribute to the project.**         | ❤️ **[Contributing Guide](./CONTRIBUTING.md)**    | Our guide for how to contribute code, documentation, or bug reports.            |
+| **...release a new version.**             | 🚀 **[Releasing Guide](./docs/RELEASING.md)**     | How to publish new versions to NuGet and GitHub Packages.                       |
 
 ---
 
