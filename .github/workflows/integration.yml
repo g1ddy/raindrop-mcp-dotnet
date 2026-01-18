@@ -20,6 +20,7 @@ jobs:
     - name: Build
       run: dotnet build --no-restore
     - name: Test
+      if: ${{ secrets.RAINDROP_TEST_API_TOKEN != '' }}
       run: dotnet test --no-build --verbosity normal --filter "Category=Integration"
       env:
         Raindrop__ApiToken: ${{ secrets.RAINDROP_TEST_API_TOKEN }}
