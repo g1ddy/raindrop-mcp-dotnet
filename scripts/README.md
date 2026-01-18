@@ -15,4 +15,4 @@ The `setup.sh` script is designed to initialize the Jules VM environment by inst
 The script performs the following:
 *   Installs .NET 8.0 SDK.
 *   Restores NuGet packages for the solution.
-*   Builds and tests the solution to ensure readiness.
+*   (Optional) Builds and tests the solution to ensure readiness (commented out by default).
