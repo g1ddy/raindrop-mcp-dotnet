@@ -17,15 +17,17 @@ namespace Mcp;
 /// </summary>
 public static class RaindropServiceCollectionExtensions
 {
-    private const string DefaultBaseUrl = "https://api.raindrop.io/rest/v1";
-
     /// <summary>
     /// Registers Raindrop API clients using configuration from the
     /// "Raindrop" section of <see cref="IConfiguration"/>.
     /// </summary>
     public static IServiceCollection AddRaindropApiClient(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<RaindropOptions>(configuration.GetSection("Raindrop"));
+        services.AddOptions<RaindropOptions>()
+            .Bind(configuration.GetSection("Raindrop"))
+            .Validate(o => Uri.TryCreate(o.BaseUrl, UriKind.Absolute, out _), "Raindrop:BaseUrl must be an absolute URI.")
+            .Validate(o => !string.IsNullOrWhiteSpace(o.ApiToken), "Raindrop:ApiToken must be configured.")
+            .ValidateOnStart();
 
         var settings = new RefitSettings
         {
@@ -39,19 +41,8 @@ public static class RaindropServiceCollectionExtensions
         void Configure(IServiceProvider sp, HttpClient client)
         {
             var options = sp.GetRequiredService<IOptions<RaindropOptions>>().Value;
-
-            if (string.IsNullOrWhiteSpace(options.BaseUrl))
-            {
-                options.BaseUrl = DefaultBaseUrl;
-            }
-
-            if (string.IsNullOrWhiteSpace(options.ApiToken))
-            {
-                throw new InvalidOperationException("Raindrop ApiToken is required");
-            }
-
-            client.BaseAddress = new Uri(options.BaseUrl);
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.ApiToken);
+            client.BaseAddress = new Uri(options.BaseUrl!);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.ApiToken!);
         }
 
         services.AddRefitClient<ICollectionsApi>(settings).ConfigureHttpClient(Configure);
