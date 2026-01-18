@@ -12,6 +12,7 @@ namespace Mcp.Collections;
 public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
     RaindropToolBase<ICollectionsApi>(api)
 {
+    private static readonly char[] _separators = ['|', '\n'];
     private readonly IRaindropsApi _raindropsApi = raindropsApi;
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
     Title = "List Collections"),
@@ -139,8 +140,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
             return new SuccessResponse(false);
         }
 
-        var separators = new[] { '|', '\n' };
-        var suggestedTitles = textContent.Text.Split(separators, StringSplitOptions.RemoveEmptyEntries)
+        var suggestedTitles = textContent.Text.Split(_separators, StringSplitOptions.RemoveEmptyEntries)
             .Select(t => t.Trim().Trim('-', '*', ' ', '\'', '"', '.'))
             .Where(t => collectionTitles.Contains(t))
             .Take(3)
