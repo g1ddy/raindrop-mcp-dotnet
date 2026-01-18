@@ -13,5 +13,5 @@ public class RaindropOptions
     /// <summary>
     /// Base URL of the Raindrop API.
     /// </summary>
-    public string? BaseUrl { get; set; }
+    public string? BaseUrl { get; set; } = "https://api.raindrop.io/rest/v1";
 }
