@@ -24,3 +24,7 @@ dotnet restore RaindropMcp.sln
 dotnet build RaindropMcp.sln --no-restore
 dotnet test RaindropMcp.sln --no-build --no-restore
 ```
+
+### Environment Setup
+
+This project uses a pre-baked Jules VM snapshot. If you need to reproduce the environment setup or understand how it was configured, refer to `scripts/setup.sh`. This script handles the installation of the .NET SDK and package restoration. See `scripts/README.md` for more details.
