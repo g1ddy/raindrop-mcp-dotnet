@@ -27,14 +27,6 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <Content Include="server.json">
-      <Pack>true</Pack>
-      <PackagePath>.</PackagePath>
-    </Content>
-    <Content Include="server.json">
-      <Pack>true</Pack>
-      <PackagePath>.</PackagePath>
-    </Content>
   </ItemGroup>
 
   <ItemGroup>
