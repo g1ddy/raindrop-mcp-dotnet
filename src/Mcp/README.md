@@ -28,7 +28,24 @@ To access your account, the server needs a secure API token.
 3.  Under the **Test token** section, click **Create** to generate a new token.
 4.  **Copy the token.** You will need it for the next step.
 
-#### Step 2: Connect Your Client
+#### Step 2: Secure Your API Token
+
+For security, it is best to store your API token in an environment variable rather than pasting it directly into your settings file.
+
+**Set the Environment Variable:**
+
+-   **Windows (PowerShell):**
+    ```powershell
+    $env:RAINDROP_API_TOKEN="YOUR_TOKEN_HERE"
+    ```
+-   **macOS/Linux:**
+    ```bash
+    export RAINDROP_API_TOKEN="YOUR_TOKEN_HERE"
+    ```
+
+Replace `YOUR_TOKEN_HERE` with the token you copied. Note that this variable will only be set for your current terminal session. For a permanent solution, add the command to your shell's startup file (e.g., `.bashrc`, `.zshrc`, or your PowerShell profile).
+
+#### Step 3: Connect Your Client
 
 Configure your MCP-compatible client to launch the server using `dnx`. This allows the client to manage the download, update, and execution process.
 
@@ -50,7 +67,7 @@ Below is an example for the **VS Code Copilot Agent**:
             "--yes"
           ],
           "env": {
-            "Raindrop:ApiToken": "PASTE_YOUR_TOKEN_HERE",
+            "Raindrop:ApiToken": "${env:RAINDROP_API_TOKEN}",
             "Raindrop:BaseUrl": "https://api.raindrop.io/rest/v1"
           }
         }
@@ -58,7 +75,7 @@ Below is an example for the **VS Code Copilot Agent**:
     }
     ```
 
-4.  Replace `PASTE_YOUR_TOKEN_HERE` with the API token you copied from Raindrop.io.
+Your client will now securely load the token from the environment variable.
 
 ---
 
@@ -74,9 +91,9 @@ Install the server as a global .NET tool:
 dotnet tool install --global Raindrop.Mcp.DotNet --version 0.1.1-beta
 ```
 
-#### Step 2: Get Your Raindrop.io API Token
+#### Step 2: Get and Secure Your API Token
 
-Follow the same token generation steps outlined in the DNX setup.
+Follow the same steps for getting and securing your API token as outlined in the DNX setup. Make sure the `RAINDROP_API_TOKEN` environment variable is set.
 
 #### Step 3: Connect Your Client
 
@@ -89,7 +106,7 @@ Add the following server configuration to your `mcp.json` file:
       "type": "stdio",
       "command": "Mcp",
       "env": {
-        "Raindrop:ApiToken": "PASTE_YOUR_TOKEN_HERE",
+        "Raindrop:ApiToken": "${env:RAINDROP_API_TOKEN}",
         "Raindrop:BaseUrl": "https://api.raindrop.io/rest/v1"
       }
     }
@@ -97,7 +114,7 @@ Add the following server configuration to your `mcp.json` file:
 }
 ```
 
-Replace `PASTE_YOUR_TOKEN_HERE` with your API token.
+Your client will now securely load the token from the environment variable.
 
 ---
 
