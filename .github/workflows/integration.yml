@@ -7,7 +7,7 @@ on:
 jobs:
   test-integration:
     runs-on: ubuntu-latest
-    if: ${{ github.event.pull_request.head.repo.full_name == github.repository && secrets.RAINDROP_TEST_API_TOKEN != '' }}
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
 
     steps:
     - uses: actions/checkout@v4
