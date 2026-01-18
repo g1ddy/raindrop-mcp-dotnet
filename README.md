@@ -46,7 +46,7 @@ It provides a complete walkthrough for configuring the server and connecting it 
 To run the server locally, you will need to provide a Raindrop.io API token. This is done by setting the `Raindrop:ApiToken` environment variable. For example:
 
 ```bash
-export Raindrop:ApiToken="YOUR_API_TOKEN"
+export Raindrop__ApiToken="YOUR_API_TOKEN"
 ```
 
 The server uses a fail-fast mechanism and will not start if this environment variable is not set.
