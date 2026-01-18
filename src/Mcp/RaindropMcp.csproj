@@ -23,12 +23,29 @@
 
   <!-- Include additional files for browsing the MCP server. -->
   <ItemGroup>
-    <None Include=".mcp\server.json" Pack="true" PackagePath="/.mcp/" />
     <None Include="README.md" Pack="true" PackagePath="/" />
     <None Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+  <!--
+    Generate server.json with the correct version number during pack.
+    This replaces the placeholder '0.0.0-dev' with the actual PackageVersion.
+  -->
+  <Target Name="GenerateServerJson" BeforeTargets="BeforePack;Pack">
+    <PropertyGroup>
+      <ServerJsonContent>$([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)/.mcp/server.json'))</ServerJsonContent>
+      <ServerJsonContentUpdated>$(ServerJsonContent.Replace("0.0.0-dev", "$(PackageVersion)"))</ServerJsonContentUpdated>
+      <GeneratedServerJsonPath>$(IntermediateOutputPath)server.json</GeneratedServerJsonPath>
+    </PropertyGroup>
+
+    <WriteLinesToFile File="$(GeneratedServerJsonPath)" Lines="$(ServerJsonContentUpdated)" Overwrite="true" />
+
+    <ItemGroup>
+      <None Include="$(GeneratedServerJsonPath)" Pack="true" PackagePath="/.mcp/server.json" />
+    </ItemGroup>
+  </Target>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.0-preview.6.25358.103" />
