@@ -6,7 +6,7 @@ namespace Mcp.Raindrops;
 /// Request payload for creating a new bookmark.
 /// </summary>
 [Description("Request payload for creating a new bookmark")]
-public record RaindropCreateRequest
+public record RaindropCreateRequest : IRaindropData
 {
     [Description("The URL of the bookmark. This field is required.")]
     public string Link { get; init; } = string.Empty;
