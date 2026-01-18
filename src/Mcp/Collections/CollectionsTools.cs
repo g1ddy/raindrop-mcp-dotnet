@@ -86,7 +86,6 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
         {
             return new SuccessResponse(false);
         }
-        var allCollections = new List<Collection>();
         var collectionTitles = new Dictionary<string, Collection>(StringComparer.OrdinalIgnoreCase);
         var promptBuilder = new StringBuilder();
 
@@ -94,13 +93,12 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
         {
             if (!string.IsNullOrEmpty(c.Title))
             {
-                allCollections.Add(c);
                 collectionTitles.TryAdd(c.Title, c);
                 promptBuilder.AppendLine($"- {c.Title}");
             }
         }
 
-        if (allCollections.Count == 0)
+        if (collectionTitles.Count == 0)
         {
             return new SuccessResponse(false);
         }
