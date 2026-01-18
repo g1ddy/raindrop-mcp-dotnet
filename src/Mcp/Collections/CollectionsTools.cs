@@ -87,7 +87,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
             return new SuccessResponse(false);
         }
         var allCollections = new List<Collection>();
-        var collectionTitles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var collectionTitles = new Dictionary<string, Collection>(StringComparer.OrdinalIgnoreCase);
         var promptBuilder = new StringBuilder();
 
         foreach (var c in collectionsResponse.Items)
@@ -95,7 +95,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
             if (!string.IsNullOrEmpty(c.Title))
             {
                 allCollections.Add(c);
-                collectionTitles.Add(c.Title);
+                collectionTitles.TryAdd(c.Title, c);
                 promptBuilder.AppendLine($"- {c.Title}");
             }
         }
@@ -142,7 +142,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
         var separators = new[] { '|', '\n' };
         var suggestedTitles = textContent.Text.Split(separators, StringSplitOptions.RemoveEmptyEntries)
             .Select(t => t.Trim().Trim('-', '*', ' ', '\'', '"', '.'))
-            .Where(t => collectionTitles.Contains(t))
+            .Where(collectionTitles.ContainsKey)
             .Take(3)
             .ToList();
 
@@ -183,9 +183,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
 
         // 5. Find the chosen collection
         var chosenCollectionName = value.GetString();
-        var chosenCollection = allCollections.FirstOrDefault(c => string.Equals(c.Title, chosenCollectionName, StringComparison.OrdinalIgnoreCase));
-
-        if (chosenCollection == null)
+        if (chosenCollectionName == null || !collectionTitles.TryGetValue(chosenCollectionName, out var chosenCollection))
         {
             return new SuccessResponse(false);
         }
