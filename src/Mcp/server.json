@@ -1,0 +1,8 @@
+{
+"command": "Raindrop.Mcp.DotNet",
+"args": [],
+"env": {
+"Raindrop:ApiToken": "",
+"Raindrop:BaseUrl": "https://api.raindrop.io/rest/v1"
+}
+}

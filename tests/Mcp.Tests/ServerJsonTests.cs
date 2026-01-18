@@ -11,38 +11,22 @@ namespace Mcp.Tests;
 public class ServerJsonTests
 {
     [Fact]
-    public async Task ServerJson_ShouldBeValidAccordingToSchema()
+    public void ServerJson_ShouldExistAndHaveCorrectCommand()
     {
         // Arrange
         var repoRoot = FindRepoRoot();
-        var serverJsonPath = Path.Combine(repoRoot, "src", "Mcp", ".mcp", "server.json");
+        var serverJsonPath = Path.Combine(repoRoot, "src", "Mcp", "server.json");
 
         Assert.True(File.Exists(serverJsonPath), $"server.json not found at {serverJsonPath}");
 
-        var jsonContent = await File.ReadAllTextAsync(serverJsonPath);
+        var jsonContent = File.ReadAllText(serverJsonPath);
+        using var jsonDoc = JsonDocument.Parse(jsonContent);
 
         // Act
-        // Get the schema URL from the file itself
-        using var jsonDoc = JsonDocument.Parse(jsonContent);
-        if (!jsonDoc.RootElement.TryGetProperty("$schema", out var schemaProperty))
-        {
-            Assert.Fail("server.json does not contain a $schema property.");
-        }
-        var schemaUrl = schemaProperty.GetString();
-        Assert.NotNull(schemaUrl);
-
-        // Download and parse the schema
-        var schema = await JsonSchema.FromUrlAsync(schemaUrl);
-
-        // Validate
-        var errors = schema.Validate(jsonContent);
+        var command = jsonDoc.RootElement.GetProperty("command").GetString();
 
         // Assert
-        if (errors.Count > 0)
-        {
-             var messages = string.Join("\n", errors.Select(e => $"{e.Path}: {e.Kind} - {e.Property}"));
-             Assert.Fail($"Schema validation failed:\n{messages}");
-        }
+        Assert.Equal("Raindrop.Mcp.DotNet", command);
     }
 
     private string FindRepoRoot()

@@ -1,48 +1,32 @@
-name: Publish
+name: Publish to NuGet
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - 'v*'
 
 jobs:
-  build-and-publish:
+  build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write # Required for publishing to GitHub Packages
-
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 8.0.x
 
-    - name: Get Version
-      id: get_version
-      run: |
-        # Strip 'refs/tags/v' or 'refs/tags/' to get the version number
-        VERSION=${GITHUB_REF#refs/tags/}
-        VERSION=${VERSION#v}
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
-        echo "Detected version: $VERSION"
+      - name: Restore dependencies
+        run: dotnet restore
 
-    - name: Restore dependencies
-      run: dotnet restore src/Mcp/RaindropMcp.csproj
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
 
-    - name: Build
-      run: dotnet build src/Mcp/RaindropMcp.csproj --configuration Release --no-restore /p:PackageVersion=${{ env.VERSION }}
+      - name: Get version from tag
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
 
-    - name: Pack
-      run: dotnet pack src/Mcp/RaindropMcp.csproj --configuration Release --no-build --output ./nupkgs /p:PackageVersion=${{ env.VERSION }}
+      - name: Pack
+        run: dotnet pack --configuration Release --no-build -p:PackageVersion=${{ env.VERSION }}
 
-    - name: Publish to NuGet.org
-      run: dotnet nuget push "./nupkgs/*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
-
-    - name: Authenticate to GitHub Packages
-      run: |
-        dotnet nuget add source --username "${{ github.repository_owner }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text --name github "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
-
-    - name: Publish to GitHub Packages
-      run: dotnet nuget push "./nupkgs/*.nupkg" --source "github" --api-key "${{ secrets.GITHUB_TOKEN }}" --skip-duplicate
+      - name: Publish to NuGet
+        run: dotnet nuget push "src/Mcp/bin/Release/Raindrop.Mcp.DotNet.${{ env.VERSION }}.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source "https://api.nuget.org/v3/index.json"

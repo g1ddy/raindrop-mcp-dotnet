@@ -41,6 +41,29 @@ The best way to begin is by following our hands-on **[Tutorial](./docs/TUTORIAL.
 
 It provides a complete walkthrough for configuring the server and connecting it to an AI client, allowing you to start managing your bookmarks right away.
 
+### Alternate Package Installation (GitHub Packages)
+
+For users who prefer to use GitHub Packages, you can install the package by adding a `nuget.config` file to your project with the following content:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <clear />
+    <add key="github" value="https://nuget.pkg.github.com/g1ddy/index.json" />
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+  </packageSources>
+  <packageSourceCredentials>
+    <github>
+      <add key="Username" value="YourGitHubUsername" />
+      <add key="ClearTextPassword" value="YourGitHubPAT" />
+    </github>
+  </packageSourceCredentials>
+</configuration>
+```
+
+Replace `YourGitHubUsername` with your GitHub username and `YourGitHubPAT` with a personal access token with the `read:packages` scope.
+
 ---
 
 ## 📝 License
