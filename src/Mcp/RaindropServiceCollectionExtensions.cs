@@ -25,7 +25,10 @@ public static class RaindropServiceCollectionExtensions
     /// </summary>
     public static IServiceCollection AddRaindropApiClient(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<RaindropOptions>(configuration.GetSection("Raindrop"));
+        services.AddOptions<RaindropOptions>()
+            .Bind(configuration.GetSection("Raindrop"))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
         var settings = new RefitSettings
         {
@@ -39,16 +42,6 @@ public static class RaindropServiceCollectionExtensions
         void Configure(IServiceProvider sp, HttpClient client)
         {
             var options = sp.GetRequiredService<IOptions<RaindropOptions>>().Value;
-
-            if (string.IsNullOrWhiteSpace(options.BaseUrl))
-            {
-                options.BaseUrl = DefaultBaseUrl;
-            }
-
-            if (string.IsNullOrWhiteSpace(options.ApiToken))
-            {
-                throw new InvalidOperationException("Raindrop ApiToken is required");
-            }
 
             client.BaseAddress = new Uri(options.BaseUrl);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.ApiToken);

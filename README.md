@@ -41,6 +41,16 @@ The best way to begin is by following our hands-on **[Tutorial](./docs/TUTORIAL.
 
 It provides a complete walkthrough for configuring the server and connecting it to an AI client, allowing you to start managing your bookmarks right away.
 
+### Configuration
+
+To run the server locally, you will need to provide a Raindrop.io API token. This is done by setting the `Raindrop:ApiToken` environment variable. For example:
+
+```bash
+export Raindrop:ApiToken="YOUR_API_TOKEN"
+```
+
+The server uses a fail-fast mechanism and will not start if this environment variable is not set.
+
 ### Alternate Package Installation (GitHub Packages)
 
 For users who prefer to use GitHub Packages, you can install the package by adding a `nuget.config` file to your project with the following content:

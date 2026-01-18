@@ -15,9 +15,9 @@ public class ServerJsonTests
     {
         // Arrange
         var repoRoot = FindRepoRoot();
-        var serverJsonPath = Path.Combine(repoRoot, "src", "Mcp", "server.json.example");
+        var serverJsonPath = Path.Combine(repoRoot, "src", "Mcp", "server.json");
 
-        Assert.True(File.Exists(serverJsonPath), $"server.json.example not found at {serverJsonPath}");
+        Assert.True(File.Exists(serverJsonPath), $"server.json not found at {serverJsonPath}");
 
         var jsonContent = File.ReadAllText(serverJsonPath);
         using var jsonDoc = JsonDocument.Parse(jsonContent);

@@ -58,6 +58,3 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
-
-# Local server configuration
-src/Mcp/server.json
