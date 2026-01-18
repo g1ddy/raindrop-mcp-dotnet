@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Text;
 using System.Text.Json;
 using Mcp.Common;
 using Mcp.Raindrops;
@@ -85,13 +86,24 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
         {
             return new SuccessResponse(false);
         }
-        var allCollections = collectionsResponse.Items
-            .Where(c => !string.IsNullOrEmpty(c.Title))
-            .ToList();
+        var allCollections = new List<Collection>();
+        var collectionTitles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var promptBuilder = new StringBuilder();
 
-        var collectionTitles = new HashSet<string>(
-            allCollections.Select(c => c.Title!),
-            StringComparer.OrdinalIgnoreCase);
+        foreach (var c in collectionsResponse.Items)
+        {
+            if (!string.IsNullOrEmpty(c.Title))
+            {
+                allCollections.Add(c);
+                collectionTitles.Add(c.Title);
+                promptBuilder.AppendLine($"- {c.Title}");
+            }
+        }
+
+        if (allCollections.Count == 0)
+        {
+            return new SuccessResponse(false);
+        }
 
         // 3. Use the LLM to get the top 3 suggestions
         var prompt = $"""
@@ -101,7 +113,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
             - Excerpt: {bookmark.Excerpt}
 
             And the following list of collections:
-            {string.Join("\n", allCollections.Select(c => $"- {c.Title}"))}
+            {promptBuilder}
 
             Please suggest the top 3 most relevant collections for this bookmark.
             Return ONLY a pipe-separated list of the collection titles, exactly as they appear in the list above.
