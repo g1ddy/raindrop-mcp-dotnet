@@ -142,7 +142,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
         }
 
         var suggestedTitles = textContent.Text.Split(_separators, StringSplitOptions.RemoveEmptyEntries)
-            .Select(t => t.Trim().Trim(_trimChars))
+            .Select(t => t.Trim(_trimChars))
             .Where(t => collectionTitles.Contains(t))
             .Take(3)
             .ToList();
