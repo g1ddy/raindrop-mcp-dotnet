@@ -15,66 +15,73 @@ public class CollectionsTests : TestBase
     [SkippableFact]
     public async Task Crud()
     {
-        RequireApi();
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var cancellationToken = cts.Token;
+
         var collections = Provider.GetRequiredService<CollectionsTools>();
-        var createResponse = await collections.CreateCollectionAsync(new Collection { Title = "Collections Crud - Create" }, CancellationToken.None);
+        var createResponse = await collections.CreateCollectionAsync(new Collection { Title = "Collections Crud - Create" }, cancellationToken);
         int collectionId = createResponse.Item.Id;
         try
         {
-            await collections.UpdateCollectionAsync(collectionId, new Collection { Title = "Collections Crud - Updated" }, CancellationToken.None);
-            var list = await collections.ListCollectionsAsync(CancellationToken.None);
+            await collections.UpdateCollectionAsync(collectionId, new Collection { Title = "Collections Crud - Updated" }, cancellationToken);
+            var list = await collections.ListCollectionsAsync(cancellationToken);
             Assert.Contains(list.Items, c => c.Id == collectionId);
-            var retrieved = await collections.GetCollectionAsync(collectionId, CancellationToken.None);
+            var retrieved = await collections.GetCollectionAsync(collectionId, cancellationToken);
             Assert.Equal("Collections Crud - Updated", retrieved.Item.Title);
         }
         finally
         {
-            await collections.DeleteCollectionAsync(collectionId, CancellationToken.None);
+            await collections.DeleteCollectionAsync(collectionId, cancellationToken);
         }
     }
 
     [SkippableFact]
     public async Task ListChildren()
     {
-        RequireApi();
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var cancellationToken = cts.Token;
+
         var collections = Provider.GetRequiredService<CollectionsTools>();
-        int parentCollectionId = (await collections.CreateCollectionAsync(new Collection { Title = "Collections ListChildren - Parent" }, CancellationToken.None)).Item.Id;
-        int childCollectionId = (await collections.CreateCollectionAsync(new Collection { Title = "Collections ListChildren - Child", Parent = new IdRef { Id = parentCollectionId } }, CancellationToken.None)).Item.Id;
+        int parentCollectionId = (await collections.CreateCollectionAsync(new Collection { Title = "Collections ListChildren - Parent" }, cancellationToken)).Item.Id;
+        int childCollectionId = (await collections.CreateCollectionAsync(new Collection { Title = "Collections ListChildren - Child", Parent = new IdRef { Id = parentCollectionId } }, cancellationToken)).Item.Id;
         try
         {
-            var result = await collections.ListChildCollectionsAsync(CancellationToken.None);
+            var result = await collections.ListChildCollectionsAsync(cancellationToken);
             Assert.Contains(result.Items, c => c.Id == childCollectionId);
         }
         finally
         {
-            await collections.DeleteCollectionAsync(childCollectionId, CancellationToken.None);
-            await collections.DeleteCollectionAsync(parentCollectionId, CancellationToken.None);
-            var finalList = await collections.ListCollectionsAsync(CancellationToken.None);
+            await collections.DeleteCollectionAsync(childCollectionId, cancellationToken);
+            await collections.DeleteCollectionAsync(parentCollectionId, cancellationToken);
+            var finalList = await collections.ListCollectionsAsync(cancellationToken);
             Assert.DoesNotContain(finalList.Items, c => c.Id == parentCollectionId);
+            Assert.DoesNotContain(finalList.Items, c => c.Id == childCollectionId);
         }
     }
 
     [SkippableFact]
     public async Task MergeCollections()
     {
-        RequireApi();
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var cancellationToken = cts.Token;
+
         var collections = Provider.GetRequiredService<CollectionsTools>();
-        int destinationId = (await collections.CreateCollectionAsync(new Collection { Title = "Collections Merge - Destination" }, CancellationToken.None)).Item.Id;
-        int sourceId1 = (await collections.CreateCollectionAsync(new Collection { Title = "Collections Merge - Source1" }, CancellationToken.None)).Item.Id;
-        int sourceId2 = (await collections.CreateCollectionAsync(new Collection { Title = "Collections Merge - Source2" }, CancellationToken.None)).Item.Id;
+        int destinationId = (await collections.CreateCollectionAsync(new Collection { Title = "Collections Merge - Destination" }, cancellationToken)).Item.Id;
+        int sourceId1 = (await collections.CreateCollectionAsync(new Collection { Title = "Collections Merge - Source1" }, cancellationToken)).Item.Id;
+        int sourceId2 = (await collections.CreateCollectionAsync(new Collection { Title = "Collections Merge - Source2" }, cancellationToken)).Item.Id;
 
         try
         {
-            var result = await collections.MergeCollectionsAsync(destinationId, new List<int> { sourceId1, sourceId2 }, CancellationToken.None);
+            var result = await collections.MergeCollectionsAsync(destinationId, new List<int> { sourceId1, sourceId2 }, cancellationToken);
             Assert.True(result.Result);
 
-            var list = await collections.ListCollectionsAsync(CancellationToken.None);
+            var list = await collections.ListCollectionsAsync(cancellationToken);
             Assert.DoesNotContain(list.Items, c => c.Id == sourceId1);
             Assert.DoesNotContain(list.Items, c => c.Id == sourceId2);
         }
         finally
         {
-            await collections.DeleteCollectionAsync(destinationId, CancellationToken.None);
+            await collections.DeleteCollectionAsync(destinationId, cancellationToken);
         }
     }
 }

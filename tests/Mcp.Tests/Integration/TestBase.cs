@@ -6,7 +6,17 @@ namespace Mcp.Tests.Integration;
 
 public abstract class TestBase
 {
-    protected IServiceProvider Provider { get; }
+    private readonly IServiceProvider? _provider;
+
+    protected IServiceProvider Provider
+    {
+        get
+        {
+            RequireApi();
+            return _provider!;
+        }
+    }
+
     private readonly bool _isConfigured;
 
     protected TestBase(params Action<IServiceCollection>[] registrations)
@@ -26,14 +36,11 @@ public abstract class TestBase
             var services = new ServiceCollection();
             services.AddRaindropApiClient(config);
             foreach (var reg in registrations) reg(services);
-            Provider = services.BuildServiceProvider();
+            _provider = services.BuildServiceProvider();
         }
         else
         {
-             // Provider will be null, but RequireApi() will skip before usage.
-             // We assign a dummy provider to avoid non-nullable warnings in constructor if we wanted,
-             // but here we just leave it null/default and handle in RequireApi.
-             Provider = null!;
+             _provider = null;
         }
     }
 

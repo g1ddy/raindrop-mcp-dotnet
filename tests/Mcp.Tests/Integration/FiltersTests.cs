@@ -12,9 +12,14 @@ public class FiltersTests : TestBase
     [SkippableFact]
     public async Task List()
     {
-        RequireApi();
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var cancellationToken = cts.Token;
+
         var filters = Provider.GetRequiredService<FiltersTools>();
-        var response = await filters.GetAvailableFiltersAsync(0);
+        var response = await filters.GetAvailableFiltersAsync(0, cancellationToken: cancellationToken);
+
         Assert.True(response.Result);
+        Assert.NotNull(response.Tags);
+        Assert.NotNull(response.Types);
     }
 }
