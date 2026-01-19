@@ -29,11 +29,7 @@
     </None>
     <Content Include="server.json">
       <Pack>true</Pack>
-      <PackagePath>.</PackagePath>
-    </Content>
-    <Content Include="server.json">
-      <Pack>true</Pack>
-      <PackagePath>.</PackagePath>
+      <PackagePath>.mcp/</PackagePath>
     </Content>
   </ItemGroup>
 
