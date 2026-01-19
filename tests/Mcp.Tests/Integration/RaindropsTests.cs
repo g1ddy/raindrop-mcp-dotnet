@@ -17,12 +17,15 @@ public class RaindropsTests : TestBase
 
         var raindropsTool = Provider.GetRequiredService<RaindropsTools>();
 
+        // Generate unique ID for this test run to avoid collisions
+        var uniqueId = Guid.NewGuid().ToString("N");
+
         // Create
         var createResponse = await raindropsTool.CreateBookmarkAsync(new RaindropCreateRequest
         {
             CollectionId = null,
-            Link = "https://example.com",
-            Title = "Raindrops Crud - Create",
+            Link = $"https://example.com/{uniqueId}",
+            Title = $"Raindrops Crud - Create {uniqueId}",
             Note = "note"
         }, cancellationToken);
 
@@ -33,7 +36,7 @@ public class RaindropsTests : TestBase
             // Update single
             await raindropsTool.UpdateBookmarkAsync(raindropId, new RaindropUpdateRequest
             {
-                Title = "Raindrops Crud - Updated"
+                Title = $"Raindrops Crud - Updated {uniqueId}"
             }, cancellationToken);
 
             // Bulk update (UpdateBookmarksAsync signature: collectionId, update, nested, search, cancellationToken)
@@ -43,16 +46,30 @@ public class RaindropsTests : TestBase
                 Important = true
             }, null, null, cancellationToken);
 
-            // Add a delay before searching to allow indexing/propagation
-            await Task.Delay(5000, cancellationToken);
+            // Poll for the bookmark to be indexed and appear in search results.
+            var foundInSearch = false;
+            const int pollAttempts = 15;
+            const int pollIntervalMs = 2000;
 
-            // List/Search (ListBookmarksAsync signature: collectionId, search, sort, page, perPage, nested, cancellationToken)
-            var search = await raindropsTool.ListBookmarksAsync(0, "example", null, null, null, null, cancellationToken);
-            Assert.Contains(search.Items, r => r.Id == raindropId);
+            for (var i = 0; i < pollAttempts; i++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                // Search using unique ID
+                var search = await raindropsTool.ListBookmarksAsync(0, uniqueId, null, null, null, null, cancellationToken);
+                if (search.Items.Any(r => r.Id == raindropId))
+                {
+                    foundInSearch = true;
+                    break;
+                }
+                await Task.Delay(pollIntervalMs, cancellationToken);
+            }
+
+            Assert.True(foundInSearch, $"Bookmark {raindropId} did not appear in search results after {pollAttempts} attempts.");
 
             // Get
             var retrieved = await raindropsTool.GetBookmarkAsync(raindropId, cancellationToken);
-            Assert.Equal("Raindrops Crud - Updated", retrieved.Item.Title);
+            Assert.Equal($"Raindrops Crud - Updated {uniqueId}", retrieved.Item.Title);
             Assert.True(retrieved.Item.Important, "Bookmark should be marked important from bulk update");
         }
         finally
