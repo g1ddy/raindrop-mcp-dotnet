@@ -3,30 +3,37 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
+using System.Threading;
 using Mcp.Raindrops;
+using ModelContextProtocol.Server;
 using Xunit;
 
 namespace Mcp.Tests;
 
 public class MetadataAttributesTests
 {
+    // Framework-injected types that do not require description attributes
+    private static readonly Type[] ExcludedParameterTypes =
+    [
+        typeof(CancellationToken),
+        typeof(IMcpServer)
+    ];
+
     [Fact]
     public void Tool_method_parameters_have_descriptions()
     {
         var toolTypes = typeof(RaindropsTools).Assembly.GetTypes()
-            .Where(t => t.GetCustomAttribute<ModelContextProtocol.Server.McpServerToolTypeAttribute>() != null);
+            .Where(t => t.GetCustomAttribute<McpServerToolTypeAttribute>() != null);
 
         foreach (var type in toolTypes)
         {
             var methods = type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly)
-                .Where(m => m.GetCustomAttribute<ModelContextProtocol.Server.McpServerToolAttribute>() != null);
+                .Where(m => m.GetCustomAttribute<McpServerToolAttribute>() != null);
             foreach (var method in methods)
             {
                 foreach (var param in method.GetParameters())
                 {
-                    // Exclude CancellationToken and IMcpServer as they are injected by the framework
-                    if (param.ParameterType == typeof(System.Threading.CancellationToken) ||
-                        param.ParameterType.FullName == "ModelContextProtocol.Server.IMcpServer")
+                    if (ExcludedParameterTypes.Contains(param.ParameterType))
                         continue;
 
                     var desc = param.GetCustomAttribute<DescriptionAttribute>();
