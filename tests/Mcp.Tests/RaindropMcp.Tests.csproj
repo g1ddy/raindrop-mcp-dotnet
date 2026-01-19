@@ -31,4 +31,10 @@
     <ProjectReference Include="..\..\src\Mcp\RaindropMcp.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Integration/Fixtures/**/*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

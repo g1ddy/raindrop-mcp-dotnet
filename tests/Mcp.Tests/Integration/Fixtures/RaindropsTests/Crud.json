@@ -1,0 +1,49 @@
+{
+  "Metadata": {
+    "TestId": "fake-guid-123"
+  },
+  "Interactions": [
+    {
+      "Method": "POST",
+      "Uri": "https://api.raindrop.io/rest/v1/raindrop",
+      "StatusCode": 200,
+      "ResponseHeaders": { "Content-Type": ["application/json"] },
+      "ResponseBody": "{ \"result\": true, \"item\": { \"_id\": 1001, \"title\": \"Raindrops Crud - Create fake-guid-123\", \"link\": \"https://example.com/fake-guid-123\" } }"
+    },
+    {
+      "Method": "PUT",
+      "Uri": "https://api.raindrop.io/rest/v1/raindrop/1001",
+      "StatusCode": 200,
+      "ResponseHeaders": { "Content-Type": ["application/json"] },
+      "ResponseBody": "{ \"result\": true, \"item\": { \"_id\": 1001 } }"
+    },
+    {
+      "Method": "PUT",
+      "Uri": "https://api.raindrop.io/rest/v1/raindrops/0",
+      "StatusCode": 200,
+      "ResponseHeaders": { "Content-Type": ["application/json"] },
+      "ResponseBody": "{ \"result\": true }"
+    },
+    {
+      "Method": "GET",
+      "Uri": "https://api.raindrop.io/rest/v1/raindrops/0?search=fake-guid-123",
+      "StatusCode": 200,
+      "ResponseHeaders": { "Content-Type": ["application/json"] },
+      "ResponseBody": "{ \"result\": true, \"items\": [ { \"_id\": 1001 } ] }"
+    },
+    {
+      "Method": "GET",
+      "Uri": "https://api.raindrop.io/rest/v1/raindrop/1001",
+      "StatusCode": 200,
+      "ResponseHeaders": { "Content-Type": ["application/json"] },
+      "ResponseBody": "{ \"result\": true, \"item\": { \"_id\": 1001, \"title\": \"Raindrops Crud - Updated fake-guid-123\", \"note\": \"updated note\", \"excerpt\": \"Updated Excerpt\", \"tags\": [\"tag3\"], \"important\": true } }"
+    },
+    {
+      "Method": "DELETE",
+      "Uri": "https://api.raindrop.io/rest/v1/raindrop/1001",
+      "StatusCode": 200,
+      "ResponseHeaders": { "Content-Type": ["application/json"] },
+      "ResponseBody": "{ \"result\": true }"
+    }
+  ]
+}
