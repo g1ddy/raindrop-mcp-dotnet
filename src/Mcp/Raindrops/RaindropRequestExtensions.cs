@@ -5,7 +5,7 @@ namespace Mcp.Raindrops;
 /// </summary>
 internal static class RaindropRequestExtensions
 {
-    public static Raindrop ToRaindrop(this IRaindropData request)
+    public static Raindrop ToRaindrop(this IRaindropRequest request)
     {
         return new Raindrop
         {

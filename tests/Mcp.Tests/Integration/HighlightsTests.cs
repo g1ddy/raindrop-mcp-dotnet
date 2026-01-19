@@ -85,6 +85,12 @@ public class HighlightsTests : TestBase
             Assert.Equal($"Highlights Crud - Updated {uniqueId}", specificHighlight.Text);
             Assert.Equal("edited", specificHighlight.Note);
 
+            // Audit assertions
+            Assert.NotNull(specificHighlight.Created);
+            Assert.True(specificHighlight.Created.Value > DateTime.MinValue);
+            Assert.NotNull(specificHighlight.LastUpdate);
+            Assert.True(specificHighlight.LastUpdate.Value > DateTime.MinValue);
+
             // 8. Delete Highlight
             await highlights.DeleteHighlightAsync(raindropId, highlightId, cancellationToken);
 
