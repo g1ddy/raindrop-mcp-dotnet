@@ -42,14 +42,23 @@ public class TagsBulkTests : TestBase
 
         // Mock IMcpServer for deletion confirmation
         var mcpServerMock = new Mock<IMcpServer>();
-        mcpServerMock.Setup(x => x.ElicitAsync(It.IsAny<ElicitRequestParams>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ElicitResult
+        mcpServerMock.Setup(x => x.ClientCapabilities)
+            .Returns(new ClientCapabilities { Elicitation = new ElicitationCapability() });
+
+        mcpServerMock
+            .Setup(x => x.SendRequestAsync(
+                It.Is<JsonRpcRequest>(r => r.Method == "elicitation/create"),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new JsonRpcResponse
             {
-                Action = "accept",
-                Content = new Dictionary<string, JsonElement>
+                Result = JsonSerializer.SerializeToNode(new ElicitResult
                 {
-                    ["confirm"] = JsonSerializer.SerializeToElement(true)
-                }
+                    Action = "accept",
+                    Content = new Dictionary<string, JsonElement>
+                    {
+                        ["confirm"] = JsonSerializer.SerializeToElement(true)
+                    }
+                })
             });
 
         try
