@@ -127,3 +127,9 @@ Once configured, you can interact with your bookmarks through your AI client.
 > `@RaindropMcp Find my bookmark about 'Gemini CLI' and add the tag '#ai-tool' to it.`
 
 The client will automatically start the server to handle your request. Enjoy managing your bookmarks!
+
+## References
+
+- [Use MCP servers in VS Code (Preview)](https://code.visualstudio.com/docs/copilot/chat/mcp-servers)
+- [Use MCP servers in Visual Studio (Preview)](https://learn.microsoft.com/visualstudio/ide/mcp-servers)
+- [Official MCP Documentation](https://modelcontextprotocol.io/)
