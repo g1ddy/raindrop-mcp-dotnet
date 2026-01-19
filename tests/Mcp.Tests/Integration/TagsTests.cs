@@ -62,9 +62,6 @@ public class TagsTests : TestBase
                 var list = await tagsTool.ListTagsAsync(null, cancellationToken);
                 return list.Items.Any(t => t.Id == tagName2) && !list.Items.Any(t => t.Id == tagName1);
             }, "Tag rename verification failed", cancellationToken);
-
-            var list = await tagsTool.ListTagsAsync(null, cancellationToken);
-            Assert.Contains(list.Items, t => t.Id == tagName2);
         }
         finally
         {
@@ -124,9 +121,6 @@ public class TagsTests : TestBase
                 return list.Items.Any(t => t.Id == tagName2);
             }, "Tag rename in collection verification failed", cancellationToken);
 
-            var list = await tagsTool.ListTagsAsync(0, cancellationToken);
-            Assert.Contains(list.Items, t => t.Id == tagName2);
-
             // Delete tag
             await tagsTool.DeleteTagAsync(mcpServerMock.Object, tagName2, 0, cancellationToken);
 
@@ -136,9 +130,6 @@ public class TagsTests : TestBase
                 var finalList = await tagsTool.ListTagsAsync(0, cancellationToken);
                 return !finalList.Items.Any(t => t.Id == tagName2);
             }, "Tag deletion verification failed", cancellationToken);
-
-            var finalList = await tagsTool.ListTagsAsync(0, cancellationToken);
-            Assert.DoesNotContain(finalList.Items, t => t.Id == tagName2);
         }
         finally
         {

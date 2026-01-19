@@ -73,9 +73,6 @@ public class TagsBulkTests : TestBase
                        !list.Items.Any(t => t.Id == tag2);
             }, "Renamed tag not found or old tags still exist", cancellationToken);
 
-            var list = await tags.ListTagsAsync(null, cancellationToken);
-            Assert.Contains(list.Items, t => t.Id == tagRenamed);
-
             // Delete tag
             await tags.DeleteTagsAsync(mcpServerMock.Object, [tagRenamed], null, cancellationToken);
 
@@ -85,9 +82,6 @@ public class TagsBulkTests : TestBase
                 var finalList = await tags.ListTagsAsync(null, cancellationToken);
                 return !finalList.Items.Any(t => t.Id == tagRenamed);
             }, "Tag deletion verification failed", cancellationToken);
-
-            var finalList = await tags.ListTagsAsync(null, cancellationToken);
-            Assert.DoesNotContain(finalList.Items, t => t.Id == tagRenamed);
         }
         finally
         {
