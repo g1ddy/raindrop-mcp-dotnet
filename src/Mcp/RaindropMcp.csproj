@@ -28,7 +28,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <Content Include="server.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Pack>true</Pack>
+      <PackagePath>.</PackagePath>
+    </Content>
+    <Content Include="server.json">
       <Pack>true</Pack>
       <PackagePath>.</PackagePath>
     </Content>
