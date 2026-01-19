@@ -1,5 +1,6 @@
-using Mcp.Highlights;
+using Mcp.Collections;
 using Mcp.Raindrops;
+using Mcp.Highlights;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -8,7 +9,9 @@ namespace Mcp.Tests.Integration;
 [Trait("Category", "Integration")]
 public class HighlightsTests : TestBase
 {
-    public HighlightsTests() : base(s => {
+    public HighlightsTests() : base(s =>
+    {
+        s.AddTransient<CollectionsTools>();
         s.AddTransient<RaindropsTools>();
         s.AddTransient<HighlightsTools>();
     }) { }
@@ -19,45 +22,86 @@ public class HighlightsTests : TestBase
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
         var cancellationToken = cts.Token;
 
-        var raindropsTool = Provider.GetRequiredService<RaindropsTools>();
-        var highlightsTool = Provider.GetRequiredService<HighlightsTools>();
+        var collections = Provider.GetRequiredService<CollectionsTools>();
+        var raindropsService = Provider.GetRequiredService<RaindropsTools>();
+        var highlights = Provider.GetRequiredService<HighlightsTools>();
 
-        // Generate unique ID for this test run to avoid collisions
+        // Generate unique ID for this test run
         var uniqueId = Guid.NewGuid().ToString("N");
 
-        // Create a bookmark to add a highlight to
-        var createResponse = await raindropsTool.CreateBookmarkAsync(new RaindropCreateRequest
-        {
-            Link = $"https://example.com/{uniqueId}",
-            Title = $"Highlights Crud - Create {uniqueId}",
-        }, cancellationToken);
-
-        long raindropId = createResponse.Item.Id;
+        int collectionId = -1;
+        long raindropId = -1;
 
         try
         {
-            // Create a highlight
-            var highlightCreateResponse = await highlightsTool.CreateHighlightAsync(new HighlightCreateRequest
+            // 1. Create Collection
+            var collectionResponse = await collections.CreateCollectionAsync(new Collection
             {
-                RaindropRef = raindropId,
-                Text = "This is a highlighted text.",
-                Note = "This is a note."
+                Title = $"Highlights Crud - Collection {uniqueId}"
+            }, cancellationToken);
+            collectionId = collectionResponse.Item.Id;
+
+            // 2. Create Bookmark
+            var raindropResponse = await raindropsService.CreateBookmarkAsync(new RaindropCreateRequest
+            {
+                CollectionId = collectionId,
+                Link = $"https://example.com/hl/{uniqueId}",
+                Title = $"Highlights Crud - Raindrop {uniqueId}",
+                Note = "hl"
+            }, cancellationToken);
+            raindropId = raindropResponse.Item.Id;
+
+            // 3. Create Highlight
+            var newHighlight = await highlights.CreateHighlightAsync(raindropId, new HighlightCreateRequest
+            {
+                Text = $"Highlights Crud - New {uniqueId}",
+                Note = "note"
             }, cancellationToken);
 
-            // Get highlights for the bookmark
-            var highlights = await highlightsTool.GetHighlightsAsync(raindropId, cancellationToken);
-            var highlight = highlights.Items.FirstOrDefault();
+            string highlightId = newHighlight.Item.Highlights.Single(h => h.Text == $"Highlights Crud - New {uniqueId}").Id!;
+            Assert.NotEmpty(highlightId);
 
-            Assert.NotNull(highlight);
-            Assert.NotNull(highlight.Created);
-            Assert.True(highlight.Created.Value > DateTime.MinValue);
-            Assert.NotNull(highlight.LastUpdate);
-            Assert.True(highlight.LastUpdate.Value > DateTime.MinValue);
+            // 4. Update Highlight
+            await highlights.UpdateHighlightAsync(raindropId, new HighlightUpdateRequest
+            {
+                Id = highlightId,
+                Text = $"Highlights Crud - Updated {uniqueId}",
+                Note = "edited"
+            }, cancellationToken);
+
+            // 5. List All Highlights (Global)
+            // Note: This might be huge if the account has many highlights, but we check if count > 0
+            var listAll = await highlights.ListHighlightsAsync(page: 0, perPage: 1, cancellationToken: cancellationToken);
+            Assert.True(listAll.Items.Count > 0);
+
+            // 6. List Highlights By Collection
+            var listByCollection = await highlights.ListHighlightsByCollectionAsync(collectionId, page: 0, perPage: 50, cancellationToken: cancellationToken);
+            Assert.Contains(listByCollection.Items, h => h.Id == highlightId);
+
+            // 7. Get Bookmark Highlights
+            var retrieved = await highlights.GetBookmarkHighlightsAsync(raindropId, cancellationToken);
+            Assert.Contains(retrieved.Item.Highlights, h => h.Id == highlightId);
+            var specificHighlight = retrieved.Item.Highlights.First(h => h.Id == highlightId);
+            Assert.Equal($"Highlights Crud - Updated {uniqueId}", specificHighlight.Text);
+            Assert.Equal("edited", specificHighlight.Note);
+
+            // 8. Delete Highlight
+            await highlights.DeleteHighlightAsync(raindropId, highlightId, cancellationToken);
+
+            // Verify deletion
+            var postDelete = await highlights.GetBookmarkHighlightsAsync(raindropId, cancellationToken);
+            Assert.DoesNotContain(postDelete.Item.Highlights, h => h.Id == highlightId);
         }
         finally
         {
-            // Delete the bookmark
-            await raindropsTool.DeleteBookmarkAsync(raindropId, cancellationToken);
+            if (raindropId != -1)
+            {
+                await raindropsService.DeleteBookmarkAsync(raindropId, cancellationToken);
+            }
+            if (collectionId != -1)
+            {
+                await collections.DeleteCollectionAsync(collectionId, cancellationToken);
+            }
         }
     }
 }
