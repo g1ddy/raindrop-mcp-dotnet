@@ -26,7 +26,7 @@ public static class RaindropServiceCollectionExtensions
         services.AddOptions<RaindropOptions>()
             .Bind(configuration.GetSection("Raindrop"))
             .ValidateDataAnnotations()
-            .Validate(o => Uri.TryCreate(o.BaseUrl, UriKind.Absolute, out _), "Raindrop:BaseUrl must be an absolute URI.")
+            .Validate(o => Uri.TryCreate(o.BaseUrl, UriKind.Absolute, out var uriResult) && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps), "Raindrop:BaseUrl must be an absolute HTTP or HTTPS URI.")
             .Validate(o => !string.IsNullOrWhiteSpace(o.ApiToken), "Raindrop:ApiToken must be configured.")
             .ValidateOnStart();
 
