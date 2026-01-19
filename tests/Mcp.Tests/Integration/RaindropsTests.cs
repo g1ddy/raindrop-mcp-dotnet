@@ -26,7 +26,10 @@ public class RaindropsTests : TestBase
             CollectionId = null,
             Link = $"https://example.com/{uniqueId}",
             Title = $"Raindrops Crud - Create {uniqueId}",
-            Note = "note"
+            Note = "note",
+            Excerpt = "Test Excerpt",
+            Tags = ["tag1", "tag2"],
+            Important = false
         }, cancellationToken);
 
         long raindropId = createResponse.Item.Id;
@@ -36,7 +39,10 @@ public class RaindropsTests : TestBase
             // Update single
             await raindropsTool.UpdateBookmarkAsync(raindropId, new RaindropUpdateRequest
             {
-                Title = $"Raindrops Crud - Updated {uniqueId}"
+                Title = $"Raindrops Crud - Updated {uniqueId}",
+                Note = "updated note",
+                Excerpt = "Updated Excerpt",
+                Tags = ["tag3"]
             }, cancellationToken);
 
             // Bulk update (UpdateBookmarksAsync signature: collectionId, update, nested, search, cancellationToken)
@@ -70,6 +76,11 @@ public class RaindropsTests : TestBase
             // Get
             var retrieved = await raindropsTool.GetBookmarkAsync(raindropId, cancellationToken);
             Assert.Equal($"Raindrops Crud - Updated {uniqueId}", retrieved.Item.Title);
+            Assert.Equal("updated note", retrieved.Item.Note);
+            Assert.Equal("Updated Excerpt", retrieved.Item.Excerpt);
+            Assert.NotNull(retrieved.Item.Tags);
+            Assert.Contains("tag3", retrieved.Item.Tags);
+            Assert.Single(retrieved.Item.Tags);
             Assert.True(retrieved.Item.Important, "Bookmark should be marked important from bulk update");
         }
         finally

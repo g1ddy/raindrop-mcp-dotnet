@@ -3,7 +3,7 @@ namespace Mcp.Raindrops;
 /// <summary>
 /// Represents the common data properties for creating and updating a Raindrop bookmark.
 /// </summary>
-public interface IRaindropData
+public interface IRaindropRequest
 {
     /// <summary>
     /// The URL of the bookmark.
