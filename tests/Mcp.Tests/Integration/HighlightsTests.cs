@@ -58,8 +58,8 @@ public class HighlightsTests : TestBase
                 Note = "note"
             }, cancellationToken);
 
-            string highlightId = newHighlight.Item.Highlights.Last().Id!;
-            Assert.False(string.IsNullOrEmpty(highlightId), "Highlight ID should not be null or empty");
+            string highlightId = newHighlight.Item.Highlights.Single(h => h.Text == $"Highlights Crud - New {uniqueId}").Id!;
+            Assert.NotEmpty(highlightId);
 
             // 4. Update Highlight
             await highlights.UpdateHighlightAsync(raindropId, new HighlightUpdateRequest
