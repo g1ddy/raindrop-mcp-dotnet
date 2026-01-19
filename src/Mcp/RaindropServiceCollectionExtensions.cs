@@ -25,6 +25,7 @@ public static class RaindropServiceCollectionExtensions
     {
         services.AddOptions<RaindropOptions>()
             .Bind(configuration.GetSection("Raindrop"))
+            .ValidateDataAnnotations()
             .Validate(o => Uri.TryCreate(o.BaseUrl, UriKind.Absolute, out _), "Raindrop:BaseUrl must be an absolute URI.")
             .Validate(o => !string.IsNullOrWhiteSpace(o.ApiToken), "Raindrop:ApiToken must be configured.")
             .ValidateOnStart();
@@ -41,8 +42,9 @@ public static class RaindropServiceCollectionExtensions
         void Configure(IServiceProvider sp, HttpClient client)
         {
             var options = sp.GetRequiredService<IOptions<RaindropOptions>>().Value;
-            client.BaseAddress = new Uri(options.BaseUrl!);
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.ApiToken!);
+
+            client.BaseAddress = new Uri(options.BaseUrl);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.ApiToken);
         }
 
         services.AddRefitClient<ICollectionsApi>(settings).ConfigureHttpClient(Configure);

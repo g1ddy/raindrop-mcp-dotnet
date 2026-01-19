@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Mcp;
 
 /// <summary>
@@ -8,10 +10,12 @@ public class RaindropOptions
     /// <summary>
     /// API token used for authenticating with the Raindrop API.
     /// </summary>
-    public string? ApiToken { get; set; }
+    [Required]
+    public string ApiToken { get; set; } = string.Empty;
 
     /// <summary>
     /// Base URL of the Raindrop API.
     /// </summary>
-    public string? BaseUrl { get; set; } = "https://api.raindrop.io/rest/v1";
+    [Required]
+    public string BaseUrl { get; set; } = "https://api.raindrop.io/rest/v1";
 }
