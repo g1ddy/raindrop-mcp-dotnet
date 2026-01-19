@@ -26,7 +26,7 @@ public record Highlight
     public string? Note { get; init; }
 
     [Description("Timestamp when the highlight was created")]
-    public string? Created { get; init; }
+    public DateTime? Created { get; init; }
 
     [Description("Tags associated with the highlight")]
     public List<string>? Tags { get; init; }
@@ -35,7 +35,7 @@ public record Highlight
     public string? Link { get; init; }
 
     [Description("Timestamp of the last update")]
-    public string? LastUpdate { get; init; }
+    public DateTime? LastUpdate { get; init; }
 
     [Description("ID of the bookmark that owns the highlight")]
     public long? RaindropRef { get; init; }
