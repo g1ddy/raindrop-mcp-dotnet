@@ -1,0 +1,28 @@
+name: Integration Tests
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test-integration:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+    env:
+      RAINDROP_TOKEN: ${{ secrets.RAINDROP_TEST_API_TOKEN }}
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore
+    - name: Test
+      if: ${{ env.RAINDROP_TOKEN != '' }}
+      run: dotnet test --no-build --verbosity normal --filter "Category=Integration"
+      env:
+        Raindrop__ApiToken: ${{ env.RAINDROP_TOKEN }}
