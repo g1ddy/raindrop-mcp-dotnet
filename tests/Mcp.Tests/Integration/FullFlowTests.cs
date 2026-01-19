@@ -64,9 +64,11 @@ public class FullFlowTests : TestBase
                 Note = "second"
             }, cancellationToken)).Item.Id;
 
-            var highlight = await highlights.CreateHighlightAsync(firstRaindropId.Value, new HighlightCreateRequest { Text = "Integration Highlight", Note = "int" }, cancellationToken);
-            string highlightId = highlight.Item.Highlights.Last().Id!;
-            Assert.False(string.IsNullOrEmpty(highlightId), "Highlight ID should not be null or empty");
+            await highlights.CreateHighlightAsync(firstRaindropId.Value, new HighlightCreateRequest { Text = "Integration Highlight", Note = "int" }, cancellationToken);
+
+            // Re-fetch highlights to verify creation and ID presence
+            var raindropHighlights = await highlights.GetBookmarkHighlightsAsync(firstRaindropId.Value, cancellationToken);
+            Assert.Contains(raindropHighlights.Item.Highlights, h => h.Text == "Integration Highlight" && !string.IsNullOrEmpty(h.Id));
 
             await raindropsTool.UpdateBookmarkAsync(secondRaindropId.Value, new RaindropUpdateRequest { Link = "https://example.com/updated", CollectionId = childCollectionId }, cancellationToken);
 
@@ -79,17 +81,15 @@ public class FullFlowTests : TestBase
                 return t.Items.Any(tag => tag.Id == tagTwoRenamed);
             }, cancellationToken, "Tag rename propagation");
 
-            var tagList = await tags.ListTagsAsync(null, cancellationToken);
-            Assert.Contains(tagList.Items, t => t.Id == tagTwoRenamed);
-
             var childCollections = await collections.ListChildCollectionsAsync(cancellationToken);
             Assert.Contains(childCollections.Items, c => c.Id == childCollectionId);
 
             // Perform explicit cleanup as part of the test flow to verify "clean state" behavior
-            if (firstRaindropId.HasValue) await raindropsTool.DeleteBookmarkAsync(firstRaindropId.Value, cancellationToken);
-            if (secondRaindropId.HasValue) await raindropsTool.DeleteBookmarkAsync(secondRaindropId.Value, cancellationToken);
-            if (childCollectionId.HasValue) await collections.DeleteCollectionAsync(childCollectionId.Value, cancellationToken);
-            if (rootCollectionId.HasValue) await collections.DeleteCollectionAsync(rootCollectionId.Value, cancellationToken);
+            // Set IDs to null after deletion to prevent double deletion in finally block
+            if (firstRaindropId.HasValue) { await raindropsTool.DeleteBookmarkAsync(firstRaindropId.Value, cancellationToken); firstRaindropId = null; }
+            if (secondRaindropId.HasValue) { await raindropsTool.DeleteBookmarkAsync(secondRaindropId.Value, cancellationToken); secondRaindropId = null; }
+            if (childCollectionId.HasValue) { await collections.DeleteCollectionAsync(childCollectionId.Value, cancellationToken); childCollectionId = null; }
+            if (rootCollectionId.HasValue) { await collections.DeleteCollectionAsync(rootCollectionId.Value, cancellationToken); rootCollectionId = null; }
 
             // Poll for tag deletion consistency
             await PollUntilAsync(async () =>
@@ -97,9 +97,6 @@ public class FullFlowTests : TestBase
                 var t = await tags.ListTagsAsync(null, cancellationToken);
                 return !t.Items.Any(tag => tag.Id == tagTwoRenamed);
             }, cancellationToken, "Tag cleanup propagation");
-
-            var finalTags = await tags.ListTagsAsync(null, cancellationToken);
-            Assert.DoesNotContain(finalTags.Items, t => t.Id == tagTwoRenamed);
         }
         finally
         {
@@ -118,11 +115,11 @@ public class FullFlowTests : TestBase
 
         for (int i = 0; i < maxAttempts; i++)
         {
-            if (cancellationToken.IsCancellationRequested) break;
+            if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
             if (await predicate()) return;
             await Task.Delay(intervalMs, cancellationToken);
         }
 
-        // Final check or let the subsequent assertion fail with a better message
+        throw new TimeoutException($"Polling for '{description}' timed out after {maxAttempts * intervalMs}ms.");
     }
 }
