@@ -9,6 +9,8 @@ using Mcp.Highlights;
 using Mcp.Filters;
 using Mcp.Tags;
 using Mcp.User;
+using Polly;
+using Polly.Extensions.Http;
 
 namespace Mcp;
 
@@ -50,9 +52,18 @@ public static class RaindropServiceCollectionExtensions
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.ApiToken);
         }
 
+        var retryPolicy = HttpPolicyExtensions
+            .HandleTransientHttpError() // Handles 5xx and 408
+            .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+            .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+
         void AddClient<T>(RefitSettings refitSettings) where T : class
         {
             var builder = services.AddRefitClient<T>(refitSettings).ConfigureHttpClient(Configure);
+
+            // Add Polly policy
+            builder.AddPolicyHandler(retryPolicy);
+
             builderCustomizer?.Invoke(builder);
         }
 
