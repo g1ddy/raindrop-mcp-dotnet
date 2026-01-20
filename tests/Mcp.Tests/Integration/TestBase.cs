@@ -83,6 +83,14 @@ public abstract class TestBase : IDisposable
         Skip.IfNot(_isConfigured || _isReplaying, "Raindrop API Token not configured and no replay data available.");
     }
 
+    protected (CancellationTokenSource, CancellationToken, string) SetupTestForVcr(TimeSpan? timeout = null, [CallerMemberName] string testName = "", [CallerFilePath] string sourceFilePath = "")
+    {
+        InitializeVcr(testName, sourceFilePath);
+        var cts = new CancellationTokenSource(timeout ?? TimeSpan.FromSeconds(30));
+        var uniqueId = CurrentTestId;
+        return (cts, cts.Token, uniqueId);
+    }
+
     protected void InitializeVcr([CallerMemberName] string testName = "", [CallerFilePath] string sourceFilePath = "")
     {
         var fixturePath = GetFixturePath(sourceFilePath, testName);
