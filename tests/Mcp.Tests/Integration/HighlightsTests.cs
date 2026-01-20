@@ -104,11 +104,27 @@ public class HighlightsTests : TestBase
         {
             if (raindropId != -1)
             {
-                await raindropsService.DeleteBookmarkAsync(raindropId, cancellationToken);
+                try
+                {
+                    await raindropsService.DeleteBookmarkAsync(raindropId, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    // Ignore cleanup errors, but log them for debugging purposes.
+                    Console.Error.WriteLine($"[CLEANUP-ERROR] Failed to delete bookmark '{raindropId}': {ex.Message}");
+                }
             }
             if (collectionId != -1)
             {
-                await collections.DeleteCollectionAsync(collectionId, cancellationToken);
+                try
+                {
+                    await collections.DeleteCollectionAsync(collectionId, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    // Ignore cleanup errors, but log them for debugging purposes.
+                    Console.Error.WriteLine($"[CLEANUP-ERROR] Failed to delete collection '{collectionId}': {ex.Message}");
+                }
             }
         }
     }

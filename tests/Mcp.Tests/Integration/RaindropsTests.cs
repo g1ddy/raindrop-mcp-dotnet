@@ -88,7 +88,15 @@ public class RaindropsTests : TestBase
         finally
         {
             // Delete
-            await raindropsTool.DeleteBookmarkAsync(raindropId, cancellationToken);
+            try
+            {
+                await raindropsTool.DeleteBookmarkAsync(raindropId, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                // Ignore cleanup errors, but log them for debugging purposes.
+                Console.Error.WriteLine($"[CLEANUP-ERROR] Failed to delete bookmark '{raindropId}': {ex.Message}");
+            }
         }
     }
 }
