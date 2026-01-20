@@ -7,25 +7,16 @@ VSTest version 17.11.1 (x64)
 
 Starting test execution, please wait...
 A total of 1 test files matched the specified pattern.
-[xUnit.net 00:00:00.67]     Mcp.Tests.Integration.CollectionsTests.MergeCollections [SKIP]
-[xUnit.net 00:00:00.69]     Mcp.Tests.Integration.RaindropsBulkTests.BulkEndpoints [SKIP]
-[xUnit.net 00:00:00.70]     Mcp.Tests.Integration.TagsBulkTests.BulkEndpoints [SKIP]
-[xUnit.net 00:00:00.70]     Mcp.Tests.Integration.CollectionsTests.ListChildren [SKIP]
-[xUnit.net 00:00:00.71]     Mcp.Tests.Integration.CollectionsTests.Crud [SKIP]
-[xUnit.net 00:00:00.71]     Mcp.Tests.Integration.FiltersTests.List [SKIP]
-  Skipped Mcp.Tests.Integration.CollectionsTests.MergeCollections [1 ms]
-  Skipped Mcp.Tests.Integration.RaindropsBulkTests.BulkEndpoints [1 ms]
-  Skipped Mcp.Tests.Integration.TagsBulkTests.BulkEndpoints [1 ms]
-  Skipped Mcp.Tests.Integration.CollectionsTests.ListChildren [1 ms]
-  Skipped Mcp.Tests.Integration.CollectionsTests.Crud [1 ms]
-  Skipped Mcp.Tests.Integration.FiltersTests.List [1 ms]
-[xUnit.net 00:00:00.81]     Mcp.Tests.Integration.HighlightsTests.Crud [SKIP]
-[xUnit.net 00:00:00.81]     Mcp.Tests.Integration.TagsTests.CrudForCollection [SKIP]
-[xUnit.net 00:00:00.81]     Mcp.Tests.Integration.FullFlowTests.FullFlow [SKIP]
-[xUnit.net 00:00:00.82]     Mcp.Tests.Integration.TagsTests.Crud [SKIP]
-  Skipped Mcp.Tests.Integration.HighlightsTests.Crud [1 ms]
-  Skipped Mcp.Tests.Integration.TagsTests.CrudForCollection [1 ms]
-  Skipped Mcp.Tests.Integration.FullFlowTests.FullFlow [1 ms]
-  Skipped Mcp.Tests.Integration.TagsTests.Crud [1 ms]
+[xUnit.net 00:00:01.39]     Mcp.Tests.Integration.FullFlowTests.FullFlow [FAIL]
+  Failed Mcp.Tests.Integration.FullFlowTests.FullFlow [1 s]
+  Error Message:
+   Refit.ApiException : Response status code does not indicate success: 401 (Unauthorized).
+  Stack Trace:
+     at Refit.RequestBuilderImplementation.<>c__DisplayClass15_0`2.<<BuildCancellableTaskFuncForMethod>b__0>d.MoveNext() in c:\temp\releaser\refit\Refit\RequestBuilderImplementation.cs:line 384
+--- End of stack trace from previous location ---
+   at Refit.Implementation.Generated.McpCollectionsICollectionsApi.global::Mcp.Collections.ICollectionsApi.CreateAsync(Collection collection, CancellationToken cancellationToken) in /app/src/Mcp/obj/Debug/net8.0/InterfaceStubGeneratorV2/Refit.Generator.InterfaceStubGeneratorV2/ICollectionsApi.g.cs:line 138
+   at Mcp.Tests.Integration.FullFlowTests.FullFlow() in /app/tests/Mcp.Tests/Integration/FullFlowTests.cs:line 46
+   at Mcp.Tests.Integration.FullFlowTests.FullFlow() in /app/tests/Mcp.Tests/Integration/FullFlowTests.cs:line 108
+--- End of stack trace from previous location ---
 
-Passed!  - Failed:     0, Passed:     1, Skipped:    10, Total:    11, Duration: 2 s - RaindropMcp.Tests.dll (net8.0)
+Failed!  - Failed:     1, Passed:    19, Skipped:     0, Total:    20, Duration: 6 s - RaindropMcp.Tests.dll (net8.0)

@@ -21,7 +21,7 @@ public record RaindropUpdateRequest : IRaindropRequest
     public string? Note { get; init; }
 
     [Description("A new list of tags for the bookmark. This will replace the existing tags.")]
-    public IEnumerable<string>? Tags { get; init; }
+    public IReadOnlyList<string>? Tags { get; init; }
 
     [Description("A boolean flag to mark the bookmark as a favorite.")]
     public bool? Important { get; init; }
