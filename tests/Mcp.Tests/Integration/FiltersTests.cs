@@ -12,6 +12,8 @@ public class FiltersTests : TestBase
     [SkippableFact]
     public async Task List()
     {
+        InitializeVcr();
+
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         var cancellationToken = cts.Token;
 

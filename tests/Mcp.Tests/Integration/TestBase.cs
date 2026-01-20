@@ -91,8 +91,9 @@ public abstract class TestBase : IDisposable
             : Directory.GetCurrentDirectory(); // Fallback to bin
 
         var fixturePath = Path.Combine(baseDir, "Fixtures", GetType().Name, $"{testName}.json");
+        var forceRecord = _config.GetValue<bool>("VCR_FORCE_RECORD");
 
-        if (_isConfigured)
+        if (_isConfigured && (forceRecord || !File.Exists(fixturePath)))
         {
             // Record Mode
             _recordingState = new RecordingState(fixturePath, RecordingMode.Record);
@@ -105,6 +106,8 @@ public abstract class TestBase : IDisposable
             // Replay Mode
             _isReplaying = true;
             _recordingState = new RecordingState(fixturePath, RecordingMode.Replay);
+            // Rebuild provider for replay
+            (_provider as IDisposable)?.Dispose();
             _provider = BuildServiceProvider(_recordingState);
         }
         else
