@@ -79,7 +79,7 @@ public class FullFlowTests : TestBase
             {
                 var t = await tags.ListTagsAsync(null, cancellationToken);
                 return t.Items.Any(tag => tag.Id == tagTwoRenamed);
-            }, "Tag rename propagation", cancellationToken);
+            }, "Tag rename propagation", cancellationToken, 6, 5000);
 
             var childCollections = await collections.ListChildCollectionsAsync(cancellationToken);
             Assert.Contains(childCollections.Items, c => c.Id == childCollectionId);
@@ -96,7 +96,7 @@ public class FullFlowTests : TestBase
             {
                 var t = await tags.ListTagsAsync(null, cancellationToken);
                 return !t.Items.Any(tag => tag.Id == tagTwoRenamed);
-            }, "Tag cleanup propagation", cancellationToken);
+            }, "Tag cleanup propagation", cancellationToken, 6, 5000);
         }
         finally
         {

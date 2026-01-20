@@ -1,8 +1,8 @@
+using Mcp.Tests.Integration.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Xunit;
 using System.Runtime.CompilerServices;
-using Mcp.Tests.Integration.Infrastructure;
+using Xunit;
 
 namespace Mcp.Tests.Integration;
 
