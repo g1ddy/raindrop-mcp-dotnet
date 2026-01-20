@@ -2,7 +2,7 @@
 
 This guide provides recipes for developers who want to set up a local development environment, modify, or contribute to the Raindrop MCP .NET server.
 
-**Prerequisite:** You have the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) or later installed.
+**Prerequisite:** You have the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) or later installed.
 
 -   [Back to Home](../README.md)
 

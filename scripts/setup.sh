@@ -4,14 +4,16 @@ set -e
 # Project name (adjust if needed)
 PROJECT_NAME=RaindropMcp
 
-# .NET version (here 8.0, adjust if needed)
-DOTNET_VERSION=8.0
+# .NET version (here 10.0, adjust if needed)
+DOTNET_VERSION=10.0
 
 # Add Microsoft package source with checksum verification
+# Targeting Ubuntu 24.04 (Noble) for .NET 10 support
 PACKAGE_FILE="packages-microsoft-prod.deb"
-EXPECTED_CHECKSUM="0d335c06ceb3227e330a36a7135997207843c726e42ec341e34a3825f151213b"
+EXPECTED_CHECKSUM="c13f01ac7c3001b51a9281d40dde666db5e037e05512840c319832f7852bfec4"
+PACKAGE_URL="https://packages.microsoft.com/config/ubuntu/24.04/packages-microsoft-prod.deb"
 
-wget https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O "$PACKAGE_FILE"
+wget "$PACKAGE_URL" -O "$PACKAGE_FILE"
 
 CURRENT_CHECKSUM=$(sha256sum "$PACKAGE_FILE" | awk '{print $1}')
 
