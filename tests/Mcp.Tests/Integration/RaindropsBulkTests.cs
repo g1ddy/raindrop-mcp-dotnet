@@ -36,7 +36,7 @@ public class RaindropsBulkTests : TestBase
             {
                 var list = await tool.ListBookmarksAsync(0, uniqueId, null, null, null, null, cancellationToken);
                 return ids.All(id => list.Items.Any(r => r.Id == id));
-            }, "Not all created bookmarks were found in search results.", cancellationToken);
+            }, "Not all created bookmarks were found in search results.", cancellationToken, 15, 2000);
 
             var update = new RaindropBulkUpdate
             {
@@ -56,7 +56,7 @@ public class RaindropsBulkTests : TestBase
                     var item = updated.Items.FirstOrDefault(r => r.Id == id);
                     return item is { Important: true } && item.Tags?.Contains("bulk-test") == true;
                 });
-            }, "Bulk updates were not reflected in search results.", cancellationToken);
+            }, "Bulk updates were not reflected in search results.", cancellationToken, 15, 2000);
         }
         finally
         {
@@ -72,23 +72,5 @@ public class RaindropsBulkTests : TestBase
                 }
             }
         }
-    }
-
-    private async Task PollUntilAsync(Func<Task<bool>> condition, string failureMessage, CancellationToken cancellationToken)
-    {
-        const int pollAttempts = 15;
-        const int pollIntervalMs = 2000;
-
-        for (var i = 0; i < pollAttempts; i++)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            if (await condition())
-            {
-                return; // Condition met, success.
-            }
-            await Task.Delay(pollIntervalMs, cancellationToken);
-        }
-
-        Assert.Fail(failureMessage);
     }
 }
