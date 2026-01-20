@@ -27,7 +27,7 @@ public record RaindropBulkUpdate
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [Description("New media attachments or covers")]
-    public List<object>? Media { get; init; }
+    public List<MediaItem>? Media { get; init; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [Description("Cover image URL")]
