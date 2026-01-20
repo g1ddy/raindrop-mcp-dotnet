@@ -21,14 +21,11 @@ public class TagsTests : TestBase
     [SkippableFact]
     public async Task Crud()
     {
-        InitializeVcr();
+        var (cts, cancellationToken, uniqueId) = SetupTestForVcr(TimeSpan.FromSeconds(120));
+        using var _ = cts;
 
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(120));
-        var cancellationToken = cts.Token;
         var raindropsTool = Provider.GetRequiredService<RaindropsTools>();
         var tagsTool = Provider.GetRequiredService<TagsTools>();
-
-        var uniqueId = CurrentTestId;
         var tagName1 = $"TagRenameTestOne_{uniqueId}";
         var tagName2 = $"TagRenameTestTwo_{uniqueId}";
 
@@ -103,14 +100,11 @@ public class TagsTests : TestBase
     [SkippableFact]
     public async Task CrudForCollection()
     {
-        InitializeVcr();
+        var (cts, cancellationToken, uniqueId) = SetupTestForVcr(TimeSpan.FromSeconds(120));
+        using var _ = cts;
 
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(120));
-        var cancellationToken = cts.Token;
         var raindropsTool = Provider.GetRequiredService<RaindropsTools>();
         var tagsTool = Provider.GetRequiredService<TagsTools>();
-
-        var uniqueId = CurrentTestId;
         var tagName1 = $"TagCollectionTestOne_{uniqueId}";
         var tagName2 = $"TagCollectionTestTwo_{uniqueId}";
 
