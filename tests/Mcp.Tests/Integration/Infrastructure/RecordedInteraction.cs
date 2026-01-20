@@ -15,4 +15,5 @@ public class RecordedInteraction
     public int StatusCode { get; set; }
     public string? ResponseBody { get; set; }
     public Dictionary<string, string[]> ResponseHeaders { get; set; } = new();
+    public Dictionary<string, string[]> ContentHeaders { get; set; } = new();
 }

@@ -85,20 +85,12 @@ public abstract class TestBase : IDisposable
 
     protected void InitializeVcr([CallerMemberName] string testName = "", [CallerFilePath] string sourceFilePath = "")
     {
-        // Determine path
         var integrationDir = Path.GetDirectoryName(sourceFilePath);
-        string fixturePath;
+        var baseDir = integrationDir != null && Directory.Exists(integrationDir)
+            ? integrationDir // Source checkout / local dev
+            : Directory.GetCurrentDirectory(); // Fallback to bin
 
-        if (integrationDir != null && Directory.Exists(integrationDir))
-        {
-            // We are likely in a source checkout or local dev
-             fixturePath = Path.Combine(integrationDir, "Fixtures", GetType().Name, $"{testName}.json");
-        }
-        else
-        {
-            // Fallback to bin directory structure if source not found
-            fixturePath = Path.Combine(Directory.GetCurrentDirectory(), "Fixtures", GetType().Name, $"{testName}.json");
-        }
+        var fixturePath = Path.Combine(baseDir, "Fixtures", GetType().Name, $"{testName}.json");
 
         if (_isConfigured)
         {
