@@ -1,63 +1,19 @@
-using System.Collections.Concurrent;
 using System.Net;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace Mcp.Tests.Integration.Infrastructure;
 
-public enum RecordingMode
-{
-    Record,
-    Replay
-}
-
 public class RecordingHandler : DelegatingHandler
 {
-    private readonly string _filePath;
-    private readonly RecordingMode _mode;
-    private readonly TestScenario _scenario;
-    private int _replayIndex = 0;
-    private readonly object _lock = new();
+    private readonly RecordingState _state;
 
-    public RecordingHandler(string filePath, RecordingMode mode)
+    public RecordingHandler(RecordingState state)
     {
-        _filePath = filePath;
-        _mode = mode;
-        _scenario = new TestScenario();
-
-        if (_mode == RecordingMode.Replay)
-        {
-            if (File.Exists(_filePath))
-            {
-                var json = File.ReadAllText(_filePath);
-                _scenario = JsonSerializer.Deserialize<TestScenario>(json) ?? new TestScenario();
-            }
-            else
-            {
-                throw new FileNotFoundException($"Recording not found at {_filePath}");
-            }
-        }
-    }
-
-    public void SetMetadata(string key, string value)
-    {
-        lock (_lock)
-        {
-            _scenario.Metadata[key] = value;
-        }
-    }
-
-    public string? GetMetadata(string key)
-    {
-        lock (_lock)
-        {
-            return _scenario.Metadata.TryGetValue(key, out var val) ? val : null;
-        }
+        _state = state;
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        if (_mode == RecordingMode.Replay)
+        if (_state.Mode == RecordingMode.Replay)
         {
             return await ReplayAsync(request, cancellationToken);
         }
@@ -69,18 +25,7 @@ public class RecordingHandler : DelegatingHandler
 
     private Task<HttpResponseMessage> ReplayAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        int index;
-        RecordedInteraction interaction;
-
-        lock (_lock)
-        {
-            index = _replayIndex++;
-            if (index >= _scenario.Interactions.Count)
-            {
-                throw new InvalidOperationException($"No more recorded interactions. Requested: {request.Method} {request.RequestUri}");
-            }
-            interaction = _scenario.Interactions[index];
-        }
+        var interaction = _state.GetNextInteraction(request.Method.ToString(), request.RequestUri?.ToString());
 
         var response = new HttpResponseMessage((HttpStatusCode)interaction.StatusCode);
         if (interaction.ResponseBody != null)
@@ -138,10 +83,7 @@ public class RecordingHandler : DelegatingHandler
             }
         }
 
-        lock (_lock)
-        {
-            _scenario.Interactions.Add(interaction);
-        }
+        _state.AddInteraction(interaction);
 
         // Replace the response content so it can be read again by the caller
         if (responseBody != null)
@@ -155,23 +97,5 @@ public class RecordingHandler : DelegatingHandler
         }
 
         return response;
-    }
-
-    public void Save()
-    {
-        if (_mode == RecordingMode.Record)
-        {
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-            };
-            var json = JsonSerializer.Serialize(_scenario, options);
-
-            var dir = Path.GetDirectoryName(_filePath);
-            if (dir != null && !Directory.Exists(dir)) Directory.CreateDirectory(dir);
-
-            File.WriteAllText(_filePath, json);
-        }
     }
 }

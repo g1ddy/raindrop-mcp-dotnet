@@ -15,19 +15,21 @@ public class CollectionsTests : TestBase
     [SkippableFact]
     public async Task Crud()
     {
+        InitializeVcr();
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         var cancellationToken = cts.Token;
+        var uniqueId = CurrentTestId;
 
         var collections = Provider.GetRequiredService<CollectionsTools>();
-        var createResponse = await collections.CreateCollectionAsync(new Collection { Title = "Collections Crud - Create" }, cancellationToken);
+        var createResponse = await collections.CreateCollectionAsync(new Collection { Title = $"Collections Crud - Create {uniqueId}" }, cancellationToken);
         int collectionId = createResponse.Item.Id;
         try
         {
-            await collections.UpdateCollectionAsync(collectionId, new Collection { Title = "Collections Crud - Updated" }, cancellationToken);
+            await collections.UpdateCollectionAsync(collectionId, new Collection { Title = $"Collections Crud - Updated {uniqueId}" }, cancellationToken);
             var list = await collections.ListCollectionsAsync(cancellationToken);
             Assert.Contains(list.Items, c => c.Id == collectionId);
             var retrieved = await collections.GetCollectionAsync(collectionId, cancellationToken);
-            Assert.Equal("Collections Crud - Updated", retrieved.Item.Title);
+            Assert.Equal($"Collections Crud - Updated {uniqueId}", retrieved.Item.Title);
         }
         finally
         {
@@ -38,12 +40,14 @@ public class CollectionsTests : TestBase
     [SkippableFact]
     public async Task ListChildren()
     {
+        InitializeVcr();
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         var cancellationToken = cts.Token;
+        var uniqueId = CurrentTestId;
 
         var collections = Provider.GetRequiredService<CollectionsTools>();
-        int parentCollectionId = (await collections.CreateCollectionAsync(new Collection { Title = "Collections ListChildren - Parent" }, cancellationToken)).Item.Id;
-        int childCollectionId = (await collections.CreateCollectionAsync(new Collection { Title = "Collections ListChildren - Child", Parent = new IdRef { Id = parentCollectionId } }, cancellationToken)).Item.Id;
+        int parentCollectionId = (await collections.CreateCollectionAsync(new Collection { Title = $"Collections ListChildren - Parent {uniqueId}" }, cancellationToken)).Item.Id;
+        int childCollectionId = (await collections.CreateCollectionAsync(new Collection { Title = $"Collections ListChildren - Child {uniqueId}", Parent = new IdRef { Id = parentCollectionId } }, cancellationToken)).Item.Id;
         try
         {
             var result = await collections.ListChildCollectionsAsync(cancellationToken);
@@ -62,13 +66,15 @@ public class CollectionsTests : TestBase
     [SkippableFact]
     public async Task MergeCollections()
     {
+        InitializeVcr();
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         var cancellationToken = cts.Token;
+        var uniqueId = CurrentTestId;
 
         var collections = Provider.GetRequiredService<CollectionsTools>();
-        int destinationId = (await collections.CreateCollectionAsync(new Collection { Title = "Collections Merge - Destination" }, cancellationToken)).Item.Id;
-        int sourceId1 = (await collections.CreateCollectionAsync(new Collection { Title = "Collections Merge - Source1" }, cancellationToken)).Item.Id;
-        int sourceId2 = (await collections.CreateCollectionAsync(new Collection { Title = "Collections Merge - Source2" }, cancellationToken)).Item.Id;
+        int destinationId = (await collections.CreateCollectionAsync(new Collection { Title = $"Collections Merge - Destination {uniqueId}" }, cancellationToken)).Item.Id;
+        int sourceId1 = (await collections.CreateCollectionAsync(new Collection { Title = $"Collections Merge - Source1 {uniqueId}" }, cancellationToken)).Item.Id;
+        int sourceId2 = (await collections.CreateCollectionAsync(new Collection { Title = $"Collections Merge - Source2 {uniqueId}" }, cancellationToken)).Item.Id;
 
         try
         {
