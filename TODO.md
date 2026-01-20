@@ -48,7 +48,11 @@ The goal is to provide clear instructions for end-users on how to consume the pu
             "Raindrop.Mcp.DotNet",
             "--prerelease",
             "--yes"
-          ]
+          ],
+          "env": {
+            "Raindrop:ApiToken": "${env:RAINDROP_API_TOKEN}",
+            "Raindrop:BaseUrl": "https://api.raindrop.io/rest/v1"
+          }
         }
       }
     }
