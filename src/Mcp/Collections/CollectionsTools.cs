@@ -49,7 +49,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
     public Task<ItemsResponse<Collection>> ListChildCollectionsAsync(CancellationToken cancellationToken) => Api.ListChildrenAsync(cancellationToken);
 
     // Pipe is used as a separator in the LLM response, so it must be removed from the input to prevent ambiguity.
-    private static string Sanitize(string value) => value.ReplaceLineEndings(string.Empty).Replace("|", string.Empty);
+    private static string Sanitize(string? value) => value?.ReplaceLineEndings(" ").Replace("|", string.Empty) ?? string.Empty;
 
     [McpServerTool(Idempotent = true, Title = "Merge Collections"),
     Description("Merge multiple collections into a destination collection. Requires both the target collection ID and an array of source collection IDs to merge.")]
@@ -118,9 +118,9 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
         // 3. Use the LLM to get the top 3 suggestions
         var prompt = $"""
             Given the following bookmark:
-            - Title: {bookmark.Title}
-            - URL: {bookmark.Link}
-            - Excerpt: {bookmark.Excerpt}
+            - Title: {Sanitize(bookmark.Title)}
+            - URL: {Sanitize(bookmark.Link)}
+            - Excerpt: {Sanitize(bookmark.Excerpt)}
 
             And the following list of collections:
             {promptBuilder}
