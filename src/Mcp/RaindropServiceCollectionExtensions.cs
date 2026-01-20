@@ -9,6 +9,8 @@ using Mcp.Highlights;
 using Mcp.Filters;
 using Mcp.Tags;
 using Mcp.User;
+using Polly;
+using Polly.Extensions.Http;
 
 namespace Mcp;
 
@@ -21,7 +23,10 @@ public static class RaindropServiceCollectionExtensions
     /// Registers Raindrop API clients using configuration from the
     /// "Raindrop" section of <see cref="IConfiguration"/>.
     /// </summary>
-    public static IServiceCollection AddRaindropApiClient(this IServiceCollection services, IConfiguration configuration)
+    /// <param name="services">The service collection.</param>
+    /// <param name="configuration">The configuration.</param>
+    /// <param name="builderCustomizer">Optional action to customize the HTTP client builder (e.g. adding handlers).</param>
+    public static IServiceCollection AddRaindropApiClient(this IServiceCollection services, IConfiguration configuration, Action<IHttpClientBuilder>? builderCustomizer = null)
     {
         services.AddOptions<RaindropOptions>()
             .Bind(configuration.GetSection("Raindrop"))
@@ -47,12 +52,27 @@ public static class RaindropServiceCollectionExtensions
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.ApiToken);
         }
 
-        services.AddRefitClient<ICollectionsApi>(settings).ConfigureHttpClient(Configure);
-        services.AddRefitClient<IRaindropsApi>(settings).ConfigureHttpClient(Configure);
-        services.AddRefitClient<IHighlightsApi>(settings).ConfigureHttpClient(Configure);
-        services.AddRefitClient<IFiltersApi>(settings).ConfigureHttpClient(Configure);
-        services.AddRefitClient<ITagsApi>(settings).ConfigureHttpClient(Configure);
-        services.AddRefitClient<IUserApi>(settings).ConfigureHttpClient(Configure);
+        var retryPolicy = HttpPolicyExtensions
+            .HandleTransientHttpError() // Handles 5xx and 408
+            .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+            .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+
+        void AddClient<T>(RefitSettings refitSettings) where T : class
+        {
+            var builder = services.AddRefitClient<T>(refitSettings).ConfigureHttpClient(Configure);
+
+            // Add Polly policy
+            builder.AddPolicyHandler(retryPolicy);
+
+            builderCustomizer?.Invoke(builder);
+        }
+
+        AddClient<ICollectionsApi>(settings);
+        AddClient<IRaindropsApi>(settings);
+        AddClient<IHighlightsApi>(settings);
+        AddClient<IFiltersApi>(settings);
+        AddClient<ITagsApi>(settings);
+        AddClient<IUserApi>(settings);
 
         return services;
     }
