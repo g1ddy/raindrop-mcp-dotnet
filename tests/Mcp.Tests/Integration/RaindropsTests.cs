@@ -12,15 +12,10 @@ public class RaindropsTests : TestBase
     [SkippableFact]
     public async Task Crud()
     {
-        InitializeVcr();
-
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-        var cancellationToken = cts.Token;
+        var (cts, cancellationToken, uniqueId) = SetupTestForVcr(TimeSpan.FromSeconds(60));
+        using var _ = cts;
 
         var raindropsTool = Provider.GetRequiredService<RaindropsTools>();
-
-        // Generate unique ID for this test run to avoid collisions
-        var uniqueId = CurrentTestId;
 
         // Create
         var createResponse = await raindropsTool.CreateBookmarkAsync(new RaindropCreateRequest

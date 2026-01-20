@@ -19,17 +19,12 @@ public class HighlightsTests : TestBase
     [SkippableFact]
     public async Task Crud()
     {
-        InitializeVcr();
-
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-        var cancellationToken = cts.Token;
+        var (cts, cancellationToken, uniqueId) = SetupTestForVcr(TimeSpan.FromSeconds(60));
+        using var _ = cts;
 
         var collections = Provider.GetRequiredService<CollectionsTools>();
         var raindropsService = Provider.GetRequiredService<RaindropsTools>();
         var highlights = Provider.GetRequiredService<HighlightsTools>();
-
-        // Generate unique ID for this test run
-        var uniqueId = CurrentTestId;
 
         int collectionId = -1;
         long raindropId = -1;
