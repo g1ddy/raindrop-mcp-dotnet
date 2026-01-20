@@ -8,6 +8,7 @@ namespace Mcp.Tests.Integration;
 
 public abstract class TestBase : IDisposable
 {
+    private const string VcrForceRecordKey = "VCR_FORCE_RECORD";
     private IServiceProvider? _provider;
     private readonly IConfiguration _config;
     private readonly Action<IServiceCollection>[] _registrations;
@@ -86,7 +87,7 @@ public abstract class TestBase : IDisposable
     protected void InitializeVcr([CallerMemberName] string testName = "", [CallerFilePath] string sourceFilePath = "")
     {
         var fixturePath = GetFixturePath(sourceFilePath, testName);
-        var forceRecord = _config.GetValue<bool>("VCR_FORCE_RECORD");
+        var forceRecord = _config.GetValue<bool>(VcrForceRecordKey);
 
         if (_isConfigured && (forceRecord || !File.Exists(fixturePath)))
         {
