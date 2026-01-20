@@ -81,9 +81,10 @@ public class TagsTests : TestBase
             {
                 await tagsTool.DeleteTagAsync(mcpServerMock.Object, tagName2, null, cancellationToken);
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore cleanup errors
+                // Ignore cleanup errors, but log them for debugging purposes.
+                Console.Error.WriteLine($"[CLEANUP-ERROR] Failed to delete tag '{tagName2}': {ex.Message}");
             }
 
             // Clean up bookmark
@@ -91,9 +92,10 @@ public class TagsTests : TestBase
             {
                 await raindropsTool.DeleteBookmarkAsync(raindropId, cancellationToken);
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore cleanup errors
+                // Ignore cleanup errors, but log them for debugging purposes.
+                Console.Error.WriteLine($"[CLEANUP-ERROR] Failed to delete bookmark '{raindropId}': {ex.Message}");
             }
         }
     }
@@ -174,9 +176,10 @@ public class TagsTests : TestBase
             {
                 await raindropsTool.DeleteBookmarkAsync(raindropId, cancellationToken);
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore cleanup errors
+                // Ignore cleanup errors, but log them for debugging purposes.
+                Console.Error.WriteLine($"[CLEANUP-ERROR] Failed to delete bookmark '{raindropId}': {ex.Message}");
             }
         }
     }
