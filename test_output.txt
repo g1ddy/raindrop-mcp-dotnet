@@ -7,7 +7,7 @@ VSTest version 17.11.1 (x64)
 
 Starting test execution, please wait...
 A total of 1 test files matched the specified pattern.
-[xUnit.net 00:00:01.39]     Mcp.Tests.Integration.FullFlowTests.FullFlow [FAIL]
+[xUnit.net 00:00:02.60]     Mcp.Tests.Integration.FullFlowTests.FullFlow [FAIL]
   Failed Mcp.Tests.Integration.FullFlowTests.FullFlow [1 s]
   Error Message:
    Refit.ApiException : Response status code does not indicate success: 401 (Unauthorized).

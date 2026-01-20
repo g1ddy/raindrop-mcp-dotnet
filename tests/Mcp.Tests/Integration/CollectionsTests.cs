@@ -15,10 +15,8 @@ public class CollectionsTests : TestBase
     [SkippableFact]
     public async Task Crud()
     {
-        InitializeVcr();
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        var cancellationToken = cts.Token;
-        var uniqueId = CurrentTestId;
+        var (cts, cancellationToken, uniqueId) = SetupTestForVcr();
+        using var _ = cts;
 
         var collections = Provider.GetRequiredService<CollectionsTools>();
         var createResponse = await collections.CreateCollectionAsync(new Collection { Title = $"Collections Crud - Create {uniqueId}" }, cancellationToken);
@@ -40,10 +38,8 @@ public class CollectionsTests : TestBase
     [SkippableFact]
     public async Task ListChildren()
     {
-        InitializeVcr();
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        var cancellationToken = cts.Token;
-        var uniqueId = CurrentTestId;
+        var (cts, cancellationToken, uniqueId) = SetupTestForVcr();
+        using var _ = cts;
 
         var collections = Provider.GetRequiredService<CollectionsTools>();
         int parentCollectionId = (await collections.CreateCollectionAsync(new Collection { Title = $"Collections ListChildren - Parent {uniqueId}" }, cancellationToken)).Item.Id;
@@ -66,10 +62,8 @@ public class CollectionsTests : TestBase
     [SkippableFact]
     public async Task MergeCollections()
     {
-        InitializeVcr();
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        var cancellationToken = cts.Token;
-        var uniqueId = CurrentTestId;
+        var (cts, cancellationToken, uniqueId) = SetupTestForVcr();
+        using var _ = cts;
 
         var collections = Provider.GetRequiredService<CollectionsTools>();
         int destinationId = (await collections.CreateCollectionAsync(new Collection { Title = $"Collections Merge - Destination {uniqueId}" }, cancellationToken)).Item.Id;
