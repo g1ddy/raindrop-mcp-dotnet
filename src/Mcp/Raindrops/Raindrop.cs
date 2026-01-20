@@ -33,7 +33,7 @@ public record Raindrop
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [Description("Associated tags")]
-    public List<string>? Tags { get; init; }
+    public IReadOnlyList<string>? Tags { get; init; }
 
     [Description("Indicates a favorite bookmark")]
     public bool? Important { get; init; }

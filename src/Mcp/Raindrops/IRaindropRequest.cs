@@ -28,7 +28,7 @@ public interface IRaindropRequest
     /// <summary>
     /// A list of tags to associate with the bookmark.
     /// </summary>
-    IEnumerable<string>? Tags { get; }
+    IReadOnlyList<string>? Tags { get; }
 
     /// <summary>
     /// A boolean flag to mark the bookmark as a favorite.

@@ -21,7 +21,7 @@ public record RaindropCreateRequest : IRaindropRequest
     public string? Note { get; init; }
 
     [Description("A list of tags to associate with the bookmark.")]
-    public IEnumerable<string>? Tags { get; init; }
+    public IReadOnlyList<string>? Tags { get; init; }
 
     [Description("A boolean flag to mark the bookmark as a favorite.")]
     public bool? Important { get; init; }
