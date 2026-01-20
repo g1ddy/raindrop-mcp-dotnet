@@ -137,4 +137,19 @@ public abstract class TestBase : IDisposable
         (_provider as IDisposable)?.Dispose();
         GC.SuppressFinalize(this);
     }
+
+    protected async Task PollUntilAsync(Func<Task<bool>> condition, string failureMessage, CancellationToken cancellationToken, int pollAttempts = 30, int pollIntervalMs = 1000)
+    {
+        for (var i = 0; i < pollAttempts; i++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (await condition())
+            {
+                return; // Condition met
+            }
+            await Task.Delay(pollIntervalMs, cancellationToken);
+        }
+
+        Assert.Fail(failureMessage);
+    }
 }

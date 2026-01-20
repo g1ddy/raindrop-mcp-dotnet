@@ -154,22 +154,4 @@ public class TagsTests : TestBase
             await raindropsTool.DeleteBookmarkAsync(raindropId, cancellationToken);
         }
     }
-
-    private async Task PollUntilAsync(Func<Task<bool>> condition, string failureMessage, CancellationToken cancellationToken)
-    {
-        const int pollAttempts = 30; // Increased attempts for safety
-        const int pollIntervalMs = 1000;
-
-        for (var i = 0; i < pollAttempts; i++)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            if (await condition())
-            {
-                return; // Condition met
-            }
-            await Task.Delay(pollIntervalMs, cancellationToken);
-        }
-
-        Assert.Fail(failureMessage);
-    }
 }

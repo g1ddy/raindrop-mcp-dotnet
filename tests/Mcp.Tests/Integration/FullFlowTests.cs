@@ -79,7 +79,7 @@ public class FullFlowTests : TestBase
             {
                 var t = await tags.ListTagsAsync(null, cancellationToken);
                 return t.Items.Any(tag => tag.Id == tagTwoRenamed);
-            }, cancellationToken, "Tag rename propagation");
+            }, "Tag rename propagation", cancellationToken);
 
             var childCollections = await collections.ListChildCollectionsAsync(cancellationToken);
             Assert.Contains(childCollections.Items, c => c.Id == childCollectionId);
@@ -96,7 +96,7 @@ public class FullFlowTests : TestBase
             {
                 var t = await tags.ListTagsAsync(null, cancellationToken);
                 return !t.Items.Any(tag => tag.Id == tagTwoRenamed);
-            }, cancellationToken, "Tag cleanup propagation");
+            }, "Tag cleanup propagation", cancellationToken);
         }
         finally
         {
@@ -106,20 +106,5 @@ public class FullFlowTests : TestBase
             if (childCollectionId.HasValue) try { await collections.DeleteCollectionAsync(childCollectionId.Value, cancellationToken); } catch { }
             if (rootCollectionId.HasValue) try { await collections.DeleteCollectionAsync(rootCollectionId.Value, cancellationToken); } catch { }
         }
-    }
-
-    private async Task PollUntilAsync(Func<Task<bool>> predicate, CancellationToken cancellationToken, string description)
-    {
-        const int maxAttempts = 15;
-        const int intervalMs = 2000;
-
-        for (int i = 0; i < maxAttempts; i++)
-        {
-            if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
-            if (await predicate()) return;
-            await Task.Delay(intervalMs, cancellationToken);
-        }
-
-        throw new TimeoutException($"Polling for '{description}' timed out after {maxAttempts * intervalMs}ms.");
     }
 }
