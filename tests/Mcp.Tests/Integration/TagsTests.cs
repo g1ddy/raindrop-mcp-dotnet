@@ -77,9 +77,24 @@ public class TagsTests : TestBase
         finally
         {
             // Clean up tag
-            await tagsTool.DeleteTagAsync(mcpServerMock.Object, tagName2, null, cancellationToken);
+            try
+            {
+                await tagsTool.DeleteTagAsync(mcpServerMock.Object, tagName2, null, cancellationToken);
+            }
+            catch
+            {
+                // Ignore cleanup errors
+            }
+
             // Clean up bookmark
-            await raindropsTool.DeleteBookmarkAsync(raindropId, cancellationToken);
+            try
+            {
+                await raindropsTool.DeleteBookmarkAsync(raindropId, cancellationToken);
+            }
+            catch
+            {
+                // Ignore cleanup errors
+            }
         }
     }
 
@@ -155,7 +170,14 @@ public class TagsTests : TestBase
         }
         finally
         {
-            await raindropsTool.DeleteBookmarkAsync(raindropId, cancellationToken);
+            try
+            {
+                await raindropsTool.DeleteBookmarkAsync(raindropId, cancellationToken);
+            }
+            catch
+            {
+                // Ignore cleanup errors
+            }
         }
     }
 }
