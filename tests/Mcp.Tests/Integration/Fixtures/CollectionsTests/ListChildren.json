@@ -1,17 +1,17 @@
 {
   "Metadata": {
-    "TestId": "9207842cd20a4a6d90c4c873dd2df228"
+    "TestId": "e28440b418734de4abcf2ea0cd2e4737"
   },
   "Interactions": [
     {
       "Method": "POST",
       "Uri": "https://api.raindrop.io/rest/v1/collection",
-      "RequestBody": "{\u0022title\u0022:\u0022Collections ListChildren - Parent 9207842cd20a4a6d90c4c873dd2df228\u0022,\u0022color\u0022:null,\u0022public\u0022:null}",
+      "RequestBody": "{\u0022title\u0022:\u0022Collections ListChildren - Parent e28440b418734de4abcf2ea0cd2e4737\u0022,\u0022color\u0022:null,\u0022public\u0022:null}",
       "StatusCode": 200,
-      "ResponseBody": "{\u0022result\u0022:true,\u0022item\u0022:{\u0022title\u0022:\u0022Collections ListChildren - Parent 9207842cd20a4a6d90c4c873dd2df228\u0022,\u0022description\u0022:\u0022\u0022,\u0022user\u0022:{\u0022$ref\u0022:\u0022users\u0022,\u0022$id\u0022:4186461},\u0022public\u0022:false,\u0022view\u0022:\u0022list\u0022,\u0022count\u0022:0,\u0022cover\u0022:[],\u0022color\u0022:null,\u0022expanded\u0022:true,\u0022creatorRef\u0022:{\u0022_id\u0022:4186461,\u0022name\u0022:\u0022blondcheetah\u0022,\u0022email\u0022:\u0022\u0022},\u0022lastAction\u0022:\u00222026-01-20T06:29:44.833Z\u0022,\u0022created\u0022:\u00222026-01-20T06:29:44.833Z\u0022,\u0022lastUpdate\u0022:\u00222026-01-20T06:29:44.833Z\u0022,\u0022_id\u0022:65814183,\u0022parent\u0022:null,\u0022sort\u0022:65814183,\u0022slug\u0022:\u0022collections-list-children-parent-9207842cd20a4a6d90c4c873dd2df228\u0022,\u0022__v\u0022:0,\u0022access\u0022:{\u0022for\u0022:4186461,\u0022level\u0022:4,\u0022root\u0022:false,\u0022draggable\u0022:true},\u0022author\u0022:true}}",
+      "ResponseBody": "{\u0022result\u0022:true,\u0022item\u0022:{\u0022title\u0022:\u0022Collections ListChildren - Parent e28440b418734de4abcf2ea0cd2e4737\u0022,\u0022description\u0022:\u0022\u0022,\u0022user\u0022:{\u0022$ref\u0022:\u0022users\u0022,\u0022$id\u0022:4186461},\u0022public\u0022:false,\u0022view\u0022:\u0022list\u0022,\u0022count\u0022:0,\u0022cover\u0022:[],\u0022color\u0022:null,\u0022expanded\u0022:true,\u0022creatorRef\u0022:{\u0022_id\u0022:4186461,\u0022name\u0022:\u0022blondcheetah\u0022,\u0022email\u0022:\u0022\u0022},\u0022lastAction\u0022:\u00222026-01-20T06:09:59.799Z\u0022,\u0022created\u0022:\u00222026-01-20T06:09:59.799Z\u0022,\u0022lastUpdate\u0022:\u00222026-01-20T06:09:59.799Z\u0022,\u0022_id\u0022:65813632,\u0022parent\u0022:null,\u0022sort\u0022:65813632,\u0022slug\u0022:\u0022collections-list-children-parent-e28440b418734de4abcf2ea0cd2e4737\u0022,\u0022__v\u0022:0,\u0022access\u0022:{\u0022for\u0022:4186461,\u0022level\u0022:4,\u0022root\u0022:false,\u0022draggable\u0022:true},\u0022author\u0022:true}}",
       "ResponseHeaders": {
         "Date": [
-          "Tue, 20 Jan 2026 06:29:44 GMT"
+          "Tue, 20 Jan 2026 06:09:59 GMT"
         ],
         "Connection": [
           "keep-alive"
@@ -21,7 +21,7 @@
         ],
         "Server-Timing": [
           "dc;desc=eu",
-          "total;dur=116.446"
+          "total;dur=118.144"
         ],
         "Cache-Control": [
           "private"
@@ -30,13 +30,13 @@
           "120"
         ],
         "x-ratelimit-remaining": [
-          "73"
+          "87"
         ],
         "x-ratelimit-reset": [
-          "1768890640"
+          "1768889457"
         ],
         "ETag": [
-          "\u002226d-nWPMPmAuX5bx4tpplrx2fW7qGqw\u0022"
+          "\u002226d-EpLw1mq/IGUZZ6Zo1QnjvzlTyyA\u0022"
         ],
         "cf-cache-status": [
           "DYNAMIC"
@@ -45,7 +45,7 @@
           "cloudflare"
         ],
         "CF-RAY": [
-          "9c0c84eacab2f4e3-IAD"
+          "9c0c67fc3ffddec3-LAX"
         ],
         "Alt-Svc": [
           "h3=\u0022:443\u0022"
@@ -63,12 +63,12 @@
     {
       "Method": "POST",
       "Uri": "https://api.raindrop.io/rest/v1/collection",
-      "RequestBody": "{\u0022title\u0022:\u0022Collections ListChildren - Child 9207842cd20a4a6d90c4c873dd2df228\u0022,\u0022parent\u0022:{\u0022$id\u0022:65814183},\u0022color\u0022:null,\u0022public\u0022:null}",
+      "RequestBody": "{\u0022title\u0022:\u0022Collections ListChildren - Child e28440b418734de4abcf2ea0cd2e4737\u0022,\u0022parent\u0022:{\u0022$id\u0022:65813632},\u0022color\u0022:null,\u0022public\u0022:null}",
       "StatusCode": 200,
-      "ResponseBody": "{\u0022result\u0022:true,\u0022item\u0022:{\u0022title\u0022:\u0022Collections ListChildren - Child 9207842cd20a4a6d90c4c873dd2df228\u0022,\u0022description\u0022:\u0022\u0022,\u0022user\u0022:{\u0022$ref\u0022:\u0022users\u0022,\u0022$id\u0022:4186461},\u0022parent\u0022:{\u0022$ref\u0022:\u0022collections\u0022,\u0022$id\u0022:65814183},\u0022public\u0022:false,\u0022view\u0022:\u0022list\u0022,\u0022count\u0022:0,\u0022cover\u0022:[],\u0022color\u0022:null,\u0022expanded\u0022:true,\u0022creatorRef\u0022:{\u0022_id\u0022:4186461,\u0022name\u0022:\u0022blondcheetah\u0022,\u0022email\u0022:\u0022\u0022},\u0022lastAction\u0022:\u00222026-01-20T06:29:45.047Z\u0022,\u0022created\u0022:\u00222026-01-20T06:29:45.048Z\u0022,\u0022lastUpdate\u0022:\u00222026-01-20T06:29:45.048Z\u0022,\u0022_id\u0022:65814184,\u0022sort\u0022:65814184,\u0022slug\u0022:\u0022collections-list-children-child-9207842cd20a4a6d90c4c873dd2df228\u0022,\u0022__v\u0022:0,\u0022access\u0022:{\u0022for\u0022:4186461,\u0022level\u0022:4,\u0022root\u0022:false,\u0022draggable\u0022:true},\u0022author\u0022:true}}",
+      "ResponseBody": "{\u0022result\u0022:true,\u0022item\u0022:{\u0022title\u0022:\u0022Collections ListChildren - Child e28440b418734de4abcf2ea0cd2e4737\u0022,\u0022description\u0022:\u0022\u0022,\u0022user\u0022:{\u0022$ref\u0022:\u0022users\u0022,\u0022$id\u0022:4186461},\u0022parent\u0022:{\u0022$ref\u0022:\u0022collections\u0022,\u0022$id\u0022:65813632},\u0022public\u0022:false,\u0022view\u0022:\u0022list\u0022,\u0022count\u0022:0,\u0022cover\u0022:[],\u0022color\u0022:null,\u0022expanded\u0022:true,\u0022creatorRef\u0022:{\u0022_id\u0022:4186461,\u0022name\u0022:\u0022blondcheetah\u0022,\u0022email\u0022:\u0022\u0022},\u0022lastAction\u0022:\u00222026-01-20T06:10:00.099Z\u0022,\u0022created\u0022:\u00222026-01-20T06:10:00.099Z\u0022,\u0022lastUpdate\u0022:\u00222026-01-20T06:10:00.099Z\u0022,\u0022_id\u0022:65813633,\u0022sort\u0022:65813633,\u0022slug\u0022:\u0022collections-list-children-child-e28440b418734de4abcf2ea0cd2e4737\u0022,\u0022__v\u0022:0,\u0022access\u0022:{\u0022for\u0022:4186461,\u0022level\u0022:4,\u0022root\u0022:false,\u0022draggable\u0022:true},\u0022author\u0022:true}}",
       "ResponseHeaders": {
         "Date": [
-          "Tue, 20 Jan 2026 06:29:45 GMT"
+          "Tue, 20 Jan 2026 06:10:00 GMT"
         ],
         "Connection": [
           "keep-alive"
@@ -78,7 +78,7 @@
         ],
         "Server-Timing": [
           "dc;desc=eu",
-          "total;dur=155.762"
+          "total;dur=159.740"
         ],
         "Cache-Control": [
           "private"
@@ -87,13 +87,13 @@
           "120"
         ],
         "x-ratelimit-remaining": [
-          "72"
+          "82"
         ],
         "x-ratelimit-reset": [
-          "1768890640"
+          "1768889457"
         ],
         "ETag": [
-          "\u002228c-Khow0nXUkaAhhOVAWsMKHFdTsfI\u0022"
+          "\u002228c-DpKxiPMTJ1UJ3O2AxTwSmjjRgvw\u0022"
         ],
         "cf-cache-status": [
           "DYNAMIC"
@@ -102,7 +102,7 @@
           "cloudflare"
         ],
         "CF-RAY": [
-          "9c0c84ec3d7bf4e3-IAD"
+          "9c0c67fdfd08dec3-LAX"
         ],
         "Alt-Svc": [
           "h3=\u0022:443\u0022"
@@ -121,10 +121,10 @@
       "Method": "GET",
       "Uri": "https://api.raindrop.io/rest/v1/collections/childrens",
       "StatusCode": 200,
-      "ResponseBody": "{\u0022result\u0022:true,\u0022items\u0022:[{\u0022_id\u0022:65814184,\u0022title\u0022:\u0022Collections ListChildren - Child 9207842cd20a4a6d90c4c873dd2df228\u0022,\u0022description\u0022:\u0022\u0022,\u0022user\u0022:{\u0022$ref\u0022:\u0022users\u0022,\u0022$id\u0022:4186461},\u0022parent\u0022:{\u0022$ref\u0022:\u0022collections\u0022,\u0022$id\u0022:65814183},\u0022public\u0022:false,\u0022view\u0022:\u0022list\u0022,\u0022count\u0022:0,\u0022cover\u0022:[],\u0022color\u0022:null,\u0022expanded\u0022:true,\u0022creatorRef\u0022:{\u0022_id\u0022:4186461,\u0022name\u0022:\u0022blondcheetah\u0022,\u0022email\u0022:\u0022\u0022},\u0022lastAction\u0022:\u00222026-01-20T06:29:45.047Z\u0022,\u0022created\u0022:\u00222026-01-20T06:29:45.048Z\u0022,\u0022lastUpdate\u0022:\u00222026-01-20T06:29:45.048Z\u0022,\u0022sort\u0022:65814184,\u0022slug\u0022:\u0022collections-list-children-child-9207842cd20a4a6d90c4c873dd2df228\u0022,\u0022access\u0022:{\u0022for\u0022:4186461,\u0022level\u0022:4,\u0022root\u0022:false,\u0022draggable\u0022:true},\u0022author\u0022:true},{\u0022_id\u0022:65814183,\u0022title\u0022:\u0022Collections ListChildren - Parent 9207842cd20a4a6d90c4c873dd2df228\u0022,\u0022description\u0022:\u0022\u0022,\u0022user\u0022:{\u0022$ref\u0022:\u0022users\u0022,\u0022$id\u0022:4186461},\u0022public\u0022:false,\u0022view\u0022:\u0022list\u0022,\u0022count\u0022:0,\u0022cover\u0022:[],\u0022color\u0022:null,\u0022expanded\u0022:true,\u0022creatorRef\u0022:{\u0022_id\u0022:4186461,\u0022name\u0022:\u0022blondcheetah\u0022,\u0022email\u0022:\u0022\u0022},\u0022lastAction\u0022:\u00222026-01-20T06:29:44.833Z\u0022,\u0022created\u0022:\u00222026-01-20T06:29:44.833Z\u0022,\u0022lastUpdate\u0022:\u00222026-01-20T06:29:44.833Z\u0022,\u0022parent\u0022:null,\u0022sort\u0022:65814183,\u0022slug\u0022:\u0022collections-list-children-parent-9207842cd20a4a6d90c4c873dd2df228\u0022,\u0022access\u0022:{\u0022for\u0022:4186461,\u0022level\u0022:4,\u0022root\u0022:false,\u0022draggable\u0022:true},\u0022author\u0022:true},{\u0022_id\u0022:65814177,\u0022title\u0022:\u0022Integration Child Collection 3dba739e\u0022,\u0022description\u0022:\u0022\u0022,\u0022user\u0022:{\u0022$ref\u0022:\u0022users\u0022,\u0022$id\u0022:4186461},\u0022parent\u0022:{\u0022$ref\u0022:\u0022collections\u0022,\u0022$id\u0022:65814174},\u0022public\u0022:false,\u0022view\u0022:\u0022list\u0022,\u0022count\u0022:1,\u0022cover\u0022:[],\u0022color\u0022:null,\u0022expanded\u0022:true,\u0022creatorRef\u0022:{\u0022_id\u0022:4186461,\u0022name\u0022:\u0022blondcheetah\u0022,\u0022email\u0022:\u0022\u0022},\u0022lastAction\u0022:\u00222026-01-20T06:29:42.049Z\u0022,\u0022created\u0022:\u00222026-01-20T06:29:40.506Z\u0022,\u0022lastUpdate\u0022:\u00222026-01-20T06:29:42.049Z\u0022,\u0022sort\u0022:65814177,\u0022slug\u0022:\u0022integration-child-collection-3dba739e\u0022,\u0022access\u0022:{\u0022for\u0022:4186461,\u0022level\u0022:4,\u0022root\u0022:false,\u0022draggable\u0022:true},\u0022author\u0022:true},{\u0022_id\u0022:65814174,\u0022title\u0022:\u0022Integration Root Collection 3dba739e\u0022,\u0022description\u0022:\u0022\u0022,\u0022user\u0022:{\u0022$ref\u0022:\u0022users\u0022,\u0022$id\u0022:4186461},\u0022public\u0022:false,\u0022view\u0022:\u0022list\u0022,\u0022count\u0022:1,\u0022cover\u0022:[],\u0022color\u0022:null,\u0022expanded\u0022:true,\u0022creatorRef\u0022:{\u0022_id\u0022:4186461,\u0022name\u0022:\u0022blondcheetah\u0022,\u0022email\u0022:\u0022\u0022},\u0022lastAction\u0022:\u00222026-01-20T06:29:42.049Z\u0022,\u0022created\u0022:\u00222026-01-20T06:29:40.095Z\u0022,\u0022lastUpdate\u0022:\u00222026-01-20T06:29:42.049Z\u0022,\u0022parent\u0022:null,\u0022sort\u0022:65814174,\u0022slug\u0022:\u0022integration-root-collection-3dba739e\u0022,\u0022access\u0022:{\u0022for\u0022:4186461,\u0022level\u0022:4,\u0022root\u0022:false,\u0022draggable\u0022:true},\u0022author\u0022:true},{\u0022_id\u0022:58405712,\u0022title\u0022:\u0022test\u0022,\u0022description\u0022:\u0022\u0022,\u0022user\u0022:{\u0022$ref\u0022:\u0022users\u0022,\u0022$id\u0022:4186461},\u0022public\u0022:false,\u0022view\u0022:\u0022list\u0022,\u0022count\u0022:0,\u0022cover\u0022:[],\u0022color\u0022:null,\u0022expanded\u0022:true,\u0022creatorRef\u0022:{\u0022_id\u0022:4186461,\u0022name\u0022:\u0022blondcheetah\u0022,\u0022email\u0022:\u0022\u0022},\u0022lastAction\u0022:\u00222025-08-03T23:38:37.947Z\u0022,\u0022created\u0022:\u00222025-08-03T23:38:37.948Z\u0022,\u0022lastUpdate\u0022:\u00222025-08-03T23:38:37.948Z\u0022,\u0022parent\u0022:null,\u0022sort\u0022:58405712,\u0022slug\u0022:\u0022test\u0022,\u0022access\u0022:{\u0022for\u0022:4186461,\u0022level\u0022:4,\u0022root\u0022:false,\u0022draggable\u0022:true},\u0022author\u0022:true}]}",
+      "ResponseBody": "{\u0022result\u0022:true,\u0022items\u0022:[{\u0022_id\u0022:65813633,\u0022title\u0022:\u0022Collections ListChildren - Child e28440b418734de4abcf2ea0cd2e4737\u0022,\u0022description\u0022:\u0022\u0022,\u0022user\u0022:{\u0022$ref\u0022:\u0022users\u0022,\u0022$id\u0022:4186461},\u0022parent\u0022:{\u0022$ref\u0022:\u0022collections\u0022,\u0022$id\u0022:65813632},\u0022public\u0022:false,\u0022view\u0022:\u0022list\u0022,\u0022count\u0022:0,\u0022cover\u0022:[],\u0022color\u0022:null,\u0022expanded\u0022:true,\u0022creatorRef\u0022:{\u0022_id\u0022:4186461,\u0022name\u0022:\u0022blondcheetah\u0022,\u0022email\u0022:\u0022\u0022},\u0022lastAction\u0022:\u00222026-01-20T06:10:00.099Z\u0022,\u0022created\u0022:\u00222026-01-20T06:10:00.099Z\u0022,\u0022lastUpdate\u0022:\u00222026-01-20T06:10:00.099Z\u0022,\u0022sort\u0022:65813633,\u0022slug\u0022:\u0022collections-list-children-child-e28440b418734de4abcf2ea0cd2e4737\u0022,\u0022access\u0022:{\u0022for\u0022:4186461,\u0022level\u0022:4,\u0022root\u0022:false,\u0022draggable\u0022:true},\u0022author\u0022:true},{\u0022_id\u0022:65813632,\u0022title\u0022:\u0022Collections ListChildren - Parent e28440b418734de4abcf2ea0cd2e4737\u0022,\u0022description\u0022:\u0022\u0022,\u0022user\u0022:{\u0022$ref\u0022:\u0022users\u0022,\u0022$id\u0022:4186461},\u0022public\u0022:false,\u0022view\u0022:\u0022list\u0022,\u0022count\u0022:0,\u0022cover\u0022:[],\u0022color\u0022:null,\u0022expanded\u0022:true,\u0022creatorRef\u0022:{\u0022_id\u0022:4186461,\u0022name\u0022:\u0022blondcheetah\u0022,\u0022email\u0022:\u0022\u0022},\u0022lastAction\u0022:\u00222026-01-20T06:09:59.799Z\u0022,\u0022created\u0022:\u00222026-01-20T06:09:59.799Z\u0022,\u0022lastUpdate\u0022:\u00222026-01-20T06:09:59.799Z\u0022,\u0022parent\u0022:null,\u0022sort\u0022:65813632,\u0022slug\u0022:\u0022collections-list-children-parent-e28440b418734de4abcf2ea0cd2e4737\u0022,\u0022access\u0022:{\u0022for\u0022:4186461,\u0022level\u0022:4,\u0022root\u0022:false,\u0022draggable\u0022:true},\u0022author\u0022:true},{\u0022_id\u0022:65813631,\u0022title\u0022:\u0022Integration Child Collection 55e9de07\u0022,\u0022description\u0022:\u0022\u0022,\u0022user\u0022:{\u0022$ref\u0022:\u0022users\u0022,\u0022$id\u0022:4186461},\u0022parent\u0022:{\u0022$ref\u0022:\u0022collections\u0022,\u0022$id\u0022:65813629},\u0022public\u0022:false,\u0022view\u0022:\u0022list\u0022,\u0022count\u0022:0,\u0022cover\u0022:[],\u0022color\u0022:null,\u0022expanded\u0022:true,\u0022creatorRef\u0022:{\u0022_id\u0022:4186461,\u0022name\u0022:\u0022blondcheetah\u0022,\u0022email\u0022:\u0022\u0022},\u0022lastAction\u0022:\u00222026-01-20T06:09:58.794Z\u0022,\u0022created\u0022:\u00222026-01-20T06:09:58.795Z\u0022,\u0022lastUpdate\u0022:\u00222026-01-20T06:09:58.795Z\u0022,\u0022sort\u0022:65813631,\u0022slug\u0022:\u0022integration-child-collection-55e9de07\u0022,\u0022access\u0022:{\u0022for\u0022:4186461,\u0022level\u0022:4,\u0022root\u0022:false,\u0022draggable\u0022:true},\u0022author\u0022:true},{\u0022_id\u0022:65813629,\u0022title\u0022:\u0022Integration Root Collection 55e9de07\u0022,\u0022description\u0022:\u0022\u0022,\u0022user\u0022:{\u0022$ref\u0022:\u0022users\u0022,\u0022$id\u0022:4186461},\u0022public\u0022:false,\u0022view\u0022:\u0022list\u0022,\u0022count\u0022:2,\u0022cover\u0022:[],\u0022color\u0022:null,\u0022expanded\u0022:true,\u0022creatorRef\u0022:{\u0022_id\u0022:4186461,\u0022name\u0022:\u0022blondcheetah\u0022,\u0022email\u0022:\u0022\u0022},\u0022lastAction\u0022:\u00222026-01-20T06:09:59.691Z\u0022,\u0022created\u0022:\u00222026-01-20T06:09:58.420Z\u0022,\u0022lastUpdate\u0022:\u00222026-01-20T06:09:59.691Z\u0022,\u0022parent\u0022:null,\u0022sort\u0022:65813629,\u0022slug\u0022:\u0022integration-root-collection-55e9de07\u0022,\u0022access\u0022:{\u0022for\u0022:4186461,\u0022level\u0022:4,\u0022root\u0022:false,\u0022draggable\u0022:true},\u0022author\u0022:true},{\u0022_id\u0022:65813627,\u0022title\u0022:\u0022Highlights Crud - Collection 7657be26782f47fa9a2b6c83c6b8eee8\u0022,\u0022description\u0022:\u0022\u0022,\u0022user\u0022:{\u0022$ref\u0022:\u0022users\u0022,\u0022$id\u0022:4186461},\u0022public\u0022:false,\u0022view\u0022:\u0022list\u0022,\u0022count\u0022:1,\u0022cover\u0022:[],\u0022color\u0022:null,\u0022expanded\u0022:true,\u0022creatorRef\u0022:{\u0022_id\u0022:4186461,\u0022name\u0022:\u0022blondcheetah\u0022,\u0022email\u0022:\u0022\u0022},\u0022lastAction\u0022:\u00222026-01-20T06:10:00.076Z\u0022,\u0022created\u0022:\u00222026-01-20T06:09:57.969Z\u0022,\u0022lastUpdate\u0022:\u00222026-01-20T06:10:00.076Z\u0022,\u0022parent\u0022:null,\u0022sort\u0022:65813627,\u0022slug\u0022:\u0022highlights-crud-collection-7657be26782f47fa9a2b6c83c6b8eee8\u0022,\u0022access\u0022:{\u0022for\u0022:4186461,\u0022level\u0022:4,\u0022root\u0022:false,\u0022draggable\u0022:true},\u0022author\u0022:true},{\u0022_id\u0022:58405712,\u0022title\u0022:\u0022test\u0022,\u0022description\u0022:\u0022\u0022,\u0022user\u0022:{\u0022$ref\u0022:\u0022users\u0022,\u0022$id\u0022:4186461},\u0022public\u0022:false,\u0022view\u0022:\u0022list\u0022,\u0022count\u0022:0,\u0022cover\u0022:[],\u0022color\u0022:null,\u0022expanded\u0022:true,\u0022creatorRef\u0022:{\u0022_id\u0022:4186461,\u0022name\u0022:\u0022blondcheetah\u0022,\u0022email\u0022:\u0022\u0022},\u0022lastAction\u0022:\u00222025-08-03T23:38:37.947Z\u0022,\u0022created\u0022:\u00222025-08-03T23:38:37.948Z\u0022,\u0022lastUpdate\u0022:\u00222025-08-03T23:38:37.948Z\u0022,\u0022parent\u0022:null,\u0022sort\u0022:58405712,\u0022slug\u0022:\u0022test\u0022,\u0022access\u0022:{\u0022for\u0022:4186461,\u0022level\u0022:4,\u0022root\u0022:false,\u0022draggable\u0022:true},\u0022author\u0022:true}]}",
       "ResponseHeaders": {
         "Date": [
-          "Tue, 20 Jan 2026 06:29:45 GMT"
+          "Tue, 20 Jan 2026 06:10:00 GMT"
         ],
         "Connection": [
           "keep-alive"
@@ -134,8 +134,8 @@
         ],
         "Server-Timing": [
           "dc;desc=eu",
-          "find_collections;dur=90.732",
-          "total;dur=106.528"
+          "find_collections;dur=20.570",
+          "total;dur=29.064"
         ],
         "Cache-Control": [
           "private"
@@ -144,13 +144,13 @@
           "120"
         ],
         "x-ratelimit-remaining": [
-          "71"
+          "77"
         ],
         "x-ratelimit-reset": [
-          "1768890640"
+          "1768889457"
         ],
         "ETag": [
-          "\u0022af5-e882oAcKl9uife2SKJ1e7H7gdHg\u0022"
+          "\u0022d39-v7dPVTysayDv9svOqxvAM7ccJaQ\u0022"
         ],
         "cf-cache-status": [
           "DYNAMIC"
@@ -159,7 +159,7 @@
           "cloudflare"
         ],
         "CF-RAY": [
-          "9c0c84edc8e8f4e3-IAD"
+          "9c0c68000b26dec3-LAX"
         ],
         "Alt-Svc": [
           "h3=\u0022:443\u0022"
@@ -170,18 +170,18 @@
           "application/json; charset=utf-8"
         ],
         "Content-Length": [
-          "2805"
+          "3385"
         ]
       }
     },
     {
       "Method": "DELETE",
-      "Uri": "https://api.raindrop.io/rest/v1/collection/65814184",
+      "Uri": "https://api.raindrop.io/rest/v1/collection/65813633",
       "StatusCode": 200,
       "ResponseBody": "{\u0022result\u0022:true}",
       "ResponseHeaders": {
         "Date": [
-          "Tue, 20 Jan 2026 06:29:45 GMT"
+          "Tue, 20 Jan 2026 06:10:00 GMT"
         ],
         "Connection": [
           "keep-alive"
@@ -191,7 +191,7 @@
         ],
         "Server-Timing": [
           "dc;desc=eu",
-          "total;dur=172.055"
+          "total;dur=137.217"
         ],
         "Cache-Control": [
           "private"
@@ -200,10 +200,10 @@
           "120"
         ],
         "x-ratelimit-remaining": [
-          "66"
+          "74"
         ],
         "x-ratelimit-reset": [
-          "1768890640"
+          "1768889457"
         ],
         "ETag": [
           "\u0022f-ayLlCL3PuzXSThdu78iReSEjl6Y\u0022"
@@ -215,7 +215,7 @@
           "cloudflare"
         ],
         "CF-RAY": [
-          "9c0c84ef9cbcf4e3-IAD"
+          "9c0c68013e7fdec3-LAX"
         ],
         "Alt-Svc": [
           "h3=\u0022:443\u0022"
@@ -232,12 +232,12 @@
     },
     {
       "Method": "DELETE",
-      "Uri": "https://api.raindrop.io/rest/v1/collection/65814183",
+      "Uri": "https://api.raindrop.io/rest/v1/collection/65813632",
       "StatusCode": 200,
       "ResponseBody": "{\u0022result\u0022:true}",
       "ResponseHeaders": {
         "Date": [
-          "Tue, 20 Jan 2026 06:29:46 GMT"
+          "Tue, 20 Jan 2026 06:10:01 GMT"
         ],
         "Connection": [
           "keep-alive"
@@ -247,7 +247,7 @@
         ],
         "Server-Timing": [
           "dc;desc=eu",
-          "total;dur=124.321"
+          "total;dur=114.098"
         ],
         "Cache-Control": [
           "private"
@@ -256,10 +256,10 @@
           "120"
         ],
         "x-ratelimit-remaining": [
-          "61"
+          "69"
         ],
         "x-ratelimit-reset": [
-          "1768890640"
+          "1768889457"
         ],
         "ETag": [
           "\u0022f-ayLlCL3PuzXSThdu78iReSEjl6Y\u0022"
@@ -271,7 +271,7 @@
           "cloudflare"
         ],
         "CF-RAY": [
-          "9c0c84f148a9f4e3-IAD"
+          "9c0c68030b48dec3-LAX"
         ],
         "Alt-Svc": [
           "h3=\u0022:443\u0022"
@@ -290,10 +290,10 @@
       "Method": "GET",
       "Uri": "https://api.raindrop.io/rest/v1/collections",
       "StatusCode": 200,
-      "ResponseBody": "{\u0022result\u0022:true,\u0022items\u0022:[{\u0022_id\u0022:65814174,\u0022title\u0022:\u0022Integration Root Collection 3dba739e\u0022,\u0022description\u0022:\u0022\u0022,\u0022user\u0022:{\u0022$ref\u0022:\u0022users\u0022,\u0022$id\u0022:4186461},\u0022public\u0022:false,\u0022view\u0022:\u0022list\u0022,\u0022count\u0022:1,\u0022cover\u0022:[],\u0022color\u0022:null,\u0022expanded\u0022:true,\u0022creatorRef\u0022:{\u0022_id\u0022:4186461,\u0022name\u0022:\u0022blondcheetah\u0022,\u0022email\u0022:\u0022\u0022},\u0022lastAction\u0022:\u00222026-01-20T06:29:42.049Z\u0022,\u0022created\u0022:\u00222026-01-20T06:29:40.095Z\u0022,\u0022lastUpdate\u0022:\u00222026-01-20T06:29:42.049Z\u0022,\u0022parent\u0022:null,\u0022sort\u0022:65814174,\u0022slug\u0022:\u0022integration-root-collection-3dba739e\u0022,\u0022access\u0022:{\u0022for\u0022:4186461,\u0022level\u0022:4,\u0022root\u0022:false,\u0022draggable\u0022:true},\u0022author\u0022:true},{\u0022_id\u0022:58405712,\u0022title\u0022:\u0022test\u0022,\u0022description\u0022:\u0022\u0022,\u0022user\u0022:{\u0022$ref\u0022:\u0022users\u0022,\u0022$id\u0022:4186461},\u0022public\u0022:false,\u0022view\u0022:\u0022list\u0022,\u0022count\u0022:0,\u0022cover\u0022:[],\u0022color\u0022:null,\u0022expanded\u0022:true,\u0022creatorRef\u0022:{\u0022_id\u0022:4186461,\u0022name\u0022:\u0022blondcheetah\u0022,\u0022email\u0022:\u0022\u0022},\u0022lastAction\u0022:\u00222025-08-03T23:38:37.947Z\u0022,\u0022created\u0022:\u00222025-08-03T23:38:37.948Z\u0022,\u0022lastUpdate\u0022:\u00222025-08-03T23:38:37.948Z\u0022,\u0022parent\u0022:null,\u0022sort\u0022:58405712,\u0022slug\u0022:\u0022test\u0022,\u0022access\u0022:{\u0022for\u0022:4186461,\u0022level\u0022:4,\u0022root\u0022:false,\u0022draggable\u0022:true},\u0022author\u0022:true}]}",
+      "ResponseBody": "{\u0022result\u0022:true,\u0022items\u0022:[{\u0022_id\u0022:65813629,\u0022title\u0022:\u0022Integration Root Collection 55e9de07\u0022,\u0022description\u0022:\u0022\u0022,\u0022user\u0022:{\u0022$ref\u0022:\u0022users\u0022,\u0022$id\u0022:4186461},\u0022public\u0022:false,\u0022view\u0022:\u0022list\u0022,\u0022count\u0022:1,\u0022cover\u0022:[],\u0022color\u0022:null,\u0022expanded\u0022:true,\u0022creatorRef\u0022:{\u0022_id\u0022:4186461,\u0022name\u0022:\u0022blondcheetah\u0022,\u0022email\u0022:\u0022\u0022},\u0022lastAction\u0022:\u00222026-01-20T06:10:01.743Z\u0022,\u0022created\u0022:\u00222026-01-20T06:09:58.420Z\u0022,\u0022lastUpdate\u0022:\u00222026-01-20T06:09:59.691Z\u0022,\u0022parent\u0022:null,\u0022sort\u0022:65813629,\u0022slug\u0022:\u0022integration-root-collection-55e9de07\u0022,\u0022access\u0022:{\u0022for\u0022:4186461,\u0022level\u0022:4,\u0022root\u0022:false,\u0022draggable\u0022:true},\u0022author\u0022:true},{\u0022_id\u0022:65813627,\u0022title\u0022:\u0022Highlights Crud - Collection 7657be26782f47fa9a2b6c83c6b8eee8\u0022,\u0022description\u0022:\u0022\u0022,\u0022user\u0022:{\u0022$ref\u0022:\u0022users\u0022,\u0022$id\u0022:4186461},\u0022public\u0022:false,\u0022view\u0022:\u0022list\u0022,\u0022count\u0022:1,\u0022cover\u0022:[],\u0022color\u0022:null,\u0022expanded\u0022:true,\u0022creatorRef\u0022:{\u0022_id\u0022:4186461,\u0022name\u0022:\u0022blondcheetah\u0022,\u0022email\u0022:\u0022\u0022},\u0022lastAction\u0022:\u00222026-01-20T06:10:00.076Z\u0022,\u0022created\u0022:\u00222026-01-20T06:09:57.969Z\u0022,\u0022lastUpdate\u0022:\u00222026-01-20T06:10:00.076Z\u0022,\u0022parent\u0022:null,\u0022sort\u0022:65813627,\u0022slug\u0022:\u0022highlights-crud-collection-7657be26782f47fa9a2b6c83c6b8eee8\u0022,\u0022access\u0022:{\u0022for\u0022:4186461,\u0022level\u0022:4,\u0022root\u0022:false,\u0022draggable\u0022:true},\u0022author\u0022:true},{\u0022_id\u0022:58405712,\u0022title\u0022:\u0022test\u0022,\u0022description\u0022:\u0022\u0022,\u0022user\u0022:{\u0022$ref\u0022:\u0022users\u0022,\u0022$id\u0022:4186461},\u0022public\u0022:false,\u0022view\u0022:\u0022list\u0022,\u0022count\u0022:0,\u0022cover\u0022:[],\u0022color\u0022:null,\u0022expanded\u0022:true,\u0022creatorRef\u0022:{\u0022_id\u0022:4186461,\u0022name\u0022:\u0022blondcheetah\u0022,\u0022email\u0022:\u0022\u0022},\u0022lastAction\u0022:\u00222025-08-03T23:38:37.947Z\u0022,\u0022created\u0022:\u00222025-08-03T23:38:37.948Z\u0022,\u0022lastUpdate\u0022:\u00222025-08-03T23:38:37.948Z\u0022,\u0022parent\u0022:null,\u0022sort\u0022:58405712,\u0022slug\u0022:\u0022test\u0022,\u0022access\u0022:{\u0022for\u0022:4186461,\u0022level\u0022:4,\u0022root\u0022:false,\u0022draggable\u0022:true},\u0022author\u0022:true}]}",
       "ResponseHeaders": {
         "Date": [
-          "Tue, 20 Jan 2026 06:29:46 GMT"
+          "Tue, 20 Jan 2026 06:10:01 GMT"
         ],
         "Connection": [
           "keep-alive"
@@ -303,8 +303,8 @@
         ],
         "Server-Timing": [
           "dc;desc=eu",
-          "find_collections;dur=18.032",
-          "total;dur=24.984"
+          "find_collections;dur=38.786",
+          "total;dur=406.302"
         ],
         "Cache-Control": [
           "private"
@@ -313,13 +313,13 @@
           "120"
         ],
         "x-ratelimit-remaining": [
-          "59"
+          "62"
         ],
         "x-ratelimit-reset": [
-          "1768890640"
+          "1768889458"
         ],
         "ETag": [
-          "\u0022401-4fV8sz3wgUGX7fi2EL2afR3M114\u0022"
+          "\u0022645-gwGEYisd3DO8uS9ZfUfRn2S7KmQ\u0022"
         ],
         "cf-cache-status": [
           "DYNAMIC"
@@ -328,7 +328,7 @@
           "cloudflare"
         ],
         "CF-RAY": [
-          "9c0c84f2abbaf4e3-IAD"
+          "9c0c6804afecdec3-LAX"
         ],
         "Alt-Svc": [
           "h3=\u0022:443\u0022"
@@ -339,7 +339,7 @@
           "application/json; charset=utf-8"
         ],
         "Content-Length": [
-          "1025"
+          "1605"
         ]
       }
     }
