@@ -101,10 +101,10 @@ public class FullFlowTests : TestBase
         finally
         {
             // Best effort cleanup in case of failure
-            if (firstRaindropId.HasValue) try { await raindropsTool.DeleteBookmarkAsync(firstRaindropId.Value, cancellationToken); } catch { }
-            if (secondRaindropId.HasValue) try { await raindropsTool.DeleteBookmarkAsync(secondRaindropId.Value, cancellationToken); } catch { }
-            if (childCollectionId.HasValue) try { await collections.DeleteCollectionAsync(childCollectionId.Value, cancellationToken); } catch { }
-            if (rootCollectionId.HasValue) try { await collections.DeleteCollectionAsync(rootCollectionId.Value, cancellationToken); } catch { }
+            if (firstRaindropId.HasValue) try { await raindropsTool.DeleteBookmarkAsync(firstRaindropId.Value, cancellationToken); } catch (Exception ex) { Console.Error.WriteLine($"[CLEANUP-ERROR] Failed to delete bookmark '{firstRaindropId.Value}': {ex.Message}"); }
+            if (secondRaindropId.HasValue) try { await raindropsTool.DeleteBookmarkAsync(secondRaindropId.Value, cancellationToken); } catch (Exception ex) { Console.Error.WriteLine($"[CLEANUP-ERROR] Failed to delete bookmark '{secondRaindropId.Value}': {ex.Message}"); }
+            if (childCollectionId.HasValue) try { await collections.DeleteCollectionAsync(childCollectionId.Value, cancellationToken); } catch (Exception ex) { Console.Error.WriteLine($"[CLEANUP-ERROR] Failed to delete collection '{childCollectionId.Value}': {ex.Message}"); }
+            if (rootCollectionId.HasValue) try { await collections.DeleteCollectionAsync(rootCollectionId.Value, cancellationToken); } catch (Exception ex) { Console.Error.WriteLine($"[CLEANUP-ERROR] Failed to delete collection '{rootCollectionId.Value}': {ex.Message}"); }
         }
     }
 }
