@@ -12,13 +12,15 @@ public class RaindropsBulkTests : TestBase
     [SkippableFact]
     public async Task BulkEndpoints()
     {
+        InitializeVcr();
+
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(120));
         var cancellationToken = cts.Token;
 
         var tool = Provider.GetRequiredService<RaindropsTools>();
 
         // Generate unique ID for this test run to avoid collisions
-        var uniqueId = Guid.NewGuid().ToString("N");
+        var uniqueId = CurrentTestId;
 
         var items = new List<Raindrop>
         {

@@ -90,6 +90,7 @@ public class RecordingState
             if (dir != null && !Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
             File.WriteAllText(_filePath, json);
+            Console.Error.WriteLine($"[VCR] Saved {_scenario.Interactions.Count} interactions to {_filePath}");
         }
     }
 }

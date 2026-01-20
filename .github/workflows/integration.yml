@@ -38,7 +38,9 @@ jobs:
       id: git-check
       if: ${{ env.RAINDROP_TOKEN != '' }}
       run: |
-        git diff --exit-code || echo "changes=true" >> $GITHUB_OUTPUT
+        if [[ -n $(git status --porcelain) ]]; then
+          echo "changes=true" >> $GITHUB_OUTPUT
+        fi
 
     - name: Commit and Push changes
       if: ${{ env.RAINDROP_TOKEN != '' && steps.git-check.outputs.changes == 'true' }}

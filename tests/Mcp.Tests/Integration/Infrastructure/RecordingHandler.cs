@@ -59,6 +59,12 @@ public class RecordingHandler : DelegatingHandler
 
         var response = await base.SendAsync(request, cancellationToken);
 
+        if (response.StatusCode == HttpStatusCode.Unauthorized)
+        {
+            // Do not record 401s. This usually indicates a configuration error and recording it ruins the fixture.
+            throw new InvalidOperationException($"Received 401 Unauthorized from {request.RequestUri}. Recording aborted to prevent saving invalid fixtures.");
+        }
+
         var responseBody = response.Content != null ? await response.Content.ReadAsStringAsync(cancellationToken) : null;
 
         var interaction = new RecordedInteraction

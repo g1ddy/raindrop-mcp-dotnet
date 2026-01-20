@@ -21,12 +21,14 @@ public class TagsBulkTests : TestBase
     [SkippableFact]
     public async Task BulkEndpoints()
     {
+        InitializeVcr();
+
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(180));
         var cancellationToken = cts.Token;
         var raindrops = Provider.GetRequiredService<RaindropsTools>();
         var tags = Provider.GetRequiredService<TagsTools>();
 
-        var uniqueId = Guid.NewGuid().ToString("N");
+        var uniqueId = CurrentTestId;
         var tag1 = $"TagBulkOne_{uniqueId}";
         var tag2 = $"TagBulkTwo_{uniqueId}";
         var tagRenamed = $"TagBulkRenamed_{uniqueId}";
