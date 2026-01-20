@@ -11,7 +11,7 @@ public abstract class TestBase : IDisposable
     private IServiceProvider? _provider;
     private readonly IConfiguration _config;
     private readonly Action<IServiceCollection>[] _registrations;
-    private RecordingHandler? _recordingHandler;
+    private RecordingState? _recordingState;
     private bool _isReplaying;
 
     protected IServiceProvider Provider
@@ -49,15 +49,15 @@ public abstract class TestBase : IDisposable
         }
     }
 
-    private IServiceProvider BuildServiceProvider(RecordingHandler? recordingHandler)
+    private IServiceProvider BuildServiceProvider(RecordingState? recordingState)
     {
         var services = new ServiceCollection();
 
         Action<IHttpClientBuilder>? customizer = null;
-        if (recordingHandler != null)
+        if (recordingState != null)
         {
-            services.AddSingleton(recordingHandler);
-            customizer = builder => builder.AddHttpMessageHandler(_ => recordingHandler);
+            services.AddSingleton(recordingState);
+            customizer = builder => builder.AddHttpMessageHandler(_ => new RecordingHandler(recordingState));
         }
 
         IConfiguration configToUse = _config;
@@ -95,17 +95,17 @@ public abstract class TestBase : IDisposable
         if (_isConfigured)
         {
             // Record Mode
-            _recordingHandler = new RecordingHandler(fixturePath, RecordingMode.Record);
+            _recordingState = new RecordingState(fixturePath, RecordingMode.Record);
             // Rebuild provider with recording
             (_provider as IDisposable)?.Dispose();
-            _provider = BuildServiceProvider(_recordingHandler);
+            _provider = BuildServiceProvider(_recordingState);
         }
         else if (File.Exists(fixturePath))
         {
             // Replay Mode
             _isReplaying = true;
-            _recordingHandler = new RecordingHandler(fixturePath, RecordingMode.Replay);
-            _provider = BuildServiceProvider(_recordingHandler);
+            _recordingState = new RecordingState(fixturePath, RecordingMode.Replay);
+            _provider = BuildServiceProvider(_recordingState);
         }
         else
         {
@@ -118,22 +118,22 @@ public abstract class TestBase : IDisposable
         get
         {
             // If VCR is not initialized, fallback to random (e.g. strict Record mode or no-VCR tests)
-            if (_recordingHandler == null) return Guid.NewGuid().ToString("N");
+            if (_recordingState == null) return Guid.NewGuid().ToString("N");
 
             const string key = "TestId";
-            var existing = _recordingHandler.GetMetadata(key);
+            var existing = _recordingState.GetMetadata(key);
             if (existing != null) return existing;
 
             // Generate new
             var newId = Guid.NewGuid().ToString("N");
-            _recordingHandler.SetMetadata(key, newId);
+            _recordingState.SetMetadata(key, newId);
             return newId;
         }
     }
 
     public void Dispose()
     {
-        _recordingHandler?.Save();
+        _recordingState?.Save();
         (_provider as IDisposable)?.Dispose();
         GC.SuppressFinalize(this);
     }
