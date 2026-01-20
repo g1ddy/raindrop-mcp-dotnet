@@ -23,22 +23,19 @@ public class RecordingState
         _filePath = filePath;
         Mode = mode;
 
-        _scenario = (() =>
+        if (Mode == RecordingMode.Replay)
         {
-            if (Mode == RecordingMode.Replay)
+            if (!File.Exists(_filePath))
             {
-                if (!File.Exists(_filePath))
-                {
-                    throw new FileNotFoundException($"Recording not found at {_filePath}");
-                }
-                var json = File.ReadAllText(_filePath);
-                return JsonSerializer.Deserialize<TestScenario>(json) ?? new TestScenario();
+                throw new FileNotFoundException($"Recording not found at {_filePath}");
             }
-            else
-            {
-                return new TestScenario();
-            }
-        })();
+            var json = File.ReadAllText(_filePath);
+            _scenario = JsonSerializer.Deserialize<TestScenario>(json) ?? new TestScenario();
+        }
+        else
+        {
+            _scenario = new TestScenario();
+        }
     }
 
     public void SetMetadata(string key, string value)
