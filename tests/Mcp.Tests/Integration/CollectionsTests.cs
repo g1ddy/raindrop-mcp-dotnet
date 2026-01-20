@@ -12,6 +12,14 @@ public class CollectionsTests : TestBase
 {
     public CollectionsTests() : base(s => s.AddTransient<CollectionsTools>()) { }
 
+    private (CancellationTokenSource, CancellationToken, string) SetupTestForVcr([System.Runtime.CompilerServices.CallerMemberName] string testName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "")
+    {
+        InitializeVcr(testName, sourceFilePath);
+        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var uniqueId = CurrentTestId;
+        return (cts, cts.Token, uniqueId);
+    }
+
     [SkippableFact]
     public async Task Crud()
     {
