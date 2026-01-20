@@ -85,16 +85,12 @@ public abstract class TestBase : IDisposable
 
     protected void InitializeVcr([CallerMemberName] string testName = "", [CallerFilePath] string sourceFilePath = "")
     {
-        var integrationDir = Path.GetDirectoryName(sourceFilePath);
-        var baseDir = integrationDir != null && Directory.Exists(integrationDir)
-            ? integrationDir // Source checkout / local dev
-            : Directory.GetCurrentDirectory(); // Fallback to bin
-
-        var fixturePath = Path.Combine(baseDir, "Fixtures", GetType().Name, $"{testName}.json");
+        var fixturePath = GetFixturePath(sourceFilePath, testName);
         var forceRecord = _config.GetValue<bool>("VCR_FORCE_RECORD");
 
         if (_isConfigured && (forceRecord || !File.Exists(fixturePath)))
         {
+            Console.Error.WriteLine($"[VCR] Mode: RECORD. Saving to: {fixturePath}");
             // Record Mode
             _recordingState = new RecordingState(fixturePath, RecordingMode.Record);
             // Rebuild provider with recording
@@ -103,6 +99,7 @@ public abstract class TestBase : IDisposable
         }
         else if (File.Exists(fixturePath))
         {
+            Console.Error.WriteLine($"[VCR] Mode: REPLAY. Loading from: {fixturePath}");
             // Replay Mode
             _isReplaying = true;
             _recordingState = new RecordingState(fixturePath, RecordingMode.Replay);
@@ -112,8 +109,47 @@ public abstract class TestBase : IDisposable
         }
         else
         {
+            Console.Error.WriteLine($"[VCR] Mode: SKIP. No token and no fixture found at {fixturePath}");
             // No token, no file -> Do nothing, RequireApi will skip
         }
+    }
+
+    private string GetFixturePath(string sourceFilePath, string testName)
+    {
+        var integrationDir = Path.GetDirectoryName(sourceFilePath);
+        string baseDir;
+
+        if (integrationDir != null && Directory.Exists(integrationDir))
+        {
+            baseDir = integrationDir; // Source checkout / local dev
+        }
+        else
+        {
+            // Fallback: Try to find repo root by walking up from CurrentDirectory
+            var current = new DirectoryInfo(Directory.GetCurrentDirectory());
+            var repoRoot = current;
+            while (repoRoot != null && !File.Exists(Path.Combine(repoRoot.FullName, "RaindropMcp.sln")))
+            {
+                repoRoot = repoRoot.Parent;
+            }
+
+            if (repoRoot != null)
+            {
+                // Found repo root, construct path to Integration tests
+                baseDir = Path.Combine(repoRoot.FullName, "tests", "Mcp.Tests", "Integration");
+                if (!Directory.Exists(baseDir))
+                {
+                    // If directory structure is different, fallback to CurrentDirectory
+                     baseDir = Directory.GetCurrentDirectory();
+                }
+            }
+            else
+            {
+                baseDir = Directory.GetCurrentDirectory();
+            }
+        }
+
+        return Path.Combine(baseDir, "Fixtures", GetType().Name, $"{testName}.json");
     }
 
     protected string CurrentTestId

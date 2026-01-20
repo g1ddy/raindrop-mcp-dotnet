@@ -1,0 +1,55 @@
+{
+  "Metadata": {
+    "TestId": "78d84635bd6e4c9182c98a0aa0b29a09"
+  },
+  "Interactions": [
+    {
+      "Method": "POST",
+      "Uri": "https://api.raindrop.io/rest/v1/raindrop",
+      "RequestBody": "{\u0022title\u0022:\u0022Tags Crud - Raindrop 78d84635bd6e4c9182c98a0aa0b29a09\u0022,\u0022link\u0022:\u0022https://example.com/tag/78d84635bd6e4c9182c98a0aa0b29a09\u0022,\u0022note\u0022:\u0022tag\u0022,\u0022tags\u0022:[\u0022TagRenameTestOne_78d84635bd6e4c9182c98a0aa0b29a09\u0022],\u0022important\u0022:null}",
+      "StatusCode": 401,
+      "ResponseBody": "{\u0022result\u0022:false,\u0022status\u0022:401,\u0022errorMessage\u0022:\u0022Incorrect access_token\u0022,\u0022auth\u0022:false}",
+      "ResponseHeaders": {
+        "Date": [
+          "Tue, 20 Jan 2026 08:34:24 GMT"
+        ],
+        "Connection": [
+          "keep-alive"
+        ],
+        "X-Powered-By": [
+          "Express"
+        ],
+        "Server-Timing": [
+          "dc;desc=eu",
+          "total;dur=12.068"
+        ],
+        "Cache-Control": [
+          "private"
+        ],
+        "ETag": [
+          "\u002252-wfYYboPmdOOjsT\u002BG9xxsXfavgu8\u0022"
+        ],
+        "cf-cache-status": [
+          "DYNAMIC"
+        ],
+        "Server": [
+          "cloudflare"
+        ],
+        "CF-RAY": [
+          "9c0d3b837c12022a-ORD"
+        ],
+        "Alt-Svc": [
+          "h3=\u0022:443\u0022"
+        ]
+      },
+      "ContentHeaders": {
+        "Content-Type": [
+          "application/json; charset=utf-8"
+        ],
+        "Content-Length": [
+          "82"
+        ]
+      }
+    }
+  ]
+}
