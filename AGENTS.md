@@ -28,3 +28,27 @@ dotnet test RaindropMcp.sln --no-build --no-restore
 ### Environment Setup
 
 This project uses a pre-baked Jules VM snapshot. If you need to reproduce the environment setup or understand how it was configured, refer to `scripts/setup.sh`. This script handles the installation of the .NET SDK and package restoration. See `scripts/README.md` for more details.
+
+## Testing and Modifying Request/Response Objects
+
+When modifying C# models or integration tests, strict adherence to the Raindrop.io API specification is required. The API behavior often differs from simple CRUD conventions.
+
+### Request Models and Field Mapping
+
+- **API Documentation as Source of Truth**: Always verify field names and types against [Raindrop.io API V1 Documentation](https://developer.raindrop.io/v1). Do not guess based on existing C# properties.
+- **Complex Objects**: Some flat C# properties must be mapped to nested objects in the API JSON.
+    - *Example*: `CollectionId` (int) in `IRaindropRequest` must be mapped to `collection: { "$id": 123 }` in the API DTO. Mapping it to a top-level `collectionId` field will fail for Create/Update operations.
+    - Use `Mcp.Common.IdRef` to serialize properties with the `$id` key (e.g., `[JsonPropertyName("$id")]`).
+- **Forbidden Fields**: Request DTOs should omit read-only fields (e.g., `user`, `broken`) unless explicitly allowed by the `POST`/`PUT` endpoint. Use `[JsonIgnore]` or separate DTO classes (e.g., `RaindropCreateRequest` vs `Raindrop` response model) to enforce this.
+
+### Integration Testing (VCR)
+
+- **VCR Workflow**:
+    - **Replay Mode (Default)**: Uses existing JSON fixtures in `tests/Mcp.Tests/Integration/Fixtures`. No API token is required.
+    - **Record Mode**: Activated when a fixture is missing AND a valid `Raindrop:ApiToken` is present.
+- **Robust Cleanup**:
+    - Wrap *each* cleanup step in a `try/catch` block within the `finally` clause.
+    - *Reasoning*: If the first cleanup action (e.g., `DeleteTag`) fails, subsequent actions (e.g., `DeleteBookmark`) must still execute to prevent resource leaks in the live API environment.
+- **CI Workflow**:
+    - The CI workflow uses `git status --porcelain` to detect changes.
+    - *Critical*: `git diff` does not detect untracked files. Since VCR recording creates *new* JSON files, the workflow must use `git status` to verify that no new recordings were unexpectedly generated during a test run (which would indicate non-determinism or leakage).
