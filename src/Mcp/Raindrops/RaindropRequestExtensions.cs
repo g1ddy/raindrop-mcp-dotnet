@@ -1,3 +1,5 @@
+using Mcp.Common;
+
 namespace Mcp.Raindrops;
 
 /// <summary>
@@ -15,7 +17,9 @@ internal static class RaindropRequestExtensions
             Note = request.Note,
             Tags = request.Tags?.ToList(),
             Important = request.Important,
-            CollectionId = request.CollectionId
+            Collection = request.CollectionId.HasValue
+                ? new IdRef { Id = request.CollectionId.Value }
+                : null
         };
     }
 }

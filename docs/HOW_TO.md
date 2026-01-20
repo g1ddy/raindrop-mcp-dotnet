@@ -102,6 +102,16 @@ powershell -File ./scripts/generate-docs.ps1
 
 ---
 
+### **Working with the Raindrop API**
+
+When extending the server, be aware that the C# models are distinct from the raw API JSON.
+
+*   **Collection Mapping:** The API expects nested objects for collections (e.g., `collection: { "$id": 123 }`). Use `Mcp.Common.IdRef` to map these correctly. Do not use flat integer fields like `collectionId` for Create/Update payloads.
+*   **Partial Models:** The `Raindrop` C# model does not include every field returned by the API (e.g., `media`, `cover`, `highlights` are currently omitted). If you need these fields, update the `Raindrop` record and verify the JSON property names against the [official documentation](https://developer.raindrop.io/v1).
+*   **VCR Testing:** When writing integration tests, always wrap cleanup operations (e.g., `DeleteBookmarkAsync`) in `try/catch` blocks within the `finally` clause. This ensures that a failure in one step doesn't leave other resources behind.
+
+---
+
 ### **Next Steps: Contributing**
 
 Now that you know how to extend the server, please review our **[Contributing Guide](../CONTRIBUTING.md)** before you submit a pull request.
