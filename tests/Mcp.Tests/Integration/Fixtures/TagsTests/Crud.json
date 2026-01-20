@@ -1,0 +1,293 @@
+{
+  "Metadata": {
+    "TestId": "74440dc789d7477899222e6dacccc4e7"
+  },
+  "Interactions": [
+    {
+      "Method": "POST",
+      "Uri": "https://api.raindrop.io/rest/v1/raindrop",
+      "RequestBody": "{\u0022title\u0022:\u0022Tags Crud - Raindrop 74440dc789d7477899222e6dacccc4e7\u0022,\u0022link\u0022:\u0022https://example.com/tag/74440dc789d7477899222e6dacccc4e7\u0022,\u0022note\u0022:\u0022tag\u0022,\u0022tags\u0022:[\u0022TagRenameTestOne_74440dc789d7477899222e6dacccc4e7\u0022],\u0022important\u0022:null}",
+      "StatusCode": 200,
+      "ResponseBody": "{\u0022result\u0022:true,\u0022item\u0022:{\u0022link\u0022:\u0022https://example.com/tag/74440dc789d7477899222e6dacccc4e7\u0022,\u0022title\u0022:\u0022Tags Crud - Raindrop 74440dc789d7477899222e6dacccc4e7\u0022,\u0022excerpt\u0022:\u0022\u0022,\u0022note\u0022:\u0022tag\u0022,\u0022type\u0022:\u0022link\u0022,\u0022user\u0022:{\u0022$ref\u0022:\u0022users\u0022,\u0022$id\u0022:4186461},\u0022cover\u0022:\u0022\u0022,\u0022tags\u0022:[\u0022TagRenameTestOne_74440dc789d7477899222e6dacccc4e7\u0022],\u0022important\u0022:null,\u0022removed\u0022:false,\u0022media\u0022:[],\u0022created\u0022:\u00222026-01-20T13:23:19.675Z\u0022,\u0022lastUpdate\u0022:\u00222026-01-20T13:23:19.675Z\u0022,\u0022domain\u0022:\u0022example.com\u0022,\u0022collection\u0022:{\u0022$ref\u0022:\u0022collections\u0022,\u0022$id\u0022:-1,\u0022oid\u0022:-1},\u0022_id\u0022:1553648844,\u0022creatorRef\u0022:{\u0022_id\u0022:4186461,\u0022name\u0022:\u0022blondcheetah\u0022,\u0022avatar\u0022:\u0022\u0022,\u0022email\u0022:\u0022\u0022},\u0022sort\u0022:1553648844,\u0022__v\u0022:0,\u0022collectionId\u0022:-1}}",
+      "ResponseHeaders": {
+        "Date": [
+          "Tue, 20 Jan 2026 13:23:19 GMT"
+        ],
+        "Connection": [
+          "keep-alive"
+        ],
+        "X-Powered-By": [
+          "Express"
+        ],
+        "Server-Timing": [
+          "dc;desc=eu",
+          "total;dur=74.570"
+        ],
+        "Cache-Control": [
+          "private"
+        ],
+        "x-ratelimit-limit": [
+          "120"
+        ],
+        "x-ratelimit-remaining": [
+          "91"
+        ],
+        "x-ratelimit-reset": [
+          "1768915456"
+        ],
+        "ETag": [
+          "\u002227d-Rk8mu6q/ONkCfS3UVZpVMFkI0ls\u0022"
+        ],
+        "cf-cache-status": [
+          "DYNAMIC"
+        ],
+        "Server": [
+          "cloudflare"
+        ],
+        "CF-RAY": [
+          "9c0ee2bf9c6672d4-IAD"
+        ],
+        "Alt-Svc": [
+          "h3=\u0022:443\u0022"
+        ]
+      },
+      "ContentHeaders": {
+        "Content-Type": [
+          "application/json; charset=utf-8"
+        ],
+        "Content-Length": [
+          "637"
+        ]
+      }
+    },
+    {
+      "Method": "PUT",
+      "Uri": "https://api.raindrop.io/rest/v1/tags",
+      "RequestBody": "{\u0022replace\u0022:\u0022TagRenameTestTwo_74440dc789d7477899222e6dacccc4e7\u0022,\u0022tags\u0022:[\u0022TagRenameTestOne_74440dc789d7477899222e6dacccc4e7\u0022]}",
+      "StatusCode": 200,
+      "ResponseBody": "{\u0022result\u0022:true}",
+      "ResponseHeaders": {
+        "Date": [
+          "Tue, 20 Jan 2026 13:23:20 GMT"
+        ],
+        "Connection": [
+          "keep-alive"
+        ],
+        "X-Powered-By": [
+          "Express"
+        ],
+        "Server-Timing": [
+          "dc;desc=eu",
+          "total;dur=118.236"
+        ],
+        "Cache-Control": [
+          "private"
+        ],
+        "x-ratelimit-limit": [
+          "60"
+        ],
+        "x-ratelimit-remaining": [
+          "54"
+        ],
+        "x-ratelimit-reset": [
+          "1768915456"
+        ],
+        "ETag": [
+          "\u0022f-ayLlCL3PuzXSThdu78iReSEjl6Y\u0022"
+        ],
+        "cf-cache-status": [
+          "DYNAMIC"
+        ],
+        "Server": [
+          "cloudflare"
+        ],
+        "CF-RAY": [
+          "9c0ee2c0dad0e5fc-IAD"
+        ],
+        "Alt-Svc": [
+          "h3=\u0022:443\u0022"
+        ]
+      },
+      "ContentHeaders": {
+        "Content-Type": [
+          "application/json; charset=utf-8"
+        ],
+        "Content-Length": [
+          "15"
+        ]
+      }
+    },
+    {
+      "Method": "GET",
+      "Uri": "https://api.raindrop.io/rest/v1/tags",
+      "StatusCode": 200,
+      "ResponseBody": "{\u0022result\u0022:true,\u0022items\u0022:[{\u0022_id\u0022:\u0022tag3\u0022,\u0022count\u0022:1},{\u0022_id\u0022:\u0022TagBulkOne_44715ac97c21446088ea26447ef6bdb4\u0022,\u0022count\u0022:1},{\u0022_id\u0022:\u0022TagBulkOne_a2b28d35a4b3494aae425ec02076838e\u0022,\u0022count\u0022:1},{\u0022_id\u0022:\u0022TagBulkOne_ace8b73becc64c7f8cd2e2edd686c650\u0022,\u0022count\u0022:1},{\u0022_id\u0022:\u0022TagBulkOne_b0665e7249c44cea971b729cc293a8b6\u0022,\u0022count\u0022:1},{\u0022_id\u0022:\u0022TagBulkTwo_44715ac97c21446088ea26447ef6bdb4\u0022,\u0022count\u0022:1},{\u0022_id\u0022:\u0022TagBulkTwo_a2b28d35a4b3494aae425ec02076838e\u0022,\u0022count\u0022:1},{\u0022_id\u0022:\u0022TagBulkTwo_ace8b73becc64c7f8cd2e2edd686c650\u0022,\u0022count\u0022:1},{\u0022_id\u0022:\u0022TagBulkTwo_b0665e7249c44cea971b729cc293a8b6\u0022,\u0022count\u0022:1},{\u0022_id\u0022:\u0022TagCollectionTestOne_14dda4a71ffe4863bc2c67706766bcbb\u0022,\u0022count\u0022:1},{\u0022_id\u0022:\u0022TagCollectionTestOne_5000391363ef479b98df77cd16c30f28\u0022,\u0022count\u0022:1},{\u0022_id\u0022:\u0022TagCollectionTestOne_aa000c93496a4825999ea3f57eb51190\u0022,\u0022count\u0022:1},{\u0022_id\u0022:\u0022TagCollectionTestOne_ed903bd1da434bcbbefdb2d6eeb1883e\u0022,\u0022count\u0022:1},{\u0022_id\u0022:\u0022TagOne3532b32d\u0022,\u0022count\u0022:1},{\u0022_id\u0022:\u0022TagRenameTestOne_82cc9833eb364a7a833537ef429eea3d\u0022,\u0022count\u0022:1},{\u0022_id\u0022:\u0022TagRenameTestOne_a3b173c943e44dacad0fe9e86713e21c\u0022,\u0022count\u0022:1},{\u0022_id\u0022:\u0022TagRenameTestOne_a2867510017a43bf9259b3a816c33f1b\u0022,\u0022count\u0022:1},{\u0022_id\u0022:\u0022TagRenameTestOne_d350048dbd8c4ce3ab31d45131086e3c\u0022,\u0022count\u0022:1},{\u0022_id\u0022:\u0022TagRenameTestTwo_74440dc789d7477899222e6dacccc4e7\u0022,\u0022count\u0022:1},{\u0022_id\u0022:\u0022TagTwo3532b32d\u0022,\u0022count\u0022:1}]}",
+      "ResponseHeaders": {
+        "Date": [
+          "Tue, 20 Jan 2026 13:23:20 GMT"
+        ],
+        "Connection": [
+          "keep-alive"
+        ],
+        "X-Powered-By": [
+          "Express"
+        ],
+        "Server-Timing": [
+          "dc;desc=eu",
+          "total;dur=30.118"
+        ],
+        "Cache-Control": [
+          "private"
+        ],
+        "x-ratelimit-limit": [
+          "60"
+        ],
+        "x-ratelimit-remaining": [
+          "53"
+        ],
+        "x-ratelimit-reset": [
+          "1768915456"
+        ],
+        "x-api-cache": [
+          "MISS"
+        ],
+        "ETag": [
+          "\u00224fe-XOGq2hj6AV39B8ORyi75rm0dUns\u0022"
+        ],
+        "cf-cache-status": [
+          "DYNAMIC"
+        ],
+        "Server": [
+          "cloudflare"
+        ],
+        "CF-RAY": [
+          "9c0ee2c24ebae5fc-IAD"
+        ],
+        "Alt-Svc": [
+          "h3=\u0022:443\u0022"
+        ]
+      },
+      "ContentHeaders": {
+        "Content-Type": [
+          "application/json; charset=utf-8"
+        ],
+        "Content-Length": [
+          "1278"
+        ]
+      }
+    },
+    {
+      "Method": "DELETE",
+      "Uri": "https://api.raindrop.io/rest/v1/tags",
+      "RequestBody": "{\u0022tags\u0022:[\u0022TagRenameTestTwo_74440dc789d7477899222e6dacccc4e7\u0022]}",
+      "StatusCode": 200,
+      "ResponseBody": "{\u0022result\u0022:true}",
+      "ResponseHeaders": {
+        "Date": [
+          "Tue, 20 Jan 2026 13:23:20 GMT"
+        ],
+        "Connection": [
+          "keep-alive"
+        ],
+        "X-Powered-By": [
+          "Express"
+        ],
+        "Server-Timing": [
+          "dc;desc=eu",
+          "total;dur=67.695"
+        ],
+        "Cache-Control": [
+          "private"
+        ],
+        "x-ratelimit-limit": [
+          "60"
+        ],
+        "x-ratelimit-remaining": [
+          "52"
+        ],
+        "x-ratelimit-reset": [
+          "1768915456"
+        ],
+        "ETag": [
+          "\u0022f-ayLlCL3PuzXSThdu78iReSEjl6Y\u0022"
+        ],
+        "cf-cache-status": [
+          "DYNAMIC"
+        ],
+        "Server": [
+          "cloudflare"
+        ],
+        "CF-RAY": [
+          "9c0ee2c3295ce5fc-IAD"
+        ],
+        "Alt-Svc": [
+          "h3=\u0022:443\u0022"
+        ]
+      },
+      "ContentHeaders": {
+        "Content-Type": [
+          "application/json; charset=utf-8"
+        ],
+        "Content-Length": [
+          "15"
+        ]
+      }
+    },
+    {
+      "Method": "DELETE",
+      "Uri": "https://api.raindrop.io/rest/v1/raindrop/1553648844",
+      "StatusCode": 200,
+      "ResponseBody": "{\u0022result\u0022:true,\u0022item\u0022:{\u0022_id\u0022:1553648844,\u0022link\u0022:\u0022https://example.com/tag/74440dc789d7477899222e6dacccc4e7\u0022,\u0022title\u0022:\u0022Tags Crud - Raindrop 74440dc789d7477899222e6dacccc4e7\u0022,\u0022excerpt\u0022:\u0022\u0022,\u0022note\u0022:\u0022tag\u0022,\u0022type\u0022:\u0022link\u0022,\u0022user\u0022:{\u0022$ref\u0022:\u0022users\u0022,\u0022$id\u0022:4186461},\u0022cover\u0022:\u0022\u0022,\u0022tags\u0022:[],\u0022important\u0022:null,\u0022removed\u0022:true,\u0022media\u0022:[],\u0022created\u0022:\u00222026-01-20T13:23:19.675Z\u0022,\u0022lastUpdate\u0022:\u00222026-01-20T13:23:20.718Z\u0022,\u0022domain\u0022:\u0022example.com\u0022,\u0022collection\u0022:{\u0022$ref\u0022:\u0022collections\u0022,\u0022$id\u0022:-99,\u0022oid\u0022:-99},\u0022creatorRef\u0022:{\u0022_id\u0022:4186461,\u0022name\u0022:\u0022blondcheetah\u0022,\u0022avatar\u0022:\u0022\u0022,\u0022email\u0022:\u0022\u0022},\u0022sort\u0022:1553648844,\u0022collectionId\u0022:-99,\u0022order\u0022:0}}",
+      "ResponseHeaders": {
+        "Date": [
+          "Tue, 20 Jan 2026 13:23:20 GMT"
+        ],
+        "Connection": [
+          "keep-alive"
+        ],
+        "X-Powered-By": [
+          "Express"
+        ],
+        "Server-Timing": [
+          "dc;desc=eu",
+          "total;dur=92.578"
+        ],
+        "Cache-Control": [
+          "private"
+        ],
+        "x-ratelimit-limit": [
+          "120"
+        ],
+        "x-ratelimit-remaining": [
+          "83"
+        ],
+        "x-ratelimit-reset": [
+          "1768915456"
+        ],
+        "ETag": [
+          "\u002224e-CQdyGuQWCbYrQA2T5vciLtyHKwA\u0022"
+        ],
+        "cf-cache-status": [
+          "DYNAMIC"
+        ],
+        "Server": [
+          "cloudflare"
+        ],
+        "CF-RAY": [
+          "9c0ee2c44a3972d4-IAD"
+        ],
+        "Alt-Svc": [
+          "h3=\u0022:443\u0022"
+        ]
+      },
+      "ContentHeaders": {
+        "Content-Type": [
+          "application/json; charset=utf-8"
+        ],
+        "Content-Length": [
+          "590"
+        ]
+      }
+    }
+  ]
+}
