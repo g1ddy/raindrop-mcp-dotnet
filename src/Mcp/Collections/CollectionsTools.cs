@@ -48,6 +48,9 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
     Description("Retrieves all nested (child) collections.")]
     public Task<ItemsResponse<Collection>> ListChildCollectionsAsync(CancellationToken cancellationToken) => Api.ListChildrenAsync(cancellationToken);
 
+    // Pipe is used as a separator in the LLM response, so it must be removed from the input to prevent ambiguity.
+    private static string Sanitize(string value) => value.ReplaceLineEndings(string.Empty).Replace("|", string.Empty);
+
     [McpServerTool(Idempotent = true, Title = "Merge Collections"),
     Description("Merge multiple collections into a destination collection. Requires both the target collection ID and an array of source collection IDs to merge.")]
     public Task<SuccessResponse> MergeCollectionsAsync(
@@ -95,8 +98,15 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
         {
             if (!string.IsNullOrEmpty(c.Title))
             {
-                collectionTitles.TryAdd(c.Title, c);
-                promptBuilder.AppendLine($"- {c.Title}");
+                var title = Sanitize(c.Title);
+                if (collectionTitles.TryAdd(title, c))
+                {
+                    if (promptBuilder.Length > 0)
+                    {
+                        promptBuilder.Append('\n');
+                    }
+                    promptBuilder.Append($"- {title}");
+                }
             }
         }
 
