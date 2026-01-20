@@ -86,24 +86,18 @@ public class RecordingHandler : DelegatingHandler
         if (interaction.ResponseBody != null)
         {
             response.Content = new StringContent(interaction.ResponseBody);
+
             // Restore content headers
-            if (interaction.ResponseHeaders.TryGetValue("Content-Type", out var cts) && cts.Length > 0)
+            foreach (var h in interaction.ContentHeaders)
             {
-                 if (System.Net.Http.Headers.MediaTypeHeaderValue.TryParse(cts[0], out var mt))
-                 {
-                     response.Content.Headers.ContentType = mt;
-                 }
+                 response.Content.Headers.TryAddWithoutValidation(h.Key, h.Value);
             }
         }
 
-        // Restore other headers
+        // Restore response headers
         foreach (var h in interaction.ResponseHeaders)
         {
-            if (!h.Key.Equals("Content-Type", StringComparison.OrdinalIgnoreCase) &&
-                !h.Key.Equals("Content-Length", StringComparison.OrdinalIgnoreCase)) // Content-Length is set by StringContent
-            {
-                 response.Headers.TryAddWithoutValidation(h.Key, h.Value);
-            }
+             response.Headers.TryAddWithoutValidation(h.Key, h.Value);
         }
 
         return Task.FromResult(response);
@@ -135,11 +129,12 @@ public class RecordingHandler : DelegatingHandler
         {
             interaction.ResponseHeaders[h.Key] = h.Value.ToArray();
         }
+
         if (response.Content != null)
         {
             foreach (var h in response.Content.Headers)
             {
-                 interaction.ResponseHeaders[h.Key] = h.Value.ToArray();
+                 interaction.ContentHeaders[h.Key] = h.Value.ToArray();
             }
         }
 
