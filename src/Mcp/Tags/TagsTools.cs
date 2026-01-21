@@ -44,7 +44,7 @@ public class TagsTools(ITagsApi api) : RaindropToolBase<ITagsApi>(api)
     [McpServerTool(Idempotent = true, Title = "Delete Tag", Destructive = true),
      Description("Removes a tag from all bookmarks.")]
     public Task<SuccessResponse> DeleteTagAsync(
-        IMcpServer server,
+        McpServer server,
         [Description("The name of the tag to remove.")] string tag,
         [Description("Collection ID if scoped")] int? collectionId = null,
         CancellationToken cancellationToken = default)
@@ -53,7 +53,7 @@ public class TagsTools(ITagsApi api) : RaindropToolBase<ITagsApi>(api)
     [McpServerTool(Idempotent = true, Title = "Delete Tags", Destructive = true),
      Description("Removes one or more tags from all bookmarks.")]
     public async Task<SuccessResponse> DeleteTagsAsync(
-        IMcpServer server,
+        McpServer server,
         [Description("A collection of tag names to be removed.")] IEnumerable<string> tags,
         [Description("Collection ID if scoped")] int? collectionId = null,
         CancellationToken cancellationToken = default)

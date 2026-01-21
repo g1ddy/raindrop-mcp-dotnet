@@ -15,7 +15,7 @@ public class CollectionsToolsTests
 {
     private readonly Mock<ICollectionsApi> _collectionsApiMock;
     private readonly Mock<IRaindropsApi> _raindropsApiMock;
-    private readonly Mock<IMcpServer> _mcpServerMock;
+    private readonly Mock<McpServer> _mcpServerMock;
     private readonly CollectionsTools _tools;
     private readonly ITestOutputHelper _output;
 
@@ -24,7 +24,7 @@ public class CollectionsToolsTests
         _output = output;
         _collectionsApiMock = new Mock<ICollectionsApi>();
         _raindropsApiMock = new Mock<IRaindropsApi>();
-        _mcpServerMock = new Mock<IMcpServer>();
+        _mcpServerMock = new Mock<McpServer>();
         _tools = new CollectionsTools(_collectionsApiMock.Object, _raindropsApiMock.Object);
     }
 
@@ -47,7 +47,7 @@ public class CollectionsToolsTests
         var llmResponse = new CreateMessageResult
         {
             Role = Role.Assistant,
-            Content = new TextContentBlock { Text = "This is a sentence, not a list." },
+            Content = [new TextContentBlock { Text = "This is a sentence, not a list." }],
             Model = "test-model"
         };
 
@@ -56,7 +56,7 @@ public class CollectionsToolsTests
             .Returns(new ClientCapabilities
             {
                 Sampling = new SamplingCapability(),
-                Elicitation = new ElicitationCapability()
+                Elicitation = new ElicitationCapability { Form = new FormElicitationCapability() }
             });
 
         // Mock SendRequestAsync to return the LLM response
@@ -93,7 +93,7 @@ public class CollectionsToolsTests
         var llmResponse = new CreateMessageResult
         {
             Role = Role.Assistant,
-            Content = new TextContentBlock { Text = "- Tech\n- News" },
+            Content = [new TextContentBlock { Text = "- Tech\n- News" }],
             Model = "test-model"
         };
 
@@ -101,7 +101,7 @@ public class CollectionsToolsTests
             .Returns(new ClientCapabilities
             {
                 Sampling = new SamplingCapability(),
-                Elicitation = new ElicitationCapability()
+                Elicitation = new ElicitationCapability { Form = new FormElicitationCapability() }
             });
 
         // Spy on SendRequestAsync
@@ -168,7 +168,7 @@ public class CollectionsToolsTests
         var llmResponse = new CreateMessageResult
         {
             Role = Role.Assistant,
-            Content = new TextContentBlock { Text = "Tech | News" },
+            Content = [new TextContentBlock { Text = "Tech | News" }],
             Model = "test-model"
         };
 
@@ -176,7 +176,7 @@ public class CollectionsToolsTests
             .Returns(new ClientCapabilities
             {
                 Sampling = new SamplingCapability(),
-                Elicitation = new ElicitationCapability()
+                Elicitation = new ElicitationCapability { Form = new FormElicitationCapability() }
             });
 
         _mcpServerMock.Setup(x => x.SendRequestAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()))
@@ -239,7 +239,7 @@ public class CollectionsToolsTests
         var llmResponse = new CreateMessageResult
         {
             Role = Role.Assistant,
-            Content = new TextContentBlock { Text = "Science, Tech & Nature | Other" },
+            Content = [new TextContentBlock { Text = "Science, Tech & Nature | Other" }],
             Model = "test-model"
         };
 
@@ -247,7 +247,7 @@ public class CollectionsToolsTests
             .Returns(new ClientCapabilities
             {
                 Sampling = new SamplingCapability(),
-                Elicitation = new ElicitationCapability()
+                Elicitation = new ElicitationCapability { Form = new FormElicitationCapability() }
             });
 
         _mcpServerMock.Setup(x => x.SendRequestAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()))
