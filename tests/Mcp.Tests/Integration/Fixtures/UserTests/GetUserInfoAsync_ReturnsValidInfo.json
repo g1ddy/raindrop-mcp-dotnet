@@ -1,0 +1,16 @@
+{
+  "Metadata": {
+    "TestId": "dummy-test-id"
+  },
+  "Interactions": [
+    {
+      "Method": "GET",
+      "Uri": "https://api.raindrop.io/rest/v1/user",
+      "StatusCode": 200,
+      "ResponseBody": "{\"result\":true,\"user\":{\"_id\":12345,\"email\":\"test@example.com\",\"fullName\":\"Test User\",\"pro\":true,\"config\":{\"broken_level\":\"basic\",\"font_color\":\"sunset\",\"font_size\":4,\"lang\":\"en\",\"last_collection\":-1,\"raindrops_sort\":\"-created\",\"raindrops_view\":\"list\"},\"dropbox\":{\"enabled\":true},\"files\":{\"used\":1024,\"size\":1048576,\"lastCheckPoint\":\"2023-01-01T00:00:00Z\"},\"type\":\"google\"}}",
+      "ResponseHeaders": {
+        "Content-Type": [ "application/json; charset=utf-8" ]
+      }
+    }
+  ]
+}
