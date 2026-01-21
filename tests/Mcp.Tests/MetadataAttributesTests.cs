@@ -16,7 +16,7 @@ public class MetadataAttributesTests
     private static readonly Type[] ExcludedParameterTypes =
     [
         typeof(CancellationToken),
-        typeof(IMcpServer)
+        typeof(McpServer)
     ];
 
     [Fact]

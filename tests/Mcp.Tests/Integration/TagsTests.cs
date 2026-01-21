@@ -38,10 +38,10 @@ public class TagsTests : TestBase
         }, cancellationToken);
         long raindropId = createResponse.Item.Id;
 
-        // Mock IMcpServer for deletion confirmation
-        var mcpServerMock = new Mock<IMcpServer>();
+        // Mock McpServer for deletion confirmation
+        var mcpServerMock = new Mock<McpServer>();
         mcpServerMock.Setup(x => x.ClientCapabilities)
-            .Returns(new ClientCapabilities { Elicitation = new ElicitationCapability() });
+            .Returns(new ClientCapabilities { Elicitation = new ElicitationCapability { Form = new FormElicitationCapability() } });
 
         mcpServerMock
             .Setup(x => x.SendRequestAsync(
@@ -117,10 +117,10 @@ public class TagsTests : TestBase
         }, cancellationToken);
         long raindropId = createResponse.Item.Id;
 
-        // Mock IMcpServer for deletion confirmation
-        var mcpServerMock = new Mock<IMcpServer>();
+        // Mock McpServer for deletion confirmation
+        var mcpServerMock = new Mock<McpServer>();
         mcpServerMock.Setup(x => x.ClientCapabilities)
-            .Returns(new ClientCapabilities { Elicitation = new ElicitationCapability() });
+            .Returns(new ClientCapabilities { Elicitation = new ElicitationCapability { Form = new FormElicitationCapability() } });
 
         mcpServerMock
             .Setup(x => x.SendRequestAsync(

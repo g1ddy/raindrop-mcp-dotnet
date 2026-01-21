@@ -73,7 +73,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
     [McpServerTool(Title = "Suggest Collection for Bookmark"),
      Description("Suggests the best three collections for a bookmark and moves it to the selected collection.")]
     public async Task<SuccessResponse> SuggestCollectionForBookmarkAsync(
-        IMcpServer server,
+        McpServer server,
         [Description("ID of the bookmark to move")] long bookmarkId,
         CancellationToken cancellationToken)
     {
@@ -133,18 +133,19 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
 
         var sampleRequest = new CreateMessageRequestParams
         {
+            MaxTokens = 1000,
             Messages =
             [
                 new SamplingMessage
                 {
                     Role = Role.User,
-                    Content = new TextContentBlock { Text = prompt }
+                    Content = [new TextContentBlock { Text = prompt }]
                 }
             ]
         };
 
         var llmResponse = await server.SampleAsync(sampleRequest, cancellationToken);
-        if (llmResponse?.Content is not TextContentBlock textContent || string.IsNullOrWhiteSpace(textContent.Text))
+        if (llmResponse?.Content?.FirstOrDefault() is not TextContentBlock textContent || string.IsNullOrWhiteSpace(textContent.Text))
         {
             return new SuccessResponse(false);
         }
