@@ -15,6 +15,8 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
     private static readonly char[] _separators = ['|', '\n'];
     private static readonly char[] _trimChars = ['-', '*', ' ', '\'', '"', '.'];
     private readonly IRaindropsApi _raindropsApi = raindropsApi;
+    private const int DefaultMaxTokens = 1000;
+
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
     Title = "List Collections"),
     Description("Retrieves all top-level (root) collections. Use this to understand your collection hierarchy before making structural changes.")]
@@ -133,7 +135,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
 
         var sampleRequest = new CreateMessageRequestParams
         {
-            MaxTokens = 1000,
+            MaxTokens = DefaultMaxTokens,
             Messages =
             [
                 new SamplingMessage
@@ -173,7 +175,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
             {
                 Properties =
                 {
-                    ["collectionName"] = new ElicitRequestParams.EnumSchema
+                    ["collectionName"] = new ElicitRequestParams.UntitledSingleSelectEnumSchema
                     {
                         Description = "Collection name",
                         Enum = suggestedTitles
