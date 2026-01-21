@@ -32,13 +32,21 @@ public class UserTests : TestBase
 
         // Config verification
         Assert.NotNull(user.Config);
-        Assert.False(string.IsNullOrEmpty(user.Config.Lang), "Config.Lang should not be empty");
+        Assert.Equal("en", user.Config.Lang);
+        Assert.Equal(4, user.Config.FontSize);
+        Assert.Equal(UserBrokenLevel.Basic, user.Config.BrokenLevel);
+        Assert.Equal(UserFontColor.Sunset, user.Config.FontColor);
+        Assert.Equal(UserRaindropsView.List, user.Config.RaindropsView);
 
         // Dropbox verification
         Assert.NotNull(user.Dropbox);
+        Assert.True(user.Dropbox.Enabled, "Dropbox should be enabled");
 
         // Files verification
         Assert.NotNull(user.Files);
-        Assert.True(user.Files.Size >= 0, "Files.Size should be non-negative");
+        Assert.Equal(1048576, user.Files.Size);
+        Assert.Equal(1024, user.Files.Used);
+        Assert.NotNull(user.Files.LastCheckPoint);
+        Assert.Equal(new DateTimeOffset(2023, 1, 1, 0, 0, 0, TimeSpan.Zero), user.Files.LastCheckPoint);
     }
 }

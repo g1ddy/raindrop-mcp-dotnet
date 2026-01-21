@@ -47,12 +47,14 @@ public record UserInfo
 public record UserConfig
 {
     [JsonPropertyName("broken_level")]
-    [Description("Broken links finder configuration (basic, default, strict, off)")]
-    public string? BrokenLevel { get; init; }
+    [Description("Broken links finder configuration")]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public UserBrokenLevel? BrokenLevel { get; init; }
 
     [JsonPropertyName("font_color")]
-    [Description("Bookmark preview style (sunset, night, empty)")]
-    public string? FontColor { get; init; }
+    [Description("Bookmark preview style")]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public UserFontColor? FontColor { get; init; }
 
     [JsonPropertyName("font_size")]
     [Description("Bookmark preview font size (0 to 9)")]
@@ -71,8 +73,9 @@ public record UserConfig
     public string? RaindropsSort { get; init; }
 
     [JsonPropertyName("raindrops_view")]
-    [Description("Default bookmark view mode (grid, list, simple, masonry)")]
-    public string? RaindropsView { get; init; }
+    [Description("Default bookmark view mode")]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public UserRaindropsView? RaindropsView { get; init; }
 }
 
 /// <summary>
@@ -99,5 +102,39 @@ public record FilesInfo
 
     [Description("Date when upload quota was last reset")]
     [JsonPropertyName("lastCheckPoint")]
-    public string? LastCheckPoint { get; init; }
+    public DateTimeOffset? LastCheckPoint { get; init; }
+}
+
+public enum UserBrokenLevel
+{
+    [JsonStringEnumMemberName("basic")]
+    Basic,
+    [JsonStringEnumMemberName("default")]
+    Default,
+    [JsonStringEnumMemberName("strict")]
+    Strict,
+    [JsonStringEnumMemberName("off")]
+    Off
+}
+
+public enum UserFontColor
+{
+    [JsonStringEnumMemberName("sunset")]
+    Sunset,
+    [JsonStringEnumMemberName("night")]
+    Night,
+    [JsonStringEnumMemberName("empty")]
+    Empty
+}
+
+public enum UserRaindropsView
+{
+    [JsonStringEnumMemberName("grid")]
+    Grid,
+    [JsonStringEnumMemberName("list")]
+    List,
+    [JsonStringEnumMemberName("simple")]
+    Simple,
+    [JsonStringEnumMemberName("masonry")]
+    Masonry
 }
