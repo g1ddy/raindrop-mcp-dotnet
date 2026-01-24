@@ -15,7 +15,8 @@ internal static class RaindropRequestExtensions
             Title = request.Title,
             Excerpt = request.Excerpt,
             Note = request.Note,
-            Tags = request.Tags?.ToList(),
+            // Optimized: Direct assignment avoids O(n) copy from .ToList()
+            Tags = request.Tags,
             Important = request.Important,
             Collection = request.CollectionId.HasValue
                 ? new IdRef { Id = request.CollectionId.Value }
