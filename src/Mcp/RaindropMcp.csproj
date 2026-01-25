@@ -14,12 +14,11 @@
     <!-- Set recommended package metadata -->
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageId>Raindrop.Mcp.DotNet</PackageId>
-    <PackageVersion>0.1.5-beta</PackageVersion>
     <Authors>g1ddy</Authors>
     <PackageTags>AI; MCP; server; stdio</PackageTags>
     <RepositoryUrl>https://github.com/g1ddy/raindrop-mcp-dotnet.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <Description>An MCP server using the MCP C# SDK.</Description>
+    <Description>A .NET-based MCP server for interacting with your Raindrop.io bookmarks using natural language.</Description>
   </PropertyGroup>
 
   <!-- Include additional files for browsing the MCP server. -->
@@ -45,6 +44,7 @@
     <!-- <PackageReference Include="ModelContextProtocol.AspNetCore" Version="0.3.0-preview.3" /> -->
     <PackageReference Include="ModelContextProtocol" Version="0.6.0-preview.1" />
     <PackageReference Include="Refit.HttpClientFactory" Version="9.0.2" />
+    <PackageReference Include="MinVer" Version="6.0.0" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
