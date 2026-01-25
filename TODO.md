@@ -16,6 +16,8 @@ The goal is to make this tool easily installable for other .NET developers via N
     <Authors>g1ddy</Authors>
     ```
 
+-   [x] **Automate Versioning:** Replaced manual `<PackageVersion>` in `.csproj` with `MinVer` to automatically derive version from Git tags.
+
 -   [x] **Pack the Project:** Run the `pack` command to create the `.nupkg` file.
 
     ```sh

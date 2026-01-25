@@ -66,8 +66,7 @@ To enable publishing, you must configure a secret for NuGet.org. GitHub Packages
 
 ## 📦 Versioning
 
-The pipeline extracts the version number directly from your git tag.
-*   Tag: `v1.0.0` -> Package Version: `1.0.0`
-*   Tag: `v0.1.5-alpha` -> Package Version: `0.1.5-alpha`
-
-You do **not** need to manually update the `<PackageVersion>` in the `.csproj` file, as the CI pipeline overrides it. However, it is good practice to keep them roughly in sync or update it during major releases for local development reference.
+The project uses **MinVer** to automatically handle versioning.
+*   The version is determined solely by the Git tag (e.g., `v0.1.5-beta`).
+*   There is **no** `<PackageVersion>` in the `.csproj` file.
+*   The CI pipeline automatically picks up the version from the tag during the build process.
