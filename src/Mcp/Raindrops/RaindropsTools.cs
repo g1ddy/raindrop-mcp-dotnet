@@ -81,7 +81,7 @@ public class RaindropsTools(IRaindropsApi api) :
             [Description("A collection of bookmark details to create.")] IEnumerable<Raindrop> raindrops,
             CancellationToken cancellationToken = default)
     {
-        var payload = new RaindropCreateManyRequest { CollectionId = collectionId, Items = raindrops.ToList() };
+        var payload = new RaindropCreateManyRequest { CollectionId = collectionId, Items = raindrops as List<Raindrop> ?? raindrops.ToList() };
         return Api.CreateManyAsync(payload, cancellationToken);
     }
 
