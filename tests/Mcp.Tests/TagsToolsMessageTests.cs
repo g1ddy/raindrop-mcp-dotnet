@@ -25,18 +25,6 @@ public class TagsToolsMessageTests
             .Setup(x => x.SendRequestAsync(
                 It.Is<JsonRpcRequest>(r => r.Method == "elicitation/create"),
                 It.IsAny<CancellationToken>()))
-            .Callback<JsonRpcRequest, CancellationToken>((req, token) =>
-            {
-                // Deserialize params to inspect the message
-                // The Params in JsonRpcRequest is object?, likely a generic type or JObject/JsonElement depending on library
-                // But McpServer implementation likely wraps it.
-                // Actually, I can mock ElicitAsync if it was virtual.
-                // Looking at McpServer source (or usage), it is a concrete class.
-                // But the method is likely using SendRequestAsync under the hood.
-
-                // Let's rely on the fact that SendRequestAsync receives a JsonRpcRequest
-                // with Params containing the ElicitRequestParams
-            })
             .ReturnsAsync(new JsonRpcResponse
             {
                 Result = JsonSerializer.SerializeToNode(new ElicitResult
@@ -62,15 +50,21 @@ public class TagsToolsMessageTests
     {
         if (request.Method != "elicitation/create") return false;
 
-        // Reflection or serialization needed to get to the Message property?
-        // Params is generic.
+        var elicitParams = request.Params.Deserialize<ElicitRequestParams>();
+        if (elicitParams == null)
+        {
+            return false;
+        }
 
-        var json = JsonSerializer.Serialize(request.Params);
-        // Simple string check for now
+        // Verify that each tag is present in the confirmation message, with the expected formatting.
         foreach (var tag in expectedTags)
         {
-            if (!json.Contains(tag)) return false;
+            if (!elicitParams.Message.Contains($"- \"{tag}\""))
+            {
+                return false;
+            }
         }
+
         return true;
     }
 }
