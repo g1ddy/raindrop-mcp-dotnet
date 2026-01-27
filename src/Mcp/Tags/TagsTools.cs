@@ -58,10 +58,15 @@ public class TagsTools(ITagsApi api) : RaindropToolBase<ITagsApi>(api)
         [Description("Collection ID if scoped")] int? collectionId = null,
         CancellationToken cancellationToken = default)
     {
+        var tagsList = tags.ToList();
+        var tagListString = tagsList.Count > 0
+            ? "\n\n" + string.Join("\n", tagsList.Select(t => $"- \"{t.Replace("\"", "\\\"").Replace("\n", " ")}\""))
+            : string.Empty;
+
         // Elicit confirmation from the user.
         var confirmationRequest = new ElicitRequestParams
         {
-            Message = "Are you sure you want to delete these tags? This action cannot be undone.",
+            Message = $"Are you sure you want to delete these tags? This action cannot be undone.{tagListString}",
             RequestedSchema = new ElicitRequestParams.RequestSchema
             {
                 Properties =
@@ -81,7 +86,7 @@ public class TagsTools(ITagsApi api) : RaindropToolBase<ITagsApi>(api)
             return new SuccessResponse(false);
         }
 
-        var payload = new TagDeleteRequest { Tags = tags.ToList() };
+        var payload = new TagDeleteRequest { Tags = tagsList };
         return collectionId is null
             ? await Api.DeleteAsync(payload, cancellationToken)
             : await Api.DeleteForCollectionAsync(collectionId.Value, payload, cancellationToken);
