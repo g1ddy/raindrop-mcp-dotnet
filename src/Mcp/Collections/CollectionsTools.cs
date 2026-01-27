@@ -79,16 +79,20 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
         [Description("ID of the bookmark to move")] long bookmarkId,
         CancellationToken cancellationToken)
     {
-        // 1. Get the bookmark
-        var bookmarkResponse = await _raindropsApi.GetAsync(bookmarkId, cancellationToken);
+        // 1. Get the bookmark and all collections concurrently
+        var bookmarkTask = _raindropsApi.GetAsync(bookmarkId, cancellationToken);
+        var collectionsTask = Api.ListAsync(cancellationToken);
+
+        await Task.WhenAll(bookmarkTask, collectionsTask);
+
+        var bookmarkResponse = await bookmarkTask;
         if (bookmarkResponse?.Item == null)
         {
             return new SuccessResponse(false);
         }
         var bookmark = bookmarkResponse.Item;
 
-        // 2. Get all collections
-        var collectionsResponse = await Api.ListAsync(cancellationToken);
+        var collectionsResponse = await collectionsTask;
         if (collectionsResponse?.Items == null || collectionsResponse.Items.Count == 0)
         {
             return new SuccessResponse(false);
