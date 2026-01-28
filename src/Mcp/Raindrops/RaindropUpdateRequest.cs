@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Mcp.Raindrops;
 
@@ -8,15 +9,18 @@ namespace Mcp.Raindrops;
 [Description("Request payload for updating an existing bookmark")]
 public record RaindropUpdateRequest : IRaindropRequest
 {
+    [Url]
     [Description("The new URL for the bookmark.")]
     public string? Link { get; init; }
 
     [Description("The new title for the bookmark.")]
     public string? Title { get; init; }
 
+    [MaxLength(10000)]
     [Description("The new description or excerpt for the bookmark. Max length: 10000 characters.")]
     public string? Excerpt { get; init; }
 
+    [MaxLength(10000)]
     [Description("The new personal note for the bookmark. Max length: 10000 characters.")]
     public string? Note { get; init; }
 
