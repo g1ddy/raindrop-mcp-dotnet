@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using Mcp.Raindrops;
@@ -7,66 +8,37 @@ namespace Mcp.Tests;
 
 public class ValidationAttributesTests
 {
-    [Fact]
-    public void RaindropCreateRequest_Link_HasRequiredAndUrlAttributes()
+    [Theory]
+    [InlineData(typeof(RaindropCreateRequest), nameof(RaindropCreateRequest.Link))]
+    public void Property_HasRequiredAttribute(Type type, string propertyName)
     {
-        var property = typeof(RaindropCreateRequest).GetProperty(nameof(RaindropCreateRequest.Link));
+        var property = type.GetProperty(propertyName);
         Assert.NotNull(property);
-
         Assert.NotNull(property.GetCustomAttribute<RequiredAttribute>());
+    }
+
+    [Theory]
+    [InlineData(typeof(RaindropCreateRequest), nameof(RaindropCreateRequest.Link))]
+    [InlineData(typeof(RaindropUpdateRequest), nameof(RaindropUpdateRequest.Link))]
+    public void Property_HasUrlAttribute(Type type, string propertyName)
+    {
+        var property = type.GetProperty(propertyName);
+        Assert.NotNull(property);
         Assert.NotNull(property.GetCustomAttribute<UrlAttribute>());
     }
 
-    [Fact]
-    public void RaindropCreateRequest_Excerpt_HasMaxLengthAttribute()
+    [Theory]
+    [InlineData(typeof(RaindropCreateRequest), nameof(RaindropCreateRequest.Excerpt), 10000)]
+    [InlineData(typeof(RaindropCreateRequest), nameof(RaindropCreateRequest.Note), 10000)]
+    [InlineData(typeof(RaindropUpdateRequest), nameof(RaindropUpdateRequest.Excerpt), 10000)]
+    [InlineData(typeof(RaindropUpdateRequest), nameof(RaindropUpdateRequest.Note), 10000)]
+    public void Property_HasMaxLengthAttribute(Type type, string propertyName, int expectedLength)
     {
-        var property = typeof(RaindropCreateRequest).GetProperty(nameof(RaindropCreateRequest.Excerpt));
+        var property = type.GetProperty(propertyName);
         Assert.NotNull(property);
 
         var attr = property.GetCustomAttribute<MaxLengthAttribute>();
         Assert.NotNull(attr);
-        Assert.Equal(10000, attr.Length);
-    }
-
-    [Fact]
-    public void RaindropCreateRequest_Note_HasMaxLengthAttribute()
-    {
-        var property = typeof(RaindropCreateRequest).GetProperty(nameof(RaindropCreateRequest.Note));
-        Assert.NotNull(property);
-
-        var attr = property.GetCustomAttribute<MaxLengthAttribute>();
-        Assert.NotNull(attr);
-        Assert.Equal(10000, attr.Length);
-    }
-
-    [Fact]
-    public void RaindropUpdateRequest_Link_HasUrlAttribute()
-    {
-        var property = typeof(RaindropUpdateRequest).GetProperty(nameof(RaindropUpdateRequest.Link));
-        Assert.NotNull(property);
-
-        Assert.NotNull(property.GetCustomAttribute<UrlAttribute>());
-    }
-
-    [Fact]
-    public void RaindropUpdateRequest_Excerpt_HasMaxLengthAttribute()
-    {
-        var property = typeof(RaindropUpdateRequest).GetProperty(nameof(RaindropUpdateRequest.Excerpt));
-        Assert.NotNull(property);
-
-        var attr = property.GetCustomAttribute<MaxLengthAttribute>();
-        Assert.NotNull(attr);
-        Assert.Equal(10000, attr.Length);
-    }
-
-    [Fact]
-    public void RaindropUpdateRequest_Note_HasMaxLengthAttribute()
-    {
-        var property = typeof(RaindropUpdateRequest).GetProperty(nameof(RaindropUpdateRequest.Note));
-        Assert.NotNull(property);
-
-        var attr = property.GetCustomAttribute<MaxLengthAttribute>();
-        Assert.NotNull(attr);
-        Assert.Equal(10000, attr.Length);
+        Assert.Equal(expectedLength, attr.Length);
     }
 }
