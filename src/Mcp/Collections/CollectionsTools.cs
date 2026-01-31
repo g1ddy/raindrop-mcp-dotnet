@@ -51,7 +51,85 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
     public Task<ItemsResponse<Collection>> ListChildCollectionsAsync(CancellationToken cancellationToken) => Api.ListChildrenAsync(cancellationToken);
 
     // Pipe is used as a separator in the LLM response, so it must be removed from the input to prevent ambiguity.
-    private static string Sanitize(string? value) => value?.ReplaceLineEndings(" ").Replace("|", string.Empty) ?? string.Empty;
+    private static string Sanitize(string? value)
+    {
+        if (string.IsNullOrEmpty(value)) return string.Empty;
+
+        // Optimization: Check if sanitization is actually needed to avoid allocation
+        int idx = -1;
+        for (int i = 0; i < value.Length; i++)
+        {
+            char c = value[i];
+            if (c == '|' || c == '\r' || c == '\n' || c == '\u0085' || c == '\u2028' || c == '\u2029')
+            {
+                idx = i;
+                break;
+            }
+        }
+
+        if (idx == -1) return value;
+
+        int len = value.Length;
+        // Use stackalloc for small strings to avoid heap allocation
+        if (len <= 512)
+        {
+            Span<char> buffer = stackalloc char[len];
+            value.AsSpan(0, idx).CopyTo(buffer);
+            int pos = idx;
+
+            for (int i = idx; i < len; i++)
+            {
+                char c = value[i];
+                if (c == '|') continue;
+
+                if (c == '\r')
+                {
+                    buffer[pos++] = ' ';
+                    if (i + 1 < len && value[i + 1] == '\n') i++;
+                }
+                else if (c == '\n' || c == '\u0085' || c == '\u2028' || c == '\u2029')
+                {
+                    buffer[pos++] = ' ';
+                }
+                else
+                {
+                    buffer[pos++] = c;
+                }
+            }
+
+            return new string(buffer.Slice(0, pos));
+        }
+        else
+        {
+            var sb = new StringBuilder(len);
+            sb.Append(value, 0, idx);
+
+            for (int i = idx; i < len; i++)
+            {
+                char c = value[i];
+                if (c == '|') continue;
+
+                if (c == '\r')
+                {
+                    sb.Append(' ');
+                    if (i + 1 < len && value[i + 1] == '\n')
+                    {
+                        i++;
+                    }
+                }
+                else if (c == '\n' || c == '\u0085' || c == '\u2028' || c == '\u2029')
+                {
+                    sb.Append(' ');
+                }
+                else
+                {
+                    sb.Append(c);
+                }
+            }
+
+            return sb.ToString();
+        }
+    }
 
     [McpServerTool(Idempotent = true, Title = "Merge Collections"),
     Description("Merge multiple collections into a destination collection. Requires both the target collection ID and an array of source collection IDs to merge.")]
