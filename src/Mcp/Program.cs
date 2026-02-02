@@ -7,6 +7,28 @@ using Mcp;
 var builder = Host.CreateApplicationBuilder(args);
 // var builder = WebApplication.CreateBuilder(args);
 
+// START UX IMPROVEMENT
+// Check for required configuration early to provide a friendly error message
+var apiToken = builder.Configuration["Raindrop:ApiToken"];
+if (string.IsNullOrWhiteSpace(apiToken))
+{
+    var originalColor = Console.ForegroundColor;
+    Console.ForegroundColor = ConsoleColor.Red;
+    Console.Error.WriteLine(@"
+Error: Raindrop API Token is missing.
+
+To use this MCP server, you must provide a Raindrop.io Test Token.
+You can set it via:
+1. Environment Variable: RAINDROP__APITOKEN=your_token_here
+2. appsettings.json: { ""Raindrop"": { ""ApiToken"": ""your_token_here"" } }
+
+Get your token from: https://app.raindrop.io/settings/integrations
+");
+    Console.ForegroundColor = originalColor;
+    Environment.Exit(1);
+}
+// END UX IMPROVEMENT
+
 // Configure all logs to go to stderr (stdout is used for the MCP protocol messages).
 builder.Logging.AddConsole(o => o.LogToStandardErrorThreshold = LogLevel.Trace);
 
