@@ -8,7 +8,10 @@ var builder = Host.CreateApplicationBuilder(args);
 // var builder = WebApplication.CreateBuilder(args);
 
 // START UX IMPROVEMENT
-// Check for required configuration early to provide a friendly error message
+// Manual pre-flight check to validate configuration.
+// NOTE: While redundant with ValidateOnStart(), this check is necessary to suppress
+// the default OptionsValidationException stack trace logged by the Host,
+// ensuring a clean, user-friendly error message for the CLI.
 var apiToken = builder.Configuration["Raindrop:ApiToken"];
 if (string.IsNullOrWhiteSpace(apiToken))
 {
