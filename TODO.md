@@ -23,6 +23,7 @@ The goal is to make this tool easily installable for other .NET developers via N
     ```sh
     dotnet pack ./src/Mcp -c Release
     ```
+    *(Automated in [`.github/workflows/publish.yml`](./.github/workflows/publish.yml))*
 
 -   [ ] **Publish to NuGet.org:** Create an API key on NuGet.org and push the package. This should only be done when ready for the first public pre-release.
 
