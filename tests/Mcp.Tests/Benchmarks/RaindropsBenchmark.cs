@@ -29,7 +29,8 @@ public class RaindropsBenchmark : TestBase
         var items = new List<Raindrop>();
         for (int i = 0; i < 1000; i++)
         {
-            items.Add(new Raindrop {
+            items.Add(new Raindrop
+            {
                 Title = $"Bench Item {i} {uniqueId}",
                 Link = $"https://example.com/bench{i}/{uniqueId}"
             });
@@ -49,10 +50,10 @@ public class RaindropsBenchmark : TestBase
 
         for (int i = 0; i < iterations; i++)
         {
-             long before = GC.GetAllocatedBytesForCurrentThread();
-             await tool.CreateBookmarksAsync(0, items, CancellationToken.None);
-             long after = GC.GetAllocatedBytesForCurrentThread();
-             totalBytes += (after - before);
+            long before = GC.GetAllocatedBytesForCurrentThread();
+            await tool.CreateBookmarksAsync(0, items, CancellationToken.None);
+            long after = GC.GetAllocatedBytesForCurrentThread();
+            totalBytes += (after - before);
         }
 
         stopwatch.Stop();

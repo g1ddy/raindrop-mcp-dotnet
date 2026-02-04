@@ -20,6 +20,7 @@ public class ValidationAttributesTests
     [Theory]
     [InlineData(typeof(RaindropCreateRequest), nameof(RaindropCreateRequest.Link))]
     [InlineData(typeof(RaindropUpdateRequest), nameof(RaindropUpdateRequest.Link))]
+    [InlineData(typeof(Raindrop), nameof(Raindrop.Link))]
     public void Property_HasUrlAttribute(Type type, string propertyName)
     {
         var property = type.GetProperty(propertyName);
@@ -32,6 +33,8 @@ public class ValidationAttributesTests
     [InlineData(typeof(RaindropCreateRequest), nameof(RaindropCreateRequest.Note), 10000)]
     [InlineData(typeof(RaindropUpdateRequest), nameof(RaindropUpdateRequest.Excerpt), 10000)]
     [InlineData(typeof(RaindropUpdateRequest), nameof(RaindropUpdateRequest.Note), 10000)]
+    [InlineData(typeof(Raindrop), nameof(Raindrop.Excerpt), 10000)]
+    [InlineData(typeof(Raindrop), nameof(Raindrop.Note), 10000)]
     public void Property_HasMaxLengthAttribute(Type type, string propertyName, int expectedLength)
     {
         var property = type.GetProperty(propertyName);

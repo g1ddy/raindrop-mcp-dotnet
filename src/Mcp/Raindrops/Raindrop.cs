@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Mcp.Common;
 
@@ -20,14 +21,17 @@ public record Raindrop
     public string? Title { get; init; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [Url]
     [Description("URL of the page")]
     public string? Link { get; init; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [MaxLength(10000)]
     [Description("Excerpt from the page")]
     public string? Excerpt { get; init; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [MaxLength(10000)]
     [Description("Personal note for the bookmark")]
     public string? Note { get; init; }
 

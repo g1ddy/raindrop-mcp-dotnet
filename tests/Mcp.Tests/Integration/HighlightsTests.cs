@@ -14,7 +14,8 @@ public class HighlightsTests : TestBase
         s.AddTransient<CollectionsTools>();
         s.AddTransient<RaindropsTools>();
         s.AddTransient<HighlightsTools>();
-    }) { }
+    })
+    { }
 
     [SkippableFact]
     public async Task Crud()

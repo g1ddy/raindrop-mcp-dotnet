@@ -120,7 +120,7 @@ public class CollectionsToolsTests
 
                 if (r.Method == "elicitation/create") // or whatever the method was
                 {
-                     var elicitResult = new ElicitResult
+                    var elicitResult = new ElicitResult
                     {
                         Action = "accept",
                         Content = new Dictionary<string, JsonElement>
@@ -128,14 +128,14 @@ public class CollectionsToolsTests
                             ["collectionName"] = JsonSerializer.SerializeToElement("Tech")
                         }
                     };
-                     return new JsonRpcResponse
+                    return new JsonRpcResponse
                     {
                         Result = JsonSerializer.SerializeToNode(elicitResult)
                     };
                 }
 
                 // Return empty response for others to avoid NRE if possible, but clean inspection is goal.
-                 return new JsonRpcResponse { Result = JsonNode.Parse("{}") };
+                return new JsonRpcResponse { Result = JsonNode.Parse("{}") };
             });
 
         _raindropsApiMock.Setup(x => x.UpdateAsync(bookmarkId, It.IsAny<Raindrop>(), It.IsAny<CancellationToken>()))
@@ -192,7 +192,7 @@ public class CollectionsToolsTests
 
                 if (r.Method == "elicitation/create")
                 {
-                     var elicitResult = new ElicitResult
+                    var elicitResult = new ElicitResult
                     {
                         Action = "accept",
                         Content = new Dictionary<string, JsonElement>
@@ -200,13 +200,13 @@ public class CollectionsToolsTests
                             ["collectionName"] = JsonSerializer.SerializeToElement("Tech")
                         }
                     };
-                     return new JsonRpcResponse
+                    return new JsonRpcResponse
                     {
                         Result = JsonSerializer.SerializeToNode(elicitResult)
                     };
                 }
 
-                 return new JsonRpcResponse { Result = JsonNode.Parse("{}") };
+                return new JsonRpcResponse { Result = JsonNode.Parse("{}") };
             });
 
         _raindropsApiMock.Setup(x => x.UpdateAsync(bookmarkId, It.IsAny<Raindrop>(), It.IsAny<CancellationToken>()))
@@ -263,7 +263,7 @@ public class CollectionsToolsTests
 
                 if (r.Method == "elicitation/create")
                 {
-                     var elicitResult = new ElicitResult
+                    var elicitResult = new ElicitResult
                     {
                         Action = "accept",
                         Content = new Dictionary<string, JsonElement>
@@ -271,13 +271,13 @@ public class CollectionsToolsTests
                             ["collectionName"] = JsonSerializer.SerializeToElement("Science, Tech & Nature")
                         }
                     };
-                     return new JsonRpcResponse
+                    return new JsonRpcResponse
                     {
                         Result = JsonSerializer.SerializeToNode(elicitResult)
                     };
                 }
 
-                 return new JsonRpcResponse { Result = JsonNode.Parse("{}") };
+                return new JsonRpcResponse { Result = JsonNode.Parse("{}") };
             });
 
         _raindropsApiMock.Setup(x => x.UpdateAsync(bookmarkId, It.IsAny<Raindrop>(), It.IsAny<CancellationToken>()))

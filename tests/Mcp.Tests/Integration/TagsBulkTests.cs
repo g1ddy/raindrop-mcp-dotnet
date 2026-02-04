@@ -16,7 +16,8 @@ public class TagsBulkTests : TestBase
     {
         s.AddTransient<RaindropsTools>();
         s.AddTransient<TagsTools>();
-    }) { }
+    })
+    { }
 
     [SkippableFact]
     public async Task BulkEndpoints()

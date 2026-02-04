@@ -46,7 +46,7 @@ public abstract class TestBase : IDisposable
         }
         else
         {
-             _provider = null;
+            _provider = null;
         }
     }
 
@@ -149,7 +149,7 @@ public abstract class TestBase : IDisposable
                 if (!Directory.Exists(baseDir))
                 {
                     // If directory structure is different, fallback to CurrentDirectory
-                     baseDir = Directory.GetCurrentDirectory();
+                    baseDir = Directory.GetCurrentDirectory();
                 }
             }
             else
