@@ -17,7 +17,8 @@ public class FullFlowTests : TestBase
         s.AddTransient<RaindropsTools>();
         s.AddTransient<HighlightsTools>();
         s.AddTransient<TagsTools>();
-    }) { }
+    })
+    { }
 
     [SkippableFact]
     public async Task FullFlow()

@@ -35,14 +35,14 @@ public class RecordingHandler : DelegatingHandler
             // Restore content headers
             foreach (var h in interaction.ContentHeaders)
             {
-                 response.Content.Headers.TryAddWithoutValidation(h.Key, h.Value);
+                response.Content.Headers.TryAddWithoutValidation(h.Key, h.Value);
             }
         }
 
         // Restore response headers
         foreach (var h in interaction.ResponseHeaders)
         {
-             response.Headers.TryAddWithoutValidation(h.Key, h.Value);
+            response.Headers.TryAddWithoutValidation(h.Key, h.Value);
         }
 
         return Task.FromResult(response);
@@ -53,8 +53,8 @@ public class RecordingHandler : DelegatingHandler
         string? requestBody = null;
         if (request.Content != null)
         {
-             await request.Content.LoadIntoBufferAsync();
-             requestBody = await request.Content.ReadAsStringAsync(cancellationToken);
+            await request.Content.LoadIntoBufferAsync();
+            requestBody = await request.Content.ReadAsStringAsync(cancellationToken);
         }
 
         var response = await base.SendAsync(request, cancellationToken);
@@ -85,7 +85,7 @@ public class RecordingHandler : DelegatingHandler
         {
             foreach (var h in response.Content.Headers)
             {
-                 interaction.ContentHeaders[h.Key] = h.Value.ToArray();
+                interaction.ContentHeaders[h.Key] = h.Value.ToArray();
             }
         }
 
@@ -94,12 +94,12 @@ public class RecordingHandler : DelegatingHandler
         // Replace the response content so it can be read again by the caller
         if (responseBody != null)
         {
-             var newContent = new StringContent(responseBody);
-             if (response.Content?.Headers.ContentType != null)
-             {
-                 newContent.Headers.ContentType = response.Content.Headers.ContentType;
-             }
-             response.Content = newContent;
+            var newContent = new StringContent(responseBody);
+            if (response.Content?.Headers.ContentType != null)
+            {
+                newContent.Headers.ContentType = response.Content.Headers.ContentType;
+            }
+            response.Content = newContent;
         }
 
         return response;

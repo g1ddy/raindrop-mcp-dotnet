@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Mcp.Common;
 
@@ -10,6 +11,11 @@ namespace Mcp.Raindrops;
 [Description("Bookmark item")]
 public record Raindrop
 {
+    /// <summary>
+    /// Maximum length for text fields like Excerpt and Note.
+    /// </summary>
+    public const int MaxTextFieldLength = 10000;
+
     [JsonPropertyName("_id")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     [Description("Unique identifier of the bookmark")]
@@ -20,14 +26,17 @@ public record Raindrop
     public string? Title { get; init; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [Url]
     [Description("URL of the page")]
     public string? Link { get; init; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [MaxLength(MaxTextFieldLength)]
     [Description("Excerpt from the page")]
     public string? Excerpt { get; init; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [MaxLength(MaxTextFieldLength)]
     [Description("Personal note for the bookmark")]
     public string? Note { get; init; }
 

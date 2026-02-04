@@ -10,7 +10,8 @@ public class UserTests : TestBase
     public UserTests() : base(s =>
     {
         s.AddTransient<UserTools>();
-    }) { }
+    })
+    { }
 
     [SkippableFact]
     public async Task GetUserInfoAsync_ReturnsValidInfo()

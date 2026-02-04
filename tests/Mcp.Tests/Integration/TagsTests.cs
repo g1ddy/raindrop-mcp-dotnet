@@ -16,7 +16,8 @@ public class TagsTests : TestBase
     {
         s.AddTransient<RaindropsTools>();
         s.AddTransient<TagsTools>();
-    }) { }
+    })
+    { }
 
     [SkippableFact]
     public async Task Crud()
@@ -33,7 +34,7 @@ public class TagsTests : TestBase
         {
             Link = $"https://example.com/tag/{uniqueId}",
             Title = $"Tags Crud - Raindrop {uniqueId}",
-            Tags = [ tagName1 ],
+            Tags = [tagName1],
             Note = "tag"
         }, cancellationToken);
         long raindropId = createResponse.Item.Id;
@@ -112,7 +113,7 @@ public class TagsTests : TestBase
         {
             Link = $"https://example.com/tag/collection/{uniqueId}",
             Title = $"Tags CrudForCollection - Raindrop {uniqueId}",
-            Tags = [ tagName1 ],
+            Tags = [tagName1],
             Note = "tag-col"
         }, cancellationToken);
         long raindropId = createResponse.Item.Id;
