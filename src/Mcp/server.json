@@ -1,8 +1,17 @@
 {
-"command": "Raindrop.Mcp.DotNet",
-"args": [],
-"env": {
-"Raindrop:ApiToken": "",
-"Raindrop:BaseUrl": "https://api.raindrop.io/rest/v1"
-}
+  "servers": {
+    "RaindropMcp": {
+      "type": "stdio",
+      "command": "dnx",
+      "args": [
+        "Raindrop.Mcp.DotNet",
+        "--prerelease",
+        "--yes"
+      ],
+      "env": {
+        "Raindrop:ApiToken": "${env:RAINDROP_API_TOKEN}",
+        "Raindrop:BaseUrl": "https://api.raindrop.io/rest/v1"
+      }
+    }
+  }
 }
