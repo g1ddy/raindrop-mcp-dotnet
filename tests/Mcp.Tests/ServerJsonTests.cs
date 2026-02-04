@@ -23,10 +23,18 @@ public class ServerJsonTests
         using var jsonDoc = JsonDocument.Parse(jsonContent);
 
         // Act
-        var command = jsonDoc.RootElement.GetProperty("command").GetString();
+        // Navigate to servers.RaindropMcp
+        var servers = jsonDoc.RootElement.GetProperty("servers");
+        var raindropServer = servers.GetProperty("RaindropMcp");
+        var command = raindropServer.GetProperty("command").GetString();
+        var args = raindropServer.GetProperty("args");
 
         // Assert
-        Assert.Equal("Raindrop.Mcp.DotNet", command);
+        Assert.Equal("dnx", command);
+
+        // Verify args contains the package name
+        var argsArray = args.EnumerateArray().Select(a => a.GetString()).ToArray();
+        Assert.Contains("Raindrop.Mcp.DotNet", argsArray);
     }
 
     private string FindRepoRoot()
