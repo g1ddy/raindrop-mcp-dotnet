@@ -1,8 +1,12 @@
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using Mcp;
+
+[assembly: InternalsVisibleTo("Mcp.Benchmarks")]
+[assembly: InternalsVisibleTo("RaindropMcp.Tests")]
 
 var builder = Host.CreateApplicationBuilder(args);
 // var builder = WebApplication.CreateBuilder(args);

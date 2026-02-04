@@ -28,6 +28,28 @@ public class CollectionsToolsTests
         _tools = new CollectionsTools(_collectionsApiMock.Object, _raindropsApiMock.Object);
     }
 
+    [Theory]
+    [InlineData("Simple Text", "Simple Text")]
+    [InlineData("Text with | pipe", "Text with  pipe")]
+    [InlineData("Line\nBreak", "Line Break")]
+    [InlineData("Line\rBreak", "Line Break")]
+    [InlineData("Line\r\nBreak", "Line Break")]
+    [InlineData("Line\vBreak", "Line Break")]
+    [InlineData("Line\fBreak", "Line Break")]
+    [InlineData("Line\u0085Break", "Line Break")]
+    [InlineData("Line\u2028Break", "Line Break")]
+    [InlineData("Line\u2029Break", "Line Break")]
+    [InlineData(null, "")]
+    [InlineData("", "")]
+    public void Sanitize_HandlesVariousCharacters(string input, string expected)
+    {
+        // Act
+        var result = CollectionsTools.Sanitize(input);
+
+        // Assert
+        Assert.Equal(expected, result);
+    }
+
     [Fact]
     public async Task SuggestCollectionForBookmarkAsync_ReturnsFalse_WhenParsingFails()
     {

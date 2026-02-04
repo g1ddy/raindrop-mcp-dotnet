@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.ComponentModel;
 using System.Text;
 using System.Text.Json;
@@ -51,33 +52,21 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
     public Task<ItemsResponse<Collection>> ListChildCollectionsAsync(CancellationToken cancellationToken) => Api.ListChildrenAsync(cancellationToken);
 
     // Pipe is used as a separator in the LLM response, so it must be removed from the input to prevent ambiguity.
-    private static string Sanitize(string? value)
+    private static readonly SearchValues<char> _sanitizeChars = SearchValues.Create(['|', '\n', '\r', '\v', '\f', '\u0085', '\u2028', '\u2029']);
+
+    internal static string Sanitize(string? value)
     {
         if (string.IsNullOrEmpty(value))
         {
             return string.Empty;
         }
 
-        int length = value.Length;
-        bool needsSanitization = false;
-
-        // Pass 0: Check if sanitization is needed
-        for (int i = 0; i < length; i++)
-        {
-            char c = value[i];
-            // Check for pipe or any newline character
-            if (c == '|' || c == '\n' || c == '\r' || c == '\u0085' || c == '\u2028' || c == '\u2029')
-            {
-                needsSanitization = true;
-                break;
-            }
-        }
-
-        if (!needsSanitization)
+        if (!value.AsSpan().ContainsAny(_sanitizeChars))
         {
             return value;
         }
 
+        int length = value.Length;
         // Pass 1: Calculate new length
         int newLength = 0;
 
@@ -98,7 +87,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
                     i++; // Skip \n
                 }
             }
-            else if (c == '\n' || c == '\u0085' || c == '\u2028' || c == '\u2029')
+            else if (c == '\n' || c == '\v' || c == '\f' || c == '\u0085' || c == '\u2028' || c == '\u2029')
             {
                 newLength++; // Replaced by space
             }
@@ -132,7 +121,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
                         i++;
                     }
                 }
-                else if (c == '\n' || c == '\u0085' || c == '\u2028' || c == '\u2029')
+                else if (c == '\n' || c == '\v' || c == '\f' || c == '\u0085' || c == '\u2028' || c == '\u2029')
                 {
                     span[idx++] = ' ';
                 }
