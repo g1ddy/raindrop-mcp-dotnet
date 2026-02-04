@@ -8,11 +8,10 @@ This file tracks the immediate, concrete tasks required to finalize the project 
 
 The goal is to make this tool easily installable for other .NET developers via NuGet.
 
--   [x] **Update `.csproj` Metadata:** Before the first publish, review and confirm the package metadata in `src/Mcp/RaindropMcp.csproj`. Ensure the `<PackageId>`, `<Version>`, `<Authors>`, `<Description>`, and `<RepositoryUrl>` are correct.
+-   [x] **Update `.csproj` Metadata:** Before the first publish, review and confirm the package metadata in `src/Mcp/RaindropMcp.csproj`. Ensure the `<PackageId>`, `<Authors>`, `<Description>`, and `<RepositoryUrl>` are correct. (`<Version>` is handled by MinVer).
 
     ```xml
     <PackageId>Raindrop.Mcp.DotNet</PackageId>
-    <Version>0.1.3-beta</Version>
     <Authors>g1ddy</Authors>
     ```
 
@@ -24,11 +23,9 @@ The goal is to make this tool easily installable for other .NET developers via N
     dotnet pack ./src/Mcp -c Release
     ```
 
--   [ ] **Publish to NuGet.org:** Create an API key on NuGet.org and push the package. This should only be done when ready for the first public pre-release.
+-   [ ] **Publish to NuGet.org:** Ensure the `NUGET_API_KEY` secret is set in GitHub Actions, then create a **GitHub Release** to trigger the automated publish workflow. See [Releasing Guide](docs/RELEASING.md).
 
-    ```sh
-    dotnet nuget push ./src/Mcp/bin/Release/Raindrop.Mcp.DotNet.0.1.3-beta.nupkg --api-key YOUR_API_KEY --source https://api.nuget.org/v3/index.json
-    ```
+    *Note: Do not push manually.*
 
 ---
 
