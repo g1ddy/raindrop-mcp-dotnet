@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.ComponentModel;
 using System.Text;
 using System.Text.Json;
@@ -51,7 +52,86 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
     public Task<ItemsResponse<Collection>> ListChildCollectionsAsync(CancellationToken cancellationToken) => Api.ListChildrenAsync(cancellationToken);
 
     // Pipe is used as a separator in the LLM response, so it must be removed from the input to prevent ambiguity.
-    private static string Sanitize(string? value) => value?.ReplaceLineEndings(" ").Replace("|", string.Empty) ?? string.Empty;
+    private static readonly SearchValues<char> _sanitizeChars = SearchValues.Create(['|', '\n', '\r', '\v', '\f', '\u0085', '\u2028', '\u2029']);
+
+    internal static string Sanitize(string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return string.Empty;
+        }
+
+        if (!value.AsSpan().ContainsAny(_sanitizeChars))
+        {
+            return value;
+        }
+
+        int length = value.Length;
+        // Pass 1: Calculate new length
+        int newLength = 0;
+
+        for (int i = 0; i < length; i++)
+        {
+            char c = value[i];
+
+            if (c == '|')
+            {
+                continue;
+            }
+
+            if (c == '\r')
+            {
+                newLength++; // Replaced by space
+                if (i + 1 < length && value[i + 1] == '\n')
+                {
+                    i++; // Skip \n
+                }
+            }
+            else if (c == '\n' || c == '\v' || c == '\f' || c == '\u0085' || c == '\u2028' || c == '\u2029')
+            {
+                newLength++; // Replaced by space
+            }
+            else
+            {
+                newLength++;
+            }
+        }
+
+        // Pass 2: Create string
+        return string.Create(newLength, value, (span, state) =>
+        {
+            var input = state.AsSpan();
+            int inputLen = input.Length;
+            int idx = 0;
+
+            for (int i = 0; i < inputLen; i++)
+            {
+                char c = input[i];
+
+                if (c == '|')
+                {
+                    continue;
+                }
+
+                if (c == '\r')
+                {
+                    span[idx++] = ' ';
+                    if (i + 1 < inputLen && input[i + 1] == '\n')
+                    {
+                        i++;
+                    }
+                }
+                else if (c == '\n' || c == '\v' || c == '\f' || c == '\u0085' || c == '\u2028' || c == '\u2029')
+                {
+                    span[idx++] = ' ';
+                }
+                else
+                {
+                    span[idx++] = c;
+                }
+            }
+        });
+    }
 
     [McpServerTool(Idempotent = true, Title = "Merge Collections"),
     Description("Merge multiple collections into a destination collection. Requires both the target collection ID and an array of source collection IDs to merge.")]
