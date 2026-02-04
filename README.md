@@ -76,6 +76,16 @@ Replace `YourGitHubUsername` with your GitHub username and `YourGitHubPAT` with 
 
 ---
 
+## 📚 MCP Resources
+
+Here are some helpful links to learn more about the Model Context Protocol (MCP) ecosystem:
+
+-   **[Use MCP servers in VS Code (Preview)](https://code.visualstudio.com/docs/copilot/chat/mcp-servers)**
+-   **[Use MCP servers in Visual Studio (Preview)](https://learn.microsoft.com/visualstudio/ide/mcp-servers)**
+-   **[Official MCP Documentation](https://modelcontextprotocol.io/)**
+
+---
+
 ## 📝 License
 
 This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
