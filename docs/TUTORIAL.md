@@ -1,20 +1,70 @@
 # Tutorial: Your First Raindrop.io Automation
 
-**Welcome!** This tutorial will guide you through using the Raindrop MCP server to perform a simple automation after you have completed the initial setup.
+**Welcome!** This tutorial will guide you through setting up and using the Raindrop MCP server to automate your bookmark management.
 
 ---
 
-### **Step 1: Choose Your Setup Path**
+### **Step 1: Setup and Configuration**
 
-Before you can use the server, it must be configured. Please select the guide that matches your goal:
+We recommend using `dnx` (part of the .NET SDK) to run the server. This method dynamically downloads the latest version of the server, ensuring you always have the newest features and fixes.
 
--   **For Users (Recommended):**
-    If you want to use the server without modifying its code, follow the quick and easy setup instructions in the **[Package README](../src/Mcp/README.md)**. This guide covers the recommended installation methods.
+**Prerequisite:** Ensure you have the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) or later installed.
 
--   **For Developers:**
-    If you want to run the server from source to debug, modify, or contribute to the project, follow the **[How to Set Up a Development Environment](./HOW_TO.md)** guide.
+#### **1. Get Your Raindrop.io API Token**
 
-**Once you have completed one of these setup guides, return here to continue.**
+To access your account, the server needs a secure API token.
+
+1.  Navigate to the [**For Developers**](https://app.raindrop.io/settings/integrations) section in your Raindrop.io settings.
+2.  Click **+ Create new app**, give it a name (e.g., "My MCP Client"), and click **Create**.
+3.  Under the **Test token** section, click **Create** to generate a new token.
+4.  **Copy the token.** You will need it for the next step.
+
+#### **2. Secure Your API Token**
+
+For security, it is best to store your API token in an environment variable rather than pasting it directly into your configuration files.
+
+**Set the Environment Variable:**
+
+*   **Windows (PowerShell):**
+    ```powershell
+    $env:RAINDROP_API_TOKEN="YOUR_TOKEN_HERE"
+    ```
+*   **macOS/Linux:**
+    ```bash
+    export RAINDROP_API_TOKEN="YOUR_TOKEN_HERE"
+    ```
+
+*Note: This variable will only be set for your current terminal session. For a permanent solution, add the command to your shell's startup file (e.g., `.bashrc`, `.zshrc`, or your PowerShell profile) or system environment variables.*
+
+#### **3. Create the Client Manifest**
+
+Configure your MCP client (like VS Code) to launch the server. This configuration file is often referred to as the **manifest** (`mcp.json`).
+
+1.  **Open VS Code Settings** (`File > Preferences > Settings`) and search for "mcp".
+2.  Click the **Edit in settings.json** link for the MCP configuration.
+3.  Add the following server configuration to your `mcp.json` file. This tells the client to use `dnx` to run the server and securely passes your token from the environment.
+
+    ```json
+    {
+      "servers": {
+        "RaindropMcp": {
+          "type": "stdio",
+          "command": "dnx",
+          "args": [
+            "Raindrop.Mcp.DotNet",
+            "--prerelease",
+            "--yes"
+          ],
+          "env": {
+            "Raindrop:ApiToken": "${env:RAINDROP_API_TOKEN}",
+            "Raindrop:BaseUrl": "https://api.raindrop.io/rest/v1"
+          }
+        }
+      }
+    }
+    ```
+
+**That's it!** Your client will now securely load the token from your environment and automatically download the latest version of the server.
 
 ---
 
