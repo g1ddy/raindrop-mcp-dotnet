@@ -59,14 +59,46 @@ public class TagsTools(ITagsApi api) : RaindropToolBase<ITagsApi>(api)
         CancellationToken cancellationToken = default)
     {
         var tagsList = tags.ToList();
-        var tagListString = tagsList.Count > 0
-            ? "\n\n" + string.Join("\n", tagsList.Select(t => $"- \"{t.Replace("\"", "\\\"").Replace("\n", " ")}\""))
-            : string.Empty;
+        var sb = new System.Text.StringBuilder();
+        sb.Append("Are you sure you want to delete these tags? This action cannot be undone.");
+
+        if (tagsList.Count > 0)
+        {
+            sb.Append("\n\n");
+            for (int i = 0; i < tagsList.Count; i++)
+            {
+                if (i > 0)
+                {
+                    sb.Append('\n');
+                }
+                sb.Append("- \"");
+
+                var tag = tagsList[i];
+                for (int j = 0; j < tag.Length; j++)
+                {
+                    var c = tag[j];
+                    if (c == '"')
+                    {
+                        sb.Append('\\');
+                        sb.Append('"');
+                    }
+                    else if (c == '\n')
+                    {
+                        sb.Append(' ');
+                    }
+                    else
+                    {
+                        sb.Append(c);
+                    }
+                }
+                sb.Append('"');
+            }
+        }
 
         // Elicit confirmation from the user.
         var confirmationRequest = new ElicitRequestParams
         {
-            Message = $"Are you sure you want to delete these tags? This action cannot be undone.{tagListString}",
+            Message = sb.ToString(),
             RequestedSchema = new ElicitRequestParams.RequestSchema
             {
                 Properties =
