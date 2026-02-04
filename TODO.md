@@ -23,7 +23,7 @@ The goal is to make this tool easily installable for other .NET developers via N
     dotnet pack ./src/Mcp -c Release
     ```
 
--   [ ] **Publish to NuGet.org:** Ensure the `NUGET_API_KEY` secret is set in GitHub Actions, then create a **GitHub Release** to trigger the automated publish workflow. See [Releasing Guide](docs/RELEASING.md).
+-   [x] **Publish to NuGet.org:** Ensure the `NUGET_API_KEY` secret is set in GitHub Actions, then create a **GitHub Release** to trigger the automated [publish workflow](.github/workflows/publish.yml). See [Releasing Guide](docs/RELEASING.md).
 
     *Note: The command below is for reference only. We use the automated workflow to publish.*
     ```sh
