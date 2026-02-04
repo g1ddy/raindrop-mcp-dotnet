@@ -9,7 +9,15 @@
 Before you can use the server, it must be configured. Please select the guide that matches your goal:
 
 -   **For Users (Recommended):**
-    If you want to use the server without modifying its code, follow the quick and easy setup instructions in the **[Package README](../src/Mcp/README.md)**. This guide covers the recommended installation methods.
+    If you want to use the server without modifying its code, follow the quick and easy setup instructions in the **[Package README](../src/Mcp/README.md)**. This guide covers the recommended installation methods, including using `dnx` with the manifest for secure token configuration.
+
+    <!--
+    MAINTAINER NOTE:
+    The setup instructions are intentionally kept in src/Mcp/README.md because that file is
+    packaged with the NuGet release and displayed on NuGet.org. We avoid duplicating the
+    instructions here to keep our documentation DRY and ensure the distributed README is
+    always the single source of truth for end-users.
+    -->
 
 -   **For Developers:**
     If you want to run the server from source to debug, modify, or contribute to the project, follow the **[How to Set Up a Development Environment](./HOW_TO.md)** guide.
