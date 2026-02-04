@@ -16,11 +16,11 @@ public record RaindropUpdateRequest : IRaindropRequest
     [Description("The new title for the bookmark.")]
     public string? Title { get; init; }
 
-    [MaxLength(10000)]
+    [MaxLength(Raindrop.MaxTextFieldLength)]
     [Description("The new description or excerpt for the bookmark. Max length: 10000 characters.")]
     public string? Excerpt { get; init; }
 
-    [MaxLength(10000)]
+    [MaxLength(Raindrop.MaxTextFieldLength)]
     [Description("The new personal note for the bookmark. Max length: 10000 characters.")]
     public string? Note { get; init; }
 
