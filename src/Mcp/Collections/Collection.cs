@@ -32,4 +32,7 @@ public record Collection
 
     [Description("Indicates if the collection is shared publicly")]
     public bool? Public { get; init; }
+
+    [Description("Number of bookmarks in the collection")]
+    public int Count { get; init; }
 }
