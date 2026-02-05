@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Linq;
+using System;
 
 namespace Mcp.Benchmarks;
 
@@ -20,6 +22,10 @@ public class CollectionsToolsBenchmark
     private Mock<McpServer> _mcpServerMock;
     private Mock<ICollectionsApi> _collectionsApiMock;
     private Mock<IRaindropsApi> _raindropsApiMock;
+    private List<Collection> _largeCollectionList;
+
+    [Params(100, 1000)]
+    public int CollectionCount;
 
     [GlobalSetup]
     public void Setup()
@@ -28,19 +34,27 @@ public class CollectionsToolsBenchmark
         _raindropsApiMock = new Mock<IRaindropsApi>();
         _mcpServerMock = new Mock<McpServer>();
 
-        // Setup Bookmark GetAsync with 100ms delay
-        _raindropsApiMock.Setup(x => x.GetAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
-            .Returns(async (long id, CancellationToken ct) => {
-                await Task.Delay(100, ct);
-                return new ItemResponse<Raindrop>(true, new Raindrop { Id = id, Title = "Test Bookmark", Link = "http://example.com" });
+        // Generate a large list of collections
+        _largeCollectionList = new List<Collection>();
+        var random = new Random(42);
+        for (int i = 0; i < CollectionCount; i++)
+        {
+            _largeCollectionList.Add(new Collection
+            {
+                Id = i,
+                Title = $"Collection {i}",
+                Count = random.Next(0, 1000), // Random count
+                Parent = (i % 5 == 0) ? new IdRef { Id = 1 } : null // 20% have parents (should be filtered out)
             });
+        }
 
-        // Setup Collections ListAsync with 100ms delay
+        // Setup Bookmark GetAsync
+        _raindropsApiMock.Setup(x => x.GetAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ItemResponse<Raindrop>(true, new Raindrop { Id = 123, Title = "Test Bookmark", Link = "http://example.com" }));
+
+        // Setup Collections ListAsync
         _collectionsApiMock.Setup(x => x.ListAsync(It.IsAny<CancellationToken>()))
-            .Returns(async (CancellationToken ct) => {
-                await Task.Delay(100, ct);
-                return new ItemsResponse<Collection>(true, new List<Collection> { new Collection { Id = 1, Title = "Test Collection" } });
-            });
+            .ReturnsAsync(new ItemsResponse<Collection>(true, _largeCollectionList));
 
         // Setup McpServer
          _mcpServerMock.Setup(x => x.ClientCapabilities)
@@ -54,7 +68,7 @@ public class CollectionsToolsBenchmark
         var llmResponse = new CreateMessageResult
         {
             Role = Role.Assistant,
-            Content = [new TextContentBlock { Text = "Test Collection" }],
+            Content = [new TextContentBlock { Text = "Collection 1 | Collection 2 | Collection 3" }],
             Model = "test-model"
         };
 

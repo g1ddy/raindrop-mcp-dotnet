@@ -180,19 +180,23 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
         var collectionTitles = new Dictionary<string, Collection>(StringComparer.OrdinalIgnoreCase);
         var promptBuilder = new StringBuilder();
 
-        foreach (var c in collectionsResponse.Items)
+        var filteredCollections = collectionsResponse.Items
+            .Where(c => !string.IsNullOrEmpty(c.Title))
+            .Where(c => c.Parent == null) // Filter out child collections
+            .OrderBy(c => c.Count)
+            .Take(25);
+
+        foreach (var c in filteredCollections)
         {
-            if (!string.IsNullOrEmpty(c.Title))
+            // We've already filtered for null/empty title above
+            var title = Sanitize(c.Title!);
+            if (collectionTitles.TryAdd(title, c))
             {
-                var title = Sanitize(c.Title);
-                if (collectionTitles.TryAdd(title, c))
+                if (promptBuilder.Length > 0)
                 {
-                    if (promptBuilder.Length > 0)
-                    {
-                        promptBuilder.Append('\n');
-                    }
-                    promptBuilder.Append($"- {title}");
+                    promptBuilder.Append('\n');
                 }
+                promptBuilder.Append($"- {title}");
             }
         }
 
