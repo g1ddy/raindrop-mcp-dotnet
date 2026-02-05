@@ -62,7 +62,7 @@ public record Raindrop
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [Description("List of media attachments (covers)")]
-    public List<MediaItem>? Media { get; init; }
+    public IReadOnlyList<MediaItem>? Media { get; init; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [Description("Creation date")]
@@ -91,7 +91,7 @@ public record Raindrop
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [Description("List of highlights")]
-    public List<Highlight>? Highlights { get; init; }
+    public IReadOnlyList<Highlight>? Highlights { get; init; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [Description("Reminder attached to the raindrop")]

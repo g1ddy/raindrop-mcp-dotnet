@@ -61,6 +61,6 @@ These fields appear in the VCR response but are NOT in the documentation tables.
 
 ## Implementation Plan
 1.  **Remove**: `CollectionId` from `Raindrop`.
-2.  **Add**: `Type`, `Cover`, `Media`, `Created`, `LastUpdate`, `Domain`, `Broken`, `Cache`, `CreatorRef`, `File`, `Highlights`, `Reminder`.
+2.  **Add**: `Type`, `Cover`, `Media`, `Created`, `LastUpdate`, `Domain`, `Broken`, `Cache`, `File`, `Highlights`, `Reminder`.
 3.  **Update**: `MediaItem` to remove `Type`.
 4.  **Create**: New records for nested objects (`RaindropCache`, `RaindropCreatorRef`, etc.).
