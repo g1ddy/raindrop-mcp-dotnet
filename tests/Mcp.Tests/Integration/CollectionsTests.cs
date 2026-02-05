@@ -72,7 +72,7 @@ public class CollectionsTests : TestBase
 
         try
         {
-            var result = await collections.MergeCollectionsAsync(destinationId, new List<int> { sourceId1, sourceId2 }, cancellationToken);
+            var result = await collections.MergeCollectionsAsync(destinationId, new HashSet<int> { sourceId1, sourceId2 }, cancellationToken);
             Assert.True(result.Result);
 
             var list = await collections.ListCollectionsAsync(cancellationToken);

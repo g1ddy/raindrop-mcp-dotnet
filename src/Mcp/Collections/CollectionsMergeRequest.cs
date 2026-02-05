@@ -12,5 +12,5 @@ public record CollectionsMergeRequest
     public int To { get; init; }
 
     [Description("Collection IDs to merge")]
-    public List<int> Ids { get; init; } = new();
+    public HashSet<int> Ids { get; init; } = new();
 }
