@@ -54,6 +54,9 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
     // Pipe is used as a separator in the LLM response, so it must be removed from the input to prevent ambiguity.
     private static readonly SearchValues<char> _sanitizeChars = SearchValues.Create(['|', '\n', '\r', '\v', '\f', '\u0085', '\u2028', '\u2029']);
 
+    // Optimized implementation using a single-pass buffer approach to minimize allocations.
+    // Small strings use stack memory (stackalloc), while larger ones rent from the shared ArrayPool.
+    // This reduces GC pressure compared to the previous two-pass or StringBuilder approaches.
     internal static string Sanitize(string? value)
     {
         if (string.IsNullOrEmpty(value))
@@ -61,52 +64,25 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
             return string.Empty;
         }
 
-        if (!value.AsSpan().ContainsAny(_sanitizeChars))
+        var span = value.AsSpan();
+        if (!span.ContainsAny(_sanitizeChars))
         {
             return value;
         }
 
         int length = value.Length;
-        // Pass 1: Calculate new length
-        int newLength = 0;
+        char[]? rented = null;
+        Span<char> buffer = length <= 512
+            ? stackalloc char[length]
+            : (rented = ArrayPool<char>.Shared.Rent(length));
 
-        for (int i = 0; i < length; i++)
+        try
         {
-            char c = value[i];
+            int newLength = 0;
 
-            if (c == '|')
+            for (int i = 0; i < length; i++)
             {
-                continue;
-            }
-
-            if (c == '\r')
-            {
-                newLength++; // Replaced by space
-                if (i + 1 < length && value[i + 1] == '\n')
-                {
-                    i++; // Skip \n
-                }
-            }
-            else if (c == '\n' || c == '\v' || c == '\f' || c == '\u0085' || c == '\u2028' || c == '\u2029')
-            {
-                newLength++; // Replaced by space
-            }
-            else
-            {
-                newLength++;
-            }
-        }
-
-        // Pass 2: Create string
-        return string.Create(newLength, value, (span, state) =>
-        {
-            var input = state.AsSpan();
-            int inputLen = input.Length;
-            int idx = 0;
-
-            for (int i = 0; i < inputLen; i++)
-            {
-                char c = input[i];
+                char c = span[i];
 
                 if (c == '|')
                 {
@@ -115,22 +91,31 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
 
                 if (c == '\r')
                 {
-                    span[idx++] = ' ';
-                    if (i + 1 < inputLen && input[i + 1] == '\n')
+                    buffer[newLength++] = ' ';
+                    if (i + 1 < length && span[i + 1] == '\n')
                     {
-                        i++;
+                        i++; // Skip \n
                     }
                 }
                 else if (c == '\n' || c == '\v' || c == '\f' || c == '\u0085' || c == '\u2028' || c == '\u2029')
                 {
-                    span[idx++] = ' ';
+                    buffer[newLength++] = ' ';
                 }
                 else
                 {
-                    span[idx++] = c;
+                    buffer[newLength++] = c;
                 }
             }
-        });
+
+            return new string(buffer.Slice(0, newLength));
+        }
+        finally
+        {
+            if (rented != null)
+            {
+                ArrayPool<char>.Shared.Return(rented);
+            }
+        }
     }
 
     [McpServerTool(Idempotent = true, Title = "Merge Collections"),

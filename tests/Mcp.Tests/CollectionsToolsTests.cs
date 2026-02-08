@@ -41,7 +41,7 @@ public class CollectionsToolsTests
     [InlineData("Line\u2029Break", "Line Break")]
     [InlineData(null, "")]
     [InlineData("", "")]
-    public void Sanitize_HandlesVariousCharacters(string input, string expected)
+    public void Sanitize_HandlesVariousCharacters(string? input, string expected)
     {
         // Act
         var result = CollectionsTools.Sanitize(input);
