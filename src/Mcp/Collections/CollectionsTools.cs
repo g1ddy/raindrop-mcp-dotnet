@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 using Mcp.Common;
@@ -11,7 +12,7 @@ namespace Mcp.Collections;
 
 [McpServerToolType]
 public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
-    RaindropToolBase<ICollectionsApi>(api)
+    RaindropToolBase<ICollectionsApi>(api), IDisposable
 {
     private static readonly char[] _separators = ['|', '\n'];
     private static readonly char[] _trimChars = ['-', '*', ' ', '\'', '"', '.'];
@@ -25,19 +26,17 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
 
     private async Task<ItemsResponse<Collection>> GetCachedCollectionsAsync(CancellationToken cancellationToken)
     {
-        var entry = _cache;
-        if (entry != null && entry.Expiration > DateTimeOffset.UtcNow)
+        if (TryGetValidCache(out var cached))
         {
-            return entry.Response with { Items = [.. entry.Response.Items] };
+            return cached;
         }
 
         await _cacheLock.WaitAsync(cancellationToken);
         try
         {
-            entry = _cache;
-            if (entry != null && entry.Expiration > DateTimeOffset.UtcNow)
+            if (TryGetValidCache(out var lockedCached))
             {
-                return entry.Response with { Items = [.. entry.Response.Items] };
+                return lockedCached;
             }
 
             var response = await Api.ListAsync(cancellationToken);
@@ -52,11 +51,29 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
         {
             _cacheLock.Release();
         }
+
+        bool TryGetValidCache([NotNullWhen(true)] out ItemsResponse<Collection>? response)
+        {
+            var entry = _cache;
+            if (entry != null && entry.Expiration > DateTimeOffset.UtcNow)
+            {
+                response = entry.Response with { Items = [.. entry.Response.Items] };
+                return true;
+            }
+            response = null;
+            return false;
+        }
     }
 
     internal void InvalidateCache()
     {
         _cache = null;
+    }
+
+    public void Dispose()
+    {
+        _cacheLock.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
