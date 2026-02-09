@@ -73,7 +73,6 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
     public void Dispose()
     {
         _cacheLock.Dispose();
-        GC.SuppressFinalize(this);
     }
 
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
