@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 using Mcp.Common;
@@ -11,17 +12,73 @@ namespace Mcp.Collections;
 
 [McpServerToolType]
 public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
-    RaindropToolBase<ICollectionsApi>(api)
+    RaindropToolBase<ICollectionsApi>(api), IDisposable
 {
     private static readonly char[] _separators = ['|', '\n'];
     private static readonly char[] _trimChars = ['-', '*', ' ', '\'', '"', '.'];
     private readonly IRaindropsApi _raindropsApi = raindropsApi;
     private const int DefaultMaxTokens = 1000;
 
+    private record CacheEntry(ItemsResponse<Collection> Response, DateTimeOffset Expiration);
+    private volatile CacheEntry? _cache;
+    private readonly SemaphoreSlim _cacheLock = new(1, 1);
+    private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
+
+    private async Task<ItemsResponse<Collection>> GetCachedCollectionsAsync(CancellationToken cancellationToken)
+    {
+        if (TryGetValidCache(out var cached))
+        {
+            return cached;
+        }
+
+        await _cacheLock.WaitAsync(cancellationToken);
+        try
+        {
+            if (TryGetValidCache(out var lockedCached))
+            {
+                return lockedCached;
+            }
+
+            var response = await Api.ListAsync(cancellationToken);
+            if (response.Result && response.Items != null)
+            {
+                _cache = new CacheEntry(response, DateTimeOffset.UtcNow.Add(CacheDuration));
+                return response with { Items = [.. response.Items] };
+            }
+            return response;
+        }
+        finally
+        {
+            _cacheLock.Release();
+        }
+
+        bool TryGetValidCache([NotNullWhen(true)] out ItemsResponse<Collection>? response)
+        {
+            var entry = _cache;
+            if (entry != null && entry.Expiration > DateTimeOffset.UtcNow)
+            {
+                response = entry.Response with { Items = [.. entry.Response.Items] };
+                return true;
+            }
+            response = null;
+            return false;
+        }
+    }
+
+    internal void InvalidateCache()
+    {
+        _cache = null;
+    }
+
+    public void Dispose()
+    {
+        _cacheLock.Dispose();
+    }
+
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
     Title = "List Collections"),
     Description("Retrieves all top-level (root) collections. Use this to understand your collection hierarchy before making structural changes.")]
-    public Task<ItemsResponse<Collection>> ListCollectionsAsync(CancellationToken cancellationToken) => Api.ListAsync(cancellationToken);
+    public Task<ItemsResponse<Collection>> ListCollectionsAsync(CancellationToken cancellationToken) => GetCachedCollectionsAsync(cancellationToken);
 
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
     Title = "Get Collection"),
@@ -31,20 +88,41 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
 
     [McpServerTool(Title = "Create Collection"),
     Description("Creates a new collection. To create a subcollection, include a parent object in the collection parameter.")]
-    public Task<ItemResponse<Collection>> CreateCollectionAsync([Description("The collection details to create")] Collection collection, CancellationToken cancellationToken)
-        => Api.CreateAsync(collection, cancellationToken);
+    public async Task<ItemResponse<Collection>> CreateCollectionAsync([Description("The collection details to create")] Collection collection, CancellationToken cancellationToken)
+    {
+        var response = await Api.CreateAsync(collection, cancellationToken);
+        if (response.Result)
+        {
+            InvalidateCache();
+        }
+        return response;
+    }
 
     [McpServerTool(Idempotent = true, Title = "Update Collection"),
     Description("Updates an existing collection.")]
-    public Task<ItemResponse<Collection>> UpdateCollectionAsync(
+    public async Task<ItemResponse<Collection>> UpdateCollectionAsync(
         [Description("ID of the collection to update")] int id,
         [Description("Updated collection data")] Collection collection, CancellationToken cancellationToken)
-        => Api.UpdateAsync(id, collection, cancellationToken);
+    {
+        var response = await Api.UpdateAsync(id, collection, cancellationToken);
+        if (response.Result)
+        {
+            InvalidateCache();
+        }
+        return response;
+    }
 
     [McpServerTool(Idempotent = true, Title = "Delete Collection"),
     Description("Removes a collection. Bookmarks within it are moved to the Trash.")]
-    public Task<SuccessResponse> DeleteCollectionAsync([Description("ID of the collection to delete")] int id, CancellationToken cancellationToken)
-        => Api.DeleteAsync(id, cancellationToken);
+    public async Task<SuccessResponse> DeleteCollectionAsync([Description("ID of the collection to delete")] int id, CancellationToken cancellationToken)
+    {
+        var response = await Api.DeleteAsync(id, cancellationToken);
+        if (response.Result)
+        {
+            InvalidateCache();
+        }
+        return response;
+    }
 
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
     Title = "List Child Collections"),
@@ -120,7 +198,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
 
     [McpServerTool(Idempotent = true, Title = "Merge Collections"),
     Description("Merge multiple collections into a destination collection. Requires both the target collection ID and an array of source collection IDs to merge.")]
-    public Task<SuccessResponse> MergeCollectionsAsync(
+    public async Task<SuccessResponse> MergeCollectionsAsync(
         [Description("Target collection ID where source collections will be merged")] int to,
         [Description("Collection IDs to merge")] HashSet<int> ids,
         CancellationToken cancellationToken)
@@ -134,7 +212,12 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
             throw new ArgumentException("Destination collection cannot be merged into itself.", nameof(ids));
 
         var payload = new CollectionsMergeRequest { To = to, Ids = ids };
-        return Api.MergeAsync(payload, cancellationToken);
+        var response = await Api.MergeAsync(payload, cancellationToken);
+        if (response.Result)
+        {
+            InvalidateCache();
+        }
+        return response;
     }
 
     [McpServerTool(Title = "Suggest Collection for Bookmark"),
@@ -146,7 +229,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
     {
         // 1. Get the bookmark and all collections concurrently
         var bookmarkTask = _raindropsApi.GetAsync(bookmarkId, cancellationToken);
-        var collectionsTask = Api.ListAsync(cancellationToken);
+        var collectionsTask = GetCachedCollectionsAsync(cancellationToken);
 
         await Task.WhenAll(bookmarkTask, collectionsTask);
 
