@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Mcp.Tests;
 
-public class CollectionsCachingTests
+public class CollectionsCachingTests : IDisposable
 {
     private readonly Mock<ICollectionsApi> _collectionsApiMock;
     private readonly Mock<IRaindropsApi> _raindropsApiMock;
@@ -170,6 +170,11 @@ public class CollectionsCachingTests
 
         // Assert
         _collectionsApiMock.Verify(x => x.ListAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
+    }
+
+    public void Dispose()
+    {
+        _tools.Dispose();
     }
 
     [Fact]
