@@ -78,6 +78,8 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
     Title = "List Collections"),
     Description("Retrieves all top-level (root) collections. Use this to understand your collection hierarchy before making structural changes.")]
+    // The upstream API does not support pagination for this endpoint:
+    // https://developer.raindrop.io/v1/collections/methods#get-root-collections
     public Task<ItemsResponse<Collection>> ListCollectionsAsync(CancellationToken cancellationToken) => GetCachedCollectionsAsync(cancellationToken);
 
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
