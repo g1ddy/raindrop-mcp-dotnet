@@ -10,6 +10,7 @@ public class ValidationAttributesTests
 {
     [Theory]
     [InlineData(typeof(RaindropCreateRequest), nameof(RaindropCreateRequest.Link))]
+    [InlineData(typeof(Raindrop), nameof(Raindrop.Link))]
     public void Property_HasRequiredAttribute(Type type, string propertyName)
     {
         var property = type.GetProperty(propertyName);
