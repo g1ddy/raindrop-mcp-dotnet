@@ -76,13 +76,40 @@ public class RaindropsTools(IRaindropsApi api) :
 
     [McpServerTool(Title = "Create Bookmarks"),
          Description("Creates multiple bookmarks in a single request.")]
-    public Task<ItemsResponse<Raindrop>> CreateBookmarksAsync(
+    public async Task<ItemsResponse<Raindrop>> CreateBookmarksAsync(
             [Description("Collection ID for the new bookmarks")] int collectionId,
             [Description("A collection of bookmark details to create.")] IEnumerable<Raindrop> raindrops,
             CancellationToken cancellationToken = default)
     {
-        var payload = new RaindropCreateManyRequest { CollectionId = collectionId, Items = raindrops as List<Raindrop> ?? raindrops.ToList() };
-        return Api.CreateManyAsync(payload, cancellationToken);
+        const int ChunkSize = 100;
+        var allItems = new List<Raindrop>();
+        var overallResult = true;
+
+        foreach (var chunk in raindrops.Chunk(ChunkSize))
+        {
+            var payload = new RaindropCreateManyRequest
+            {
+                CollectionId = collectionId,
+                Items = chunk.ToList()
+            };
+
+            var response = await Api.CreateManyAsync(payload, cancellationToken);
+
+            if (response.Result)
+            {
+                if (response.Items is not null)
+                {
+                    allItems.AddRange(response.Items);
+                }
+            }
+            else
+            {
+                overallResult = false;
+                break;
+            }
+        }
+
+        return new ItemsResponse<Raindrop>(overallResult, allItems);
     }
 
     [McpServerTool(Idempotent = true, Title = "Update Bookmarks"),

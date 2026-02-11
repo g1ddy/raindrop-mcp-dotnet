@@ -1,17 +1,18 @@
+using Mcp.Common;
 using Mcp.Raindrops;
-using Mcp.Tests.Integration;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Mcp.Tests.Benchmarks;
 
 [Trait("Category", "Benchmark")]
-public class RaindropsBenchmark : TestBase
+public class RaindropsChunkingBenchmark
 {
     private readonly ITestOutputHelper _output;
 
-    public RaindropsBenchmark(ITestOutputHelper output) : base(s => s.AddTransient<RaindropsTools>())
+    public RaindropsChunkingBenchmark(ITestOutputHelper output)
     {
         _output = output;
     }
@@ -19,13 +20,16 @@ public class RaindropsBenchmark : TestBase
     [Fact]
     public async Task BenchmarkAllocation()
     {
-        InitializeVcr();
+        // Setup Mock API
+        var apiMock = new Mock<IRaindropsApi>();
+        apiMock.Setup(x => x.CreateManyAsync(It.IsAny<RaindropCreateManyRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ItemsResponse<Raindrop>(true, new List<Raindrop>()));
 
-        var tool = Provider.GetRequiredService<RaindropsTools>();
-        var uniqueId = CurrentTestId;
+        var tool = new RaindropsTools(apiMock.Object);
+        var uniqueId = Guid.NewGuid().ToString("N");
         _output.WriteLine($"TestID: {uniqueId}");
 
-        // Create 1000 items matching the fixture
+        // Create 1000 items
         var items = new List<Raindrop>();
         for (int i = 0; i < 1000; i++)
         {
