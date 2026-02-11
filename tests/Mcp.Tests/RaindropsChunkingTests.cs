@@ -78,6 +78,27 @@ public class RaindropsChunkingTests
         }
     }
 
+    [Fact]
+    public async Task CreateBookmarksAsync_WhenChunkFails_StopsAndReturnsPartialSuccess()
+    {
+        // Arrange
+        var raindrops = CreateRaindrops(250); // 3 chunks
+        var firstChunkResponseItems = raindrops.Take(100).ToList();
+
+        _apiMock.SetupSequence(api => api.CreateManyAsync(It.IsAny<RaindropCreateManyRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ItemsResponse<Raindrop>(true, firstChunkResponseItems)) // First chunk succeeds
+            .ReturnsAsync(new ItemsResponse<Raindrop>(false, null)); // Second chunk fails
+
+        // Act
+        var result = await _tools.CreateBookmarksAsync(0, raindrops, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.Result);
+        Assert.Equal(100, result.Items.Count);
+        // This verifies that processing stops after failure, as recommended in the other comment.
+        _apiMock.Verify(api => api.CreateManyAsync(It.IsAny<RaindropCreateManyRequest>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+    }
+
     private IEnumerable<Raindrop> CreateRaindrops(int count)
     {
         return Enumerable.Range(0, count).Select(i => new Raindrop

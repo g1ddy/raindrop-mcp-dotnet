@@ -95,14 +95,17 @@ public class RaindropsTools(IRaindropsApi api) :
 
             var response = await Api.CreateManyAsync(payload, cancellationToken);
 
-            if (!response.Result)
+            if (response.Result)
+            {
+                if (response.Items is not null)
+                {
+                    allItems.AddRange(response.Items);
+                }
+            }
+            else
             {
                 overallResult = false;
-            }
-
-            if (response.Items is not null)
-            {
-                allItems.AddRange(response.Items);
+                break;
             }
         }
 
