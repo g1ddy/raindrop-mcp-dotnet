@@ -33,6 +33,8 @@ public static class RaindropServiceCollectionExtensions
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        services.AddSingleton<RaindropClientConfig>();
+
         var settings = new RefitSettings
         {
             ContentSerializer = new SystemTextJsonContentSerializer(new System.Text.Json.JsonSerializerOptions
@@ -44,10 +46,10 @@ public static class RaindropServiceCollectionExtensions
 
         void Configure(IServiceProvider sp, HttpClient client)
         {
-            var options = sp.GetRequiredService<IOptions<RaindropOptions>>().Value;
+            var config = sp.GetRequiredService<RaindropClientConfig>();
 
-            client.BaseAddress = new Uri(options.BaseUrl);
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.ApiToken);
+            client.BaseAddress = config.BaseUri;
+            client.DefaultRequestHeaders.Authorization = config.AuthorizationHeader;
         }
 
         var retryPolicy = HttpPolicyExtensions
