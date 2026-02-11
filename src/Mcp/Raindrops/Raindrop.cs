@@ -26,6 +26,7 @@ public record Raindrop
     public string? Title { get; init; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [Required]
     [Url]
     [Description("URL of the page")]
     public string? Link { get; init; }
