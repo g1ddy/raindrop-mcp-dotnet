@@ -25,11 +25,10 @@ public record Raindrop
     [Description("Title of the bookmarked page")]
     public string? Title { get; init; }
 
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [Required]
     [Url]
     [Description("URL of the page")]
-    public string? Link { get; init; }
+    public string Link { get; init; } = string.Empty;
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [MaxLength(MaxTextFieldLength)]

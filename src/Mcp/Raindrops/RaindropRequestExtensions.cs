@@ -11,7 +11,7 @@ internal static class RaindropRequestExtensions
     {
         return new Raindrop
         {
-            Link = request.Link,
+            Link = request.Link ?? string.Empty,
             Title = request.Title,
             Excerpt = request.Excerpt,
             Note = request.Note,
