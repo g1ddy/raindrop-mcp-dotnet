@@ -35,4 +35,13 @@ public class HttpClientConfigurationBenchmark
         // This triggers the Configure delegate we want to optimize.
         _ = _serviceProvider.GetRequiredService<IUserApi>();
     }
+
+    [GlobalCleanup]
+    public void Cleanup()
+    {
+        if (_serviceProvider is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
+    }
 }
