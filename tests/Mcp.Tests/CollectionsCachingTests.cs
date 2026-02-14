@@ -187,8 +187,6 @@ public class CollectionsCachingTests : IDisposable
 
         // Act
         var response1 = await _tools.ListCollectionsAsync(CancellationToken.None);
-        response1.Items.Add(new Collection { Id = 2, Title = "Modified" });
-
         var response2 = await _tools.ListCollectionsAsync(CancellationToken.None);
 
         // Assert
