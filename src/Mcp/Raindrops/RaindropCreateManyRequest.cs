@@ -14,5 +14,5 @@ public record RaindropCreateManyRequest
     public int? CollectionId { get; init; }
 
     [Description("Bookmarks to create")]
-    public List<Raindrop> Items { get; init; } = new();
+    public IReadOnlyList<Raindrop> Items { get; init; } = Array.Empty<Raindrop>();
 }

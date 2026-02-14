@@ -90,7 +90,7 @@ public class RaindropsTools(IRaindropsApi api) :
             var payload = new RaindropCreateManyRequest
             {
                 CollectionId = collectionId,
-                Items = chunk.ToList()
+                Items = chunk
             };
 
             var response = await Api.CreateManyAsync(payload, cancellationToken);

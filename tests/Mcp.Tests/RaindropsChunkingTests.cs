@@ -39,7 +39,7 @@ public class RaindropsChunkingTests
         var raindrops = CreateRaindrops(150);
         _apiMock.Setup(x => x.CreateManyAsync(It.IsAny<RaindropCreateManyRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((RaindropCreateManyRequest req, CancellationToken _) =>
-                new ItemsResponse<Raindrop>(true, req.Items));
+                new ItemsResponse<Raindrop>(true, req.Items.ToList()));
 
         // Act
         var result = await _tools.CreateBookmarksAsync(0, raindrops, CancellationToken.None);
@@ -62,7 +62,7 @@ public class RaindropsChunkingTests
 
         _apiMock.Setup(x => x.CreateManyAsync(It.IsAny<RaindropCreateManyRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((RaindropCreateManyRequest req, CancellationToken _) =>
-                new ItemsResponse<Raindrop>(true, req.Items));
+                new ItemsResponse<Raindrop>(true, req.Items.ToList()));
 
         // Act
         var result = await _tools.CreateBookmarksAsync(0, raindrops, CancellationToken.None);
