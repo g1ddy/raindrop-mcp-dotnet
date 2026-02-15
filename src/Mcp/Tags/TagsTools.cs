@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Mcp.Common;
 using ModelContextProtocol.Protocol;
@@ -7,15 +8,72 @@ using ModelContextProtocol.Server;
 namespace Mcp.Tags;
 
 [McpServerToolType]
-public class TagsTools(ITagsApi api) : RaindropToolBase<ITagsApi>(api)
+public class TagsTools(ITagsApi api) : RaindropToolBase<ITagsApi>(api), IDisposable
 {
+    private record CacheEntry(ItemsResponse<TagInfo> Response, DateTimeOffset Expiration);
+    private volatile CacheEntry? _cache;
+    private readonly SemaphoreSlim _cacheLock = new(1, 1);
+    private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
+
+    private async Task<ItemsResponse<TagInfo>> GetCachedTagsAsync(CancellationToken cancellationToken)
+    {
+        if (TryGetValidCache(out var cached))
+        {
+            return cached;
+        }
+
+        await _cacheLock.WaitAsync(cancellationToken);
+        try
+        {
+            if (TryGetValidCache(out var lockedCached))
+            {
+                return lockedCached;
+            }
+
+            var response = await Api.ListAsync(cancellationToken);
+            if (response.Result && response.Items != null)
+            {
+                _cache = new CacheEntry(response, DateTimeOffset.UtcNow.Add(CacheDuration));
+                return response with { Items = [.. response.Items] };
+            }
+            return response;
+        }
+        finally
+        {
+            _cacheLock.Release();
+        }
+
+        bool TryGetValidCache([NotNullWhen(true)] out ItemsResponse<TagInfo>? response)
+        {
+            var entry = _cache;
+            if (entry != null && entry.Expiration > DateTimeOffset.UtcNow)
+            {
+                response = entry.Response with { Items = [.. entry.Response.Items] };
+                return true;
+            }
+            response = null;
+            return false;
+        }
+    }
+
+    internal void InvalidateCache()
+    {
+        _cache = null;
+    }
+
+    public void Dispose()
+    {
+        _cacheLock.Dispose();
+        GC.SuppressFinalize(this);
+    }
+
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true, Title = "List Tags"),
      Description("Retrieves all tags, optionally filtered by a collection.")]
     public Task<ItemsResponse<TagInfo>> ListTagsAsync(
         [Description("Optional collection ID to filter tags by.")] int? collectionId = null,
         CancellationToken cancellationToken = default)
         => collectionId is null
-            ? Api.ListAsync(cancellationToken)
+            ? GetCachedTagsAsync(cancellationToken)
             : Api.ListForCollectionAsync(collectionId.Value, cancellationToken);
 
     [McpServerTool(Idempotent = true, Title = "Rename Tag"),
@@ -29,16 +87,21 @@ public class TagsTools(ITagsApi api) : RaindropToolBase<ITagsApi>(api)
 
     [McpServerTool(Idempotent = true, Title = "Rename Tags"),
      Description("Merges multiple tags into a single destination tag.")]
-    public Task<SuccessResponse> RenameTagsAsync(
+    public async Task<SuccessResponse> RenameTagsAsync(
         [Description("A collection of tag names to be merged.")] IEnumerable<string> tags,
         [Description("The name of the tag that the source tags will be merged into.")] string newTag,
         [Description("Collection ID if scoped")] int? collectionId = null,
         CancellationToken cancellationToken = default)
     {
         var payload = new TagRenameRequest { Replace = newTag, Tags = tags.ToList() };
-        return collectionId is null
+        var response = await (collectionId is null
             ? Api.UpdateAsync(payload, cancellationToken)
-            : Api.UpdateForCollectionAsync(collectionId.Value, payload, cancellationToken);
+            : Api.UpdateForCollectionAsync(collectionId.Value, payload, cancellationToken));
+        if (response?.Result == true)
+        {
+            InvalidateCache();
+        }
+        return response ?? new SuccessResponse(false);
     }
 
     [McpServerTool(Idempotent = true, Title = "Delete Tag", Destructive = true),
@@ -87,8 +150,13 @@ public class TagsTools(ITagsApi api) : RaindropToolBase<ITagsApi>(api)
         }
 
         var payload = new TagDeleteRequest { Tags = tagsList };
-        return collectionId is null
-            ? await Api.DeleteAsync(payload, cancellationToken)
-            : await Api.DeleteForCollectionAsync(collectionId.Value, payload, cancellationToken);
+        var response = await (collectionId is null
+            ? Api.DeleteAsync(payload, cancellationToken)
+            : Api.DeleteForCollectionAsync(collectionId.Value, payload, cancellationToken));
+        if (response?.Result == true)
+        {
+            InvalidateCache();
+        }
+        return response ?? new SuccessResponse(false);
     }
 }
