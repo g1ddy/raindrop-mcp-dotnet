@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Refit;
 using System.Net.Http.Headers;
+using Mcp.Common;
 using Mcp.Collections;
 using Mcp.Raindrops;
 using Mcp.Highlights;
@@ -34,6 +35,7 @@ public static class RaindropServiceCollectionExtensions
             .ValidateOnStart();
 
         services.AddSingleton<RaindropClientConfig>();
+        services.AddSingleton<RaindropCacheService>();
 
         var settings = new RefitSettings
         {

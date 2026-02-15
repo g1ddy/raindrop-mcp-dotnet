@@ -27,7 +27,7 @@ public class CollectionsToolsTests
         _collectionsApiMock = new Mock<ICollectionsApi>();
         _raindropsApiMock = new Mock<IRaindropsApi>();
         _mcpServerMock = new Mock<McpServer>();
-        _tools = new CollectionsTools(_collectionsApiMock.Object, _raindropsApiMock.Object);
+        _tools = new CollectionsTools(_collectionsApiMock.Object, _raindropsApiMock.Object, new RaindropCacheService());
     }
 
     [Theory]
