@@ -23,6 +23,7 @@ public class CollectionsCachingTests : IDisposable
 
     public CollectionsCachingTests()
     {
+        CollectionsTools.InvalidateCache();
         _collectionsApiMock = new Mock<ICollectionsApi>();
         _raindropsApiMock = new Mock<IRaindropsApi>();
         _mcpServerMock = new Mock<McpServer>();

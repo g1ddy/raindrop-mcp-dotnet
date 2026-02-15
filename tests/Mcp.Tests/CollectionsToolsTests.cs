@@ -22,6 +22,7 @@ public class CollectionsToolsTests
 
     public CollectionsToolsTests(ITestOutputHelper output)
     {
+        CollectionsTools.InvalidateCache();
         _output = output;
         _collectionsApiMock = new Mock<ICollectionsApi>();
         _raindropsApiMock = new Mock<IRaindropsApi>();
