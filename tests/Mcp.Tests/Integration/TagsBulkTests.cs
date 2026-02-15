@@ -1,3 +1,4 @@
+using Mcp.Common;
 using Mcp.Raindrops;
 using Mcp.Tags;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +15,7 @@ public class TagsBulkTests : TestBase
 {
     public TagsBulkTests() : base(s =>
     {
+        s.AddSingleton<RaindropCacheService>();
         s.AddTransient<RaindropsTools>();
         s.AddTransient<TagsTools>();
     })

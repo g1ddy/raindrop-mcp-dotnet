@@ -7,7 +7,12 @@ namespace Mcp.Tests.Integration;
 [Trait("Category", "Integration")]
 public class RaindropsTests : TestBase
 {
-    public RaindropsTests() : base(s => s.AddTransient<RaindropsTools>()) { }
+    public RaindropsTests() : base(s =>
+    {
+        s.AddSingleton<Mcp.Common.RaindropCacheService>();
+        s.AddTransient<RaindropsTools>();
+    })
+    { }
 
     [SkippableFact]
     public async Task Crud()

@@ -18,15 +18,16 @@ public class CollectionsCachingTests : IDisposable
     private readonly Mock<ICollectionsApi> _collectionsApiMock;
     private readonly Mock<IRaindropsApi> _raindropsApiMock;
     private readonly Mock<McpServer> _mcpServerMock;
+    private readonly RaindropCacheService _cacheService;
     private readonly CollectionsTools _tools;
 
     public CollectionsCachingTests()
     {
-        CollectionsTools.InvalidateCache();
         _collectionsApiMock = new Mock<ICollectionsApi>();
         _raindropsApiMock = new Mock<IRaindropsApi>();
         _mcpServerMock = new Mock<McpServer>();
-        _tools = new CollectionsTools(_collectionsApiMock.Object, _raindropsApiMock.Object);
+        _cacheService = new RaindropCacheService();
+        _tools = new CollectionsTools(_collectionsApiMock.Object, _raindropsApiMock.Object, _cacheService);
 
         // Setup default responses
         _collectionsApiMock.Setup(x => x.ListAsync(It.IsAny<CancellationToken>()))
@@ -176,7 +177,7 @@ public class CollectionsCachingTests : IDisposable
 
     public void Dispose()
     {
-        _tools.Dispose();
+        _cacheService.Dispose();
     }
 
     [Fact]

@@ -8,58 +8,12 @@ using ModelContextProtocol.Server;
 namespace Mcp.Tags;
 
 [McpServerToolType]
-public class TagsTools(ITagsApi api) : RaindropToolBase<ITagsApi>(api), IDisposable
+public class TagsTools(ITagsApi api, RaindropCacheService cacheService) : RaindropToolBase<ITagsApi>(api)
 {
-    private record CacheEntry(ItemsResponse<TagInfo> Response, DateTimeOffset Expiration);
-    private static volatile CacheEntry? _cache;
-    private static readonly SemaphoreSlim _cacheLock = new(1, 1);
-    private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
+    private readonly RaindropCacheService _cacheService = cacheService;
 
-    private async Task<ItemsResponse<TagInfo>> GetCachedTagsAsync(CancellationToken cancellationToken)
-    {
-        if (TryGetValidCache(out var cached))
-        {
-            return cached;
-        }
-
-        await _cacheLock.WaitAsync(cancellationToken);
-        try
-        {
-            if (TryGetValidCache(out var lockedCached))
-            {
-                return lockedCached;
-            }
-
-            var response = await Api.ListAsync(cancellationToken);
-            if (response.Result && response.Items != null)
-            {
-                _cache = new CacheEntry(response, DateTimeOffset.UtcNow.Add(CacheDuration));
-                return response with { Items = [.. response.Items] };
-            }
-            return response;
-        }
-        finally
-        {
-            _cacheLock.Release();
-        }
-
-        bool TryGetValidCache([NotNullWhen(true)] out ItemsResponse<TagInfo>? response)
-        {
-            var entry = _cache;
-            if (entry != null && entry.Expiration > DateTimeOffset.UtcNow)
-            {
-                response = entry.Response with { Items = [.. entry.Response.Items] };
-                return true;
-            }
-            response = null;
-            return false;
-        }
-    }
-
-    internal static void InvalidateCache()
-    {
-        _cache = null;
-    }
+    private Task<ItemsResponse<TagInfo>> GetCachedTagsAsync(CancellationToken cancellationToken)
+        => _cacheService.GetTagsAsync(Api.ListAsync, cancellationToken);
 
     private async Task<bool> ConfirmActionAsync(McpServer server, string message, CancellationToken cancellationToken)
     {
@@ -88,15 +42,9 @@ public class TagsTools(ITagsApi api) : RaindropToolBase<ITagsApi>(api), IDisposa
         var response = await apiTask;
         if (response?.Result == true)
         {
-            InvalidateCache();
+            _cacheService.InvalidateTags();
         }
         return response ?? new SuccessResponse(false);
-    }
-
-    public void Dispose()
-    {
-        // Don't dispose static _cacheLock as it's shared across instances.
-        GC.SuppressFinalize(this);
     }
 
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true, Title = "List Tags"),

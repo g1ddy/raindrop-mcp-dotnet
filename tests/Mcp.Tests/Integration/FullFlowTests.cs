@@ -17,6 +17,7 @@ public class FullFlowTests : TestBase
 {
     public FullFlowTests() : base(s =>
     {
+        s.AddSingleton<RaindropCacheService>();
         s.AddTransient<CollectionsTools>();
         s.AddTransient<RaindropsTools>();
         s.AddTransient<HighlightsTools>();

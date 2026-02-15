@@ -7,9 +7,10 @@ using Mcp.Collections;
 namespace Mcp.Raindrops;
 
 [McpServerToolType]
-public class RaindropsTools(IRaindropsApi api) :
+public class RaindropsTools(IRaindropsApi api, RaindropCacheService cacheService) :
     RaindropToolBase<IRaindropsApi>(api)
 {
+    private readonly RaindropCacheService _cacheService = cacheService;
     private static readonly HashSet<string> ValidSortOptions = new(
         new[] { "created", "-created", "title", "-title", "domain", "-domain", "sort", "score" }
     );
@@ -23,8 +24,7 @@ public class RaindropsTools(IRaindropsApi api) :
         var response = await Api.CreateAsync(payload, cancellationToken);
         if (response.Result)
         {
-            TagsTools.InvalidateCache();
-            CollectionsTools.InvalidateCache();
+            _cacheService.InvalidateAll();
         }
         return response;
     }
@@ -46,8 +46,7 @@ public class RaindropsTools(IRaindropsApi api) :
         var response = await Api.UpdateAsync(id, payload, cancellationToken);
         if (response.Result)
         {
-            TagsTools.InvalidateCache();
-            CollectionsTools.InvalidateCache();
+            _cacheService.InvalidateAll();
         }
         return response;
     }
@@ -60,8 +59,7 @@ public class RaindropsTools(IRaindropsApi api) :
         var response = await Api.DeleteAsync(id, cancellationToken);
         if (response.Result)
         {
-            TagsTools.InvalidateCache();
-            CollectionsTools.InvalidateCache();
+            _cacheService.InvalidateAll();
         }
         return response;
     }
@@ -119,8 +117,7 @@ public class RaindropsTools(IRaindropsApi api) :
 
             if (response.Result)
             {
-                TagsTools.InvalidateCache();
-                CollectionsTools.InvalidateCache();
+                _cacheService.InvalidateAll();
                 if (response.Items is not null)
                 {
                     allItems.AddRange(response.Items);
@@ -148,8 +145,7 @@ public class RaindropsTools(IRaindropsApi api) :
         var response = await Api.UpdateManyAsync(collectionId, update, nested, search, cancellationToken);
         if (response.Result)
         {
-            TagsTools.InvalidateCache();
-            CollectionsTools.InvalidateCache();
+            _cacheService.InvalidateAll();
         }
         return response;
     }
