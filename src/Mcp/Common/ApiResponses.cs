@@ -6,7 +6,7 @@ namespace Mcp.Common;
 public record ItemResponse<T>(bool Result, T Item);
 
 [Description("Response containing a list of items")]
-public record ItemsResponse<T>(bool Result, List<T> Items);
+public record ItemsResponse<T>(bool Result, IReadOnlyList<T> Items);
 
 [Description("Response representing success or failure")]
 public record SuccessResponse(bool Result);
