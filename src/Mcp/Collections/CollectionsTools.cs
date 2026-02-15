@@ -361,6 +361,10 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
         // 6. Move the bookmark
         var updateRequest = new Raindrop { Collection = new IdRef { Id = chosenCollection.Id } };
         var updateResponse = await _raindropsApi.UpdateAsync(bookmarkId, updateRequest, cancellationToken);
+        if (updateResponse.Result)
+        {
+            InvalidateCache();
+        }
         return new SuccessResponse(updateResponse.Result);
     }
 }

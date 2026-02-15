@@ -11,6 +11,7 @@ using System.Text.Json.Nodes;
 
 namespace Mcp.Tests;
 
+[Collection("Sequential")]
 public class CollectionsToolsTests
 {
     private readonly Mock<ICollectionsApi> _collectionsApiMock;
@@ -21,6 +22,7 @@ public class CollectionsToolsTests
 
     public CollectionsToolsTests(ITestOutputHelper output)
     {
+        CollectionsTools.InvalidateCache();
         _output = output;
         _collectionsApiMock = new Mock<ICollectionsApi>();
         _raindropsApiMock = new Mock<IRaindropsApi>();
