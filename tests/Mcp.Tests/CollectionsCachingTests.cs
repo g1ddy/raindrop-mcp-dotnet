@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 
 namespace Mcp.Tests;
 
+[Collection("Sequential")]
 public class CollectionsCachingTests : IDisposable
 {
     private readonly Mock<ICollectionsApi> _collectionsApiMock;
@@ -21,6 +22,7 @@ public class CollectionsCachingTests : IDisposable
 
     public CollectionsCachingTests()
     {
+        CollectionsTools.InvalidateCache();
         _collectionsApiMock = new Mock<ICollectionsApi>();
         _raindropsApiMock = new Mock<IRaindropsApi>();
         _mcpServerMock = new Mock<McpServer>();
@@ -81,14 +83,14 @@ public class CollectionsCachingTests : IDisposable
     }
 
     [Fact]
-    public async Task SuggestCollectionForBookmarkAsync_CalledMultipleTimes_CallsApiOnlyOnce()
+    public async Task SuggestCollectionForBookmarkAsync_CalledMultipleTimes_InvalidatesEachTime()
     {
         // Act
         await _tools.SuggestCollectionForBookmarkAsync(_mcpServerMock.Object, 123, CancellationToken.None);
         await _tools.SuggestCollectionForBookmarkAsync(_mcpServerMock.Object, 123, CancellationToken.None);
 
-        // Assert
-        _collectionsApiMock.Verify(x => x.ListAsync(It.IsAny<CancellationToken>()), Times.Exactly(1));
+        // Assert - Each successful move invalidates the cache
+        _collectionsApiMock.Verify(x => x.ListAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
     [Fact]

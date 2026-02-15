@@ -20,8 +20,8 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
     private const int DefaultMaxTokens = 1000;
 
     private record CacheEntry(ItemsResponse<Collection> Response, DateTimeOffset Expiration);
-    private volatile CacheEntry? _cache;
-    private readonly SemaphoreSlim _cacheLock = new(1, 1);
+    private static volatile CacheEntry? _cache;
+    private static readonly SemaphoreSlim _cacheLock = new(1, 1);
     private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
 
     private async Task<ItemsResponse<Collection>> GetCachedCollectionsAsync(CancellationToken cancellationToken)
@@ -65,14 +65,14 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
         }
     }
 
-    internal void InvalidateCache()
+    internal static void InvalidateCache()
     {
         _cache = null;
     }
 
     public void Dispose()
     {
-        _cacheLock.Dispose();
+        // Don't dispose static _cacheLock as it's shared across instances.
     }
 
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
@@ -361,6 +361,10 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
         // 6. Move the bookmark
         var updateRequest = new Raindrop { Collection = new IdRef { Id = chosenCollection.Id } };
         var updateResponse = await _raindropsApi.UpdateAsync(bookmarkId, updateRequest, cancellationToken);
+        if (updateResponse.Result)
+        {
+            InvalidateCache();
+        }
         return new SuccessResponse(updateResponse.Result);
     }
 }

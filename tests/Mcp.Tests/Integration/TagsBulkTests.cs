@@ -74,7 +74,7 @@ public class TagsBulkTests : TestBase
             }, "Initial tags not found", cancellationToken);
 
             // Rename tags
-            await tags.RenameTagsAsync([tag1, tag2], tagRenamed, null, cancellationToken);
+            await tags.RenameTagsAsync(mcpServerMock.Object, [tag1, tag2], tagRenamed, null, cancellationToken);
 
             // Poll for rename to propagate
             await PollUntilAsync(async () =>
