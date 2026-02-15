@@ -11,8 +11,8 @@ namespace Mcp.Tags;
 public class TagsTools(ITagsApi api) : RaindropToolBase<ITagsApi>(api), IDisposable
 {
     private record CacheEntry(ItemsResponse<TagInfo> Response, DateTimeOffset Expiration);
-    private volatile CacheEntry? _cache;
-    private readonly SemaphoreSlim _cacheLock = new(1, 1);
+    private static volatile CacheEntry? _cache;
+    private static readonly SemaphoreSlim _cacheLock = new(1, 1);
     private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
 
     private async Task<ItemsResponse<TagInfo>> GetCachedTagsAsync(CancellationToken cancellationToken)
@@ -56,14 +56,14 @@ public class TagsTools(ITagsApi api) : RaindropToolBase<ITagsApi>(api), IDisposa
         }
     }
 
-    internal void InvalidateCache()
+    internal static void InvalidateCache()
     {
         _cache = null;
     }
 
     public void Dispose()
     {
-        _cacheLock.Dispose();
+        // Don't dispose static _cacheLock as it's shared across instances.
         GC.SuppressFinalize(this);
     }
 
