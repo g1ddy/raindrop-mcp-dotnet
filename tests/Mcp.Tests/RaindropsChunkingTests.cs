@@ -87,7 +87,7 @@ public class RaindropsChunkingTests
 
         _apiMock.SetupSequence(api => api.CreateManyAsync(It.IsAny<RaindropCreateManyRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ItemsResponse<Raindrop>(true, firstChunkResponseItems)) // First chunk succeeds
-            .ReturnsAsync(new ItemsResponse<Raindrop>(false, null)); // Second chunk fails
+            .ReturnsAsync(new ItemsResponse<Raindrop>(false, Array.Empty<Raindrop>())); // Second chunk fails
 
         // Act
         var result = await _tools.CreateBookmarksAsync(0, raindrops, CancellationToken.None);
