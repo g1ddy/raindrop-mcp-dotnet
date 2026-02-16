@@ -269,9 +269,9 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, R
         }
 
         // 4. Elicit choice from user
-        var message = "Here are the top 3 suggested collections for your bookmark:\n" +
-                      string.Join("\n", suggestedTitles.Select(st => $"- {st}"));
-        message += "\n\nPlease select the collection you want to move the bookmark to.";
+        var message = $"I found some great collections for \"{Sanitize(bookmark.Title)}\":\n\n" +
+                      string.Join("\n", suggestedTitles.Select(st => $"📂 {st}"));
+        message += "\n\nWhich one would you like to move it to?";
 
         var confirmationRequest = new ElicitRequestParams
         {
