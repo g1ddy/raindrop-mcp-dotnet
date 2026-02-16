@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Mcp.Common;
+using Mcp.Highlights;
 
 namespace Mcp.Raindrops;
 
@@ -52,6 +53,51 @@ public record Raindrop
     public IdRef? Collection { get; init; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    [Description("Identifier of the parent collection")]
-    public int? CollectionId { get; init; }
+    [Description("Type of the bookmark: link, article, image, video, document, or audio")]
+    public string? Type { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [Description("Raindrop cover URL")]
+    public string? Cover { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [Description("List of media attachments (covers)")]
+    public IReadOnlyList<MediaItem>? Media { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [Description("Creation date")]
+    public DateTime? Created { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [Description("Last update date")]
+    public DateTime? LastUpdate { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [Description("Hostname of the link")]
+    public string? Domain { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [Description("Marked as broken")]
+    public bool? Broken { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [Description("Permanent copy (cached version) details")]
+    public RaindropCache? Cache { get; init; }
+
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [Description("File uploaded from desktop")]
+    public RaindropFile? File { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [Description("List of highlights")]
+    public IReadOnlyList<Highlight>? Highlights { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [Description("Reminder attached to the raindrop")]
+    public RaindropReminder? Reminder { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [Description("Raindrop owner")]
+    public IdRef? User { get; init; }
 }
