@@ -1,4 +1,5 @@
 using Mcp.Tags;
+using Mcp.Common;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using Moq;
@@ -14,7 +15,7 @@ public class TagsToolsMessageTests
     {
         // Arrange
         var apiMock = new Mock<ITagsApi>();
-        var tools = new TagsTools(apiMock.Object);
+        var tools = new TagsTools(apiMock.Object, new RaindropCacheService());
         var tagsToDelete = new[] { "tag1", "tag2", "tag3" };
 
         var mcpServerMock = new Mock<McpServer>();

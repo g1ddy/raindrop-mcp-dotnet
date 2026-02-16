@@ -1,3 +1,4 @@
+using Mcp.Common;
 using Mcp.Raindrops;
 using Mcp.Tags;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +15,7 @@ public class TagsTests : TestBase
 {
     public TagsTests() : base(s =>
     {
+        s.AddSingleton<RaindropCacheService>();
         s.AddTransient<RaindropsTools>();
         s.AddTransient<TagsTools>();
     })
@@ -63,7 +65,7 @@ public class TagsTests : TestBase
         try
         {
             // Rename tag
-            await tagsTool.RenameTagAsync(tagName1, tagName2, null, cancellationToken);
+            await tagsTool.RenameTagAsync(mcpServerMock.Object, tagName1, tagName2, null, cancellationToken);
 
             // Poll for tag rename
             await PollUntilAsync(async () =>
@@ -146,7 +148,7 @@ public class TagsTests : TestBase
             // The original test used 0, assuming that's where it landed (Unsorted).
             // Default collection for create is usually Unsorted (0) or -1. Let's assume 0 works as per original test.
 
-            await tagsTool.RenameTagAsync(tagName1, tagName2, 0, cancellationToken);
+            await tagsTool.RenameTagAsync(mcpServerMock.Object, tagName1, tagName2, 0, cancellationToken);
 
             // Poll for tag rename
             await PollUntilAsync(async () =>

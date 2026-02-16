@@ -1,6 +1,5 @@
 using System.Buffers;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 using Mcp.Common;
@@ -11,69 +10,17 @@ using ModelContextProtocol.Server;
 namespace Mcp.Collections;
 
 [McpServerToolType]
-public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
-    RaindropToolBase<ICollectionsApi>(api), IDisposable
+public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, RaindropCacheService cacheService) :
+    RaindropToolBase<ICollectionsApi>(api)
 {
     private static readonly char[] _separators = ['|', '\n'];
     private static readonly char[] _trimChars = ['-', '*', ' ', '\'', '"', '.'];
     private readonly IRaindropsApi _raindropsApi = raindropsApi;
+    private readonly RaindropCacheService _cacheService = cacheService;
     private const int DefaultMaxTokens = 1000;
 
-    private record CacheEntry(ItemsResponse<Collection> Response, DateTimeOffset Expiration);
-    private volatile CacheEntry? _cache;
-    private readonly SemaphoreSlim _cacheLock = new(1, 1);
-    private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
-
-    private async Task<ItemsResponse<Collection>> GetCachedCollectionsAsync(CancellationToken cancellationToken)
-    {
-        if (TryGetValidCache(out var cached))
-        {
-            return cached;
-        }
-
-        await _cacheLock.WaitAsync(cancellationToken);
-        try
-        {
-            if (TryGetValidCache(out var lockedCached))
-            {
-                return lockedCached;
-            }
-
-            var response = await Api.ListAsync(cancellationToken);
-            if (response.Result && response.Items != null)
-            {
-                _cache = new CacheEntry(response, DateTimeOffset.UtcNow.Add(CacheDuration));
-                return response with { Items = [.. response.Items] };
-            }
-            return response;
-        }
-        finally
-        {
-            _cacheLock.Release();
-        }
-
-        bool TryGetValidCache([NotNullWhen(true)] out ItemsResponse<Collection>? response)
-        {
-            var entry = _cache;
-            if (entry != null && entry.Expiration > DateTimeOffset.UtcNow)
-            {
-                response = entry.Response with { Items = [.. entry.Response.Items] };
-                return true;
-            }
-            response = null;
-            return false;
-        }
-    }
-
-    internal void InvalidateCache()
-    {
-        _cache = null;
-    }
-
-    public void Dispose()
-    {
-        _cacheLock.Dispose();
-    }
+    private Task<ItemsResponse<Collection>> GetCachedCollectionsAsync(CancellationToken cancellationToken)
+        => _cacheService.GetCollectionsAsync(Api.ListAsync, cancellationToken);
 
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
     Title = "List Collections"),
@@ -95,7 +42,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
         var response = await Api.CreateAsync(collection, cancellationToken);
         if (response.Result)
         {
-            InvalidateCache();
+            _cacheService.InvalidateCollections();
         }
         return response;
     }
@@ -109,7 +56,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
         var response = await Api.UpdateAsync(id, collection, cancellationToken);
         if (response.Result)
         {
-            InvalidateCache();
+            _cacheService.InvalidateCollections();
         }
         return response;
     }
@@ -121,7 +68,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
         var response = await Api.DeleteAsync(id, cancellationToken);
         if (response.Result)
         {
-            InvalidateCache();
+            _cacheService.InvalidateCollections();
         }
         return response;
     }
@@ -217,7 +164,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
         var response = await Api.MergeAsync(payload, cancellationToken);
         if (response.Result)
         {
-            InvalidateCache();
+            _cacheService.InvalidateCollections();
         }
         return response;
     }
@@ -361,6 +308,10 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi) :
         // 6. Move the bookmark
         var updateRequest = new Raindrop { Collection = new IdRef { Id = chosenCollection.Id } };
         var updateResponse = await _raindropsApi.UpdateAsync(bookmarkId, updateRequest, cancellationToken);
+        if (updateResponse.Result)
+        {
+            _cacheService.InvalidateCollections();
+        }
         return new SuccessResponse(updateResponse.Result);
     }
 }

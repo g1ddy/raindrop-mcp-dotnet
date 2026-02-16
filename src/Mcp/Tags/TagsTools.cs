@@ -7,38 +7,88 @@ using ModelContextProtocol.Server;
 namespace Mcp.Tags;
 
 [McpServerToolType]
-public class TagsTools(ITagsApi api) : RaindropToolBase<ITagsApi>(api)
+public class TagsTools(ITagsApi api, RaindropCacheService cacheService) : RaindropToolBase<ITagsApi>(api)
 {
+    private readonly RaindropCacheService _cacheService = cacheService;
+
+    private Task<ItemsResponse<TagInfo>> GetCachedTagsAsync(CancellationToken cancellationToken)
+        => _cacheService.GetTagsAsync(Api.ListAsync, cancellationToken);
+
+    private async Task<bool> ConfirmActionAsync(McpServer server, string message, CancellationToken cancellationToken)
+    {
+        var confirmationRequest = new ElicitRequestParams
+        {
+            Message = message,
+            RequestedSchema = new ElicitRequestParams.RequestSchema
+            {
+                Properties =
+                {
+                    ["confirm"] = new ElicitRequestParams.BooleanSchema { Description = "Confirm action" }
+                }
+            }
+        };
+
+        var confirmationResponse = await server.ElicitAsync(confirmationRequest, cancellationToken);
+
+        return confirmationResponse.Action == "accept" &&
+               confirmationResponse.Content != null &&
+               confirmationResponse.Content.TryGetValue("confirm", out var value) &&
+               value.ValueKind == JsonValueKind.True;
+    }
+
+    private async Task<SuccessResponse> ExecuteAndInvalidateAsync(Task<SuccessResponse> apiTask)
+    {
+        var response = await apiTask;
+        if (response?.Result == true)
+        {
+            _cacheService.InvalidateTags();
+        }
+        return response ?? new SuccessResponse(false);
+    }
+
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true, Title = "List Tags"),
      Description("Retrieves all tags, optionally filtered by a collection.")]
     public Task<ItemsResponse<TagInfo>> ListTagsAsync(
         [Description("Optional collection ID to filter tags by.")] int? collectionId = null,
         CancellationToken cancellationToken = default)
         => collectionId is null
-            ? Api.ListAsync(cancellationToken)
+            ? GetCachedTagsAsync(cancellationToken)
             : Api.ListForCollectionAsync(collectionId.Value, cancellationToken);
 
     [McpServerTool(Idempotent = true, Title = "Rename Tag"),
      Description("Renames a tag across all bookmarks.")]
     public Task<SuccessResponse> RenameTagAsync(
+        McpServer server,
         [Description("The current name of the tag to rename.")] string oldTag,
         [Description("The new name for the tag.")] string newTag,
         [Description("Collection ID if scoped")] int? collectionId = null,
         CancellationToken cancellationToken = default)
-        => RenameTagsAsync([oldTag], newTag, collectionId, cancellationToken);
+        => RenameTagsAsync(server, [oldTag], newTag, collectionId, cancellationToken);
 
     [McpServerTool(Idempotent = true, Title = "Rename Tags"),
      Description("Merges multiple tags into a single destination tag.")]
-    public Task<SuccessResponse> RenameTagsAsync(
+    public async Task<SuccessResponse> RenameTagsAsync(
+        McpServer server,
         [Description("A collection of tag names to be merged.")] IEnumerable<string> tags,
         [Description("The name of the tag that the source tags will be merged into.")] string newTag,
         [Description("Collection ID if scoped")] int? collectionId = null,
         CancellationToken cancellationToken = default)
     {
-        var payload = new TagRenameRequest { Replace = newTag, Tags = tags.ToList() };
-        return collectionId is null
+        var tagsList = tags.ToList();
+        const string BaseMessage = "Are you sure you want to merge these tags? This action cannot be undone.";
+
+        string message = TagFormatter.FormatConfirmationMessage(tagsList, BaseMessage);
+        message += $"\n\nThey will be merged into: \"{newTag}\"";
+
+        if (!await ConfirmActionAsync(server, message, cancellationToken))
+        {
+            return new SuccessResponse(false);
+        }
+
+        var payload = new TagRenameRequest { Replace = newTag, Tags = tagsList };
+        return await ExecuteAndInvalidateAsync(collectionId is null
             ? Api.UpdateAsync(payload, cancellationToken)
-            : Api.UpdateForCollectionAsync(collectionId.Value, payload, cancellationToken);
+            : Api.UpdateForCollectionAsync(collectionId.Value, payload, cancellationToken));
     }
 
     [McpServerTool(Idempotent = true, Title = "Delete Tag", Destructive = true),
@@ -63,32 +113,14 @@ public class TagsTools(ITagsApi api) : RaindropToolBase<ITagsApi>(api)
 
         string message = TagFormatter.FormatConfirmationMessage(tagsList, BaseMessage);
 
-        // Elicit confirmation from the user.
-        var confirmationRequest = new ElicitRequestParams
-        {
-            Message = message,
-            RequestedSchema = new ElicitRequestParams.RequestSchema
-            {
-                Properties =
-                {
-                    ["confirm"] = new ElicitRequestParams.BooleanSchema { Description = "Confirm deletion" }
-                }
-            }
-        };
-
-        var confirmationResponse = await server.ElicitAsync(confirmationRequest, cancellationToken);
-
-        if (confirmationResponse.Action != "accept" ||
-            confirmationResponse.Content == null ||
-            !confirmationResponse.Content.TryGetValue("confirm", out var value) ||
-            value.ValueKind != JsonValueKind.True)
+        if (!await ConfirmActionAsync(server, message, cancellationToken))
         {
             return new SuccessResponse(false);
         }
 
         var payload = new TagDeleteRequest { Tags = tagsList };
-        return collectionId is null
-            ? await Api.DeleteAsync(payload, cancellationToken)
-            : await Api.DeleteForCollectionAsync(collectionId.Value, payload, cancellationToken);
+        return await ExecuteAndInvalidateAsync(collectionId is null
+            ? Api.DeleteAsync(payload, cancellationToken)
+            : Api.DeleteForCollectionAsync(collectionId.Value, payload, cancellationToken));
     }
 }

@@ -7,7 +7,12 @@ namespace Mcp.Tests.Integration;
 [Trait("Category", "Integration")]
 public class RaindropsBulkTests : TestBase
 {
-    public RaindropsBulkTests() : base(s => s.AddTransient<RaindropsTools>()) { }
+    public RaindropsBulkTests() : base(s =>
+    {
+        s.AddSingleton<Mcp.Common.RaindropCacheService>();
+        s.AddTransient<RaindropsTools>();
+    })
+    { }
 
     [SkippableFact]
     public async Task BulkEndpoints()
