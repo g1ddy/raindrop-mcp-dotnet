@@ -4,6 +4,10 @@ using Mcp.Highlights;
 using Mcp.Tags;
 using Mcp.Common;
 using Microsoft.Extensions.DependencyInjection;
+using ModelContextProtocol.Server;
+using ModelContextProtocol.Protocol;
+using Moq;
+using System.Text.Json;
 using Xunit;
 
 namespace Mcp.Tests.Integration;
@@ -13,6 +17,7 @@ public class FullFlowTests : TestBase
 {
     public FullFlowTests() : base(s =>
     {
+        s.AddSingleton<RaindropCacheService>();
         s.AddTransient<CollectionsTools>();
         s.AddTransient<RaindropsTools>();
         s.AddTransient<HighlightsTools>();
@@ -73,7 +78,28 @@ public class FullFlowTests : TestBase
 
             await raindropsTool.UpdateBookmarkAsync(secondRaindropId.Value, new RaindropUpdateRequest { Link = "https://example.com/updated", CollectionId = childCollectionId }, cancellationToken);
 
-            await tags.RenameTagAsync(tagTwo, tagTwoRenamed, null, cancellationToken);
+            // Mock McpServer for confirmation
+            var mcpServerMock = new Mock<McpServer>();
+            mcpServerMock.Setup(x => x.ClientCapabilities)
+                .Returns(new ClientCapabilities { Elicitation = new ElicitationCapability { Form = new FormElicitationCapability() } });
+
+            mcpServerMock
+                .Setup(x => x.SendRequestAsync(
+                    It.Is<JsonRpcRequest>(r => r.Method == "elicitation/create"),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new JsonRpcResponse
+                {
+                    Result = JsonSerializer.SerializeToNode(new ElicitResult
+                    {
+                        Action = "accept",
+                        Content = new Dictionary<string, JsonElement>
+                        {
+                            ["confirm"] = JsonSerializer.SerializeToElement(true)
+                        }
+                    })
+                });
+
+            await tags.RenameTagAsync(mcpServerMock.Object, tagTwo, tagTwoRenamed, null, cancellationToken);
 
             // Poll for tag rename consistency
             await PollUntilAsync(async () =>

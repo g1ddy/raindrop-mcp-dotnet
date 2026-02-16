@@ -13,7 +13,7 @@ public class RaindropsChunkingTests
     public RaindropsChunkingTests()
     {
         _apiMock = new Mock<IRaindropsApi>();
-        _tools = new RaindropsTools(_apiMock.Object);
+        _tools = new RaindropsTools(_apiMock.Object, new RaindropCacheService());
     }
 
     [Fact]

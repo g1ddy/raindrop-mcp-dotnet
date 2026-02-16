@@ -1,3 +1,4 @@
+using Mcp.Common;
 using Mcp.Raindrops;
 using Mcp.Tags;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +15,7 @@ public class TagsBulkTests : TestBase
 {
     public TagsBulkTests() : base(s =>
     {
+        s.AddSingleton<RaindropCacheService>();
         s.AddTransient<RaindropsTools>();
         s.AddTransient<TagsTools>();
     })
@@ -74,7 +76,7 @@ public class TagsBulkTests : TestBase
             }, "Initial tags not found", cancellationToken);
 
             // Rename tags
-            await tags.RenameTagsAsync([tag1, tag2], tagRenamed, null, cancellationToken);
+            await tags.RenameTagsAsync(mcpServerMock.Object, [tag1, tag2], tagRenamed, null, cancellationToken);
 
             // Poll for rename to propagate
             await PollUntilAsync(async () =>
