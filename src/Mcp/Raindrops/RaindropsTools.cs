@@ -1,24 +1,32 @@
 using System.ComponentModel;
 using ModelContextProtocol.Server;
 using Mcp.Common;
+using Mcp.Tags;
+using Mcp.Collections;
 
 namespace Mcp.Raindrops;
 
 [McpServerToolType]
-public class RaindropsTools(IRaindropsApi api) :
+public class RaindropsTools(IRaindropsApi api, RaindropCacheService cacheService) :
     RaindropToolBase<IRaindropsApi>(api)
 {
+    private readonly RaindropCacheService _cacheService = cacheService;
     private static readonly HashSet<string> ValidSortOptions = new(
         new[] { "created", "-created", "title", "-title", "domain", "-domain", "sort", "score" }
     );
 
     [McpServerTool(Title = "Create Bookmark"),
          Description("Creates a new bookmark.")]
-    public Task<ItemResponse<Raindrop>> CreateBookmarkAsync(
+    public async Task<ItemResponse<Raindrop>> CreateBookmarkAsync(
             [Description("Bookmark creation details")] RaindropCreateRequest request, CancellationToken cancellationToken)
     {
         var payload = request.ToRaindrop();
-        return Api.CreateAsync(payload, cancellationToken);
+        var response = await Api.CreateAsync(payload, cancellationToken);
+        if (response.Result)
+        {
+            _cacheService.InvalidateAll();
+        }
+        return response;
     }
 
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
@@ -30,19 +38,31 @@ public class RaindropsTools(IRaindropsApi api) :
 
     [McpServerTool(Idempotent = true, Title = "Update Bookmark"),
          Description("Updates an existing bookmark.")]
-    public Task<ItemResponse<Raindrop>> UpdateBookmarkAsync(
+    public async Task<ItemResponse<Raindrop>> UpdateBookmarkAsync(
             [Description("ID of the bookmark to update")] long id,
             [Description("Updated bookmark data")] RaindropUpdateRequest request, CancellationToken cancellationToken)
     {
         var payload = request.ToRaindrop();
-        return Api.UpdateAsync(id, payload, cancellationToken);
+        var response = await Api.UpdateAsync(id, payload, cancellationToken);
+        if (response.Result)
+        {
+            _cacheService.InvalidateAll();
+        }
+        return response;
     }
 
     [McpServerTool(Idempotent = true, Title = "Delete Bookmark"),
          Description("Moves a bookmark to the Trash.")]
-    public Task<SuccessResponse> DeleteBookmarkAsync([
+    public async Task<SuccessResponse> DeleteBookmarkAsync([
             Description("ID of the bookmark to delete")] long id, CancellationToken cancellationToken)
-            => Api.DeleteAsync(id, cancellationToken);
+    {
+        var response = await Api.DeleteAsync(id, cancellationToken);
+        if (response.Result)
+        {
+            _cacheService.InvalidateAll();
+        }
+        return response;
+    }
 
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
             Title = "List Bookmarks"),
@@ -109,16 +129,28 @@ public class RaindropsTools(IRaindropsApi api) :
             }
         }
 
+        if (allItems.Count > 0)
+        {
+            _cacheService.InvalidateAll();
+        }
+
         return new ItemsResponse<Raindrop>(overallResult, allItems);
     }
 
     [McpServerTool(Idempotent = true, Title = "Update Bookmarks"),
      Description("Bulk update bookmarks in a collection. For precise targeting, use the ids parameter in the update object.")]
-    public Task<SuccessResponse> UpdateBookmarksAsync(
+    public async Task<SuccessResponse> UpdateBookmarksAsync(
         [Description("Collection to update")] int collectionId,
         [Description("Update operations to apply")] RaindropBulkUpdate update,
         [Description("Apply to nested collections")] bool? nested = null,
         [Description("Optional search filter. Use cautiously as it may affect more bookmarks than intended.")] string? search = null,
         CancellationToken cancellationToken = default)
-        => Api.UpdateManyAsync(collectionId, update, nested, search, cancellationToken);
+    {
+        var response = await Api.UpdateManyAsync(collectionId, update, nested, search, cancellationToken);
+        if (response.Result)
+        {
+            _cacheService.InvalidateAll();
+        }
+        return response;
+    }
 }

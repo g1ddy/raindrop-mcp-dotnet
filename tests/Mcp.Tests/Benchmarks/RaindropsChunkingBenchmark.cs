@@ -25,7 +25,7 @@ public class RaindropsChunkingBenchmark
         apiMock.Setup(x => x.CreateManyAsync(It.IsAny<RaindropCreateManyRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ItemsResponse<Raindrop>(true, new List<Raindrop>()));
 
-        var tool = new RaindropsTools(apiMock.Object);
+        var tool = new RaindropsTools(apiMock.Object, new RaindropCacheService());
         var uniqueId = Guid.NewGuid().ToString("N");
         _output.WriteLine($"TestID: {uniqueId}");
 
