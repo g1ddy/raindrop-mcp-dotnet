@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Options;
 
 namespace Mcp.Benchmarks;
 
@@ -35,7 +36,8 @@ public class MergeCollectionsBenchmark : RaindropBenchmarkBase
         _collectionsApiMock.Setup(x => x.MergeAsync(It.IsAny<CollectionsMergeRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new SuccessResponse(true));
 
-        _tools = new CollectionsTools(_collectionsApiMock.Object, _raindropsApiMock.Object, CacheService);
+        var options = Options.Create(new RaindropOptions { ApiToken = "benchmark-token" });
+        _tools = new CollectionsTools(_collectionsApiMock.Object, _raindropsApiMock.Object, new RaindropCacheService(), options);
     }
 
     [Benchmark]

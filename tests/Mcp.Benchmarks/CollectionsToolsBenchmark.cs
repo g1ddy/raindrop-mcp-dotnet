@@ -12,6 +12,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Linq;
 using System;
+using Microsoft.Extensions.Options;
 
 namespace Mcp.Benchmarks;
 
@@ -76,7 +77,8 @@ public class CollectionsToolsBenchmark : RaindropBenchmarkBase
         _mcpServerMock.Setup(x => x.SendRequestAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()))
              .ReturnsAsync(new JsonRpcResponse { Result = JsonSerializer.SerializeToNode(llmResponse) });
 
-        _tools = new CollectionsTools(_collectionsApiMock.Object, _raindropsApiMock.Object, CacheService);
+        var options = Options.Create(new RaindropOptions { ApiToken = "benchmark-token" });
+        _tools = new CollectionsTools(_collectionsApiMock.Object, _raindropsApiMock.Object, new RaindropCacheService(), options);
     }
 
     [Benchmark]

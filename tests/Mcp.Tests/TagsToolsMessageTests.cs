@@ -5,6 +5,7 @@ using ModelContextProtocol.Server;
 using Moq;
 using System.Text.Json;
 using Xunit;
+using Microsoft.Extensions.Options;
 
 namespace Mcp.Tests;
 
@@ -15,7 +16,8 @@ public class TagsToolsMessageTests
     {
         // Arrange
         var apiMock = new Mock<ITagsApi>();
-        var tools = new TagsTools(apiMock.Object, new RaindropCacheService());
+        var options = Options.Create(new RaindropOptions { ApiToken = "dummy-token" });
+        var tools = new TagsTools(apiMock.Object, new RaindropCacheService(), options);
         var tagsToDelete = new[] { "tag1", "tag2", "tag3" };
 
         var mcpServerMock = new Mock<McpServer>();

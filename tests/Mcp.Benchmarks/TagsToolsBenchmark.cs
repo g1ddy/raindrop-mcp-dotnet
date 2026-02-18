@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using Microsoft.Extensions.Options;
 
 namespace Mcp.Benchmarks;
 
@@ -27,7 +28,8 @@ public class TagsToolsBenchmark : RaindropBenchmarkBase
         base.SetupCache();
 
         _tagsApiMock = new Mock<ITagsApi>();
-        _tools = new TagsTools(_tagsApiMock.Object, CacheService);
+        var options = Options.Create(new RaindropOptions { ApiToken = "benchmark-token" });
+        _tools = new TagsTools(_tagsApiMock.Object, new RaindropCacheService(), options);
 
         _mcpServerMock = new Mock<McpServer>();
         _mcpServerMock.Setup(x => x.ClientCapabilities)
