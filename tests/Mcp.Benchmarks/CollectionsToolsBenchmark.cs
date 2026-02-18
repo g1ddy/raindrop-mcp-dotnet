@@ -16,25 +16,24 @@ using System;
 namespace Mcp.Benchmarks;
 
 [MemoryDiagnoser]
-public class CollectionsToolsBenchmark
+public class CollectionsToolsBenchmark : RaindropBenchmarkBase
 {
     private CollectionsTools _tools;
     private Mock<McpServer> _mcpServerMock;
     private Mock<ICollectionsApi> _collectionsApiMock;
     private Mock<IRaindropsApi> _raindropsApiMock;
-    private RaindropCacheService _cacheService;
     private List<Collection> _largeCollectionList;
 
     [Params(100, 1000)]
     public int CollectionCount;
 
-    [GlobalSetup]
-    public void Setup()
+    public override void SetupCache()
     {
+        base.SetupCache();
+
         _collectionsApiMock = new Mock<ICollectionsApi>();
         _raindropsApiMock = new Mock<IRaindropsApi>();
         _mcpServerMock = new Mock<McpServer>();
-        _cacheService = new RaindropCacheService();
 
         // Generate a large list of collections
         _largeCollectionList = new List<Collection>();
@@ -77,13 +76,7 @@ public class CollectionsToolsBenchmark
         _mcpServerMock.Setup(x => x.SendRequestAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()))
              .ReturnsAsync(new JsonRpcResponse { Result = JsonSerializer.SerializeToNode(llmResponse) });
 
-        _tools = new CollectionsTools(_collectionsApiMock.Object, _raindropsApiMock.Object, _cacheService);
-    }
-
-    [GlobalCleanup]
-    public void Cleanup()
-    {
-        _cacheService.Dispose();
+        _tools = new CollectionsTools(_collectionsApiMock.Object, _raindropsApiMock.Object, CacheService);
     }
 
     [Benchmark]

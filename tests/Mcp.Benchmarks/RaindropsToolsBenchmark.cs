@@ -10,37 +10,29 @@ using System.Linq;
 namespace Mcp.Benchmarks;
 
 [MemoryDiagnoser]
-public class RaindropsToolsBenchmark
+public class RaindropsToolsBenchmark : RaindropBenchmarkBase
 {
     private RaindropsTools _tools;
     private Mock<IRaindropsApi> _raindropsApiMock;
-    private RaindropCacheService _cacheService;
     private List<Raindrop> _preAllocatedList;
     private const int ItemCount = 100;
 
-    [GlobalSetup]
-    public void Setup()
+    public override void SetupCache()
     {
+        base.SetupCache();
         _raindropsApiMock = new Mock<IRaindropsApi>();
-        _cacheService = new RaindropCacheService();
 
         // Setup CreateManyAsync to return immediately
         _raindropsApiMock.Setup(x => x.CreateManyAsync(It.IsAny<RaindropCreateManyRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ItemsResponse<Raindrop>(true, new List<Raindrop>()));
 
-        _tools = new RaindropsTools(_raindropsApiMock.Object, _cacheService);
+        _tools = new RaindropsTools(_raindropsApiMock.Object, CacheService);
 
         _preAllocatedList = new List<Raindrop>(ItemCount);
         for (int i = 0; i < ItemCount; i++)
         {
             _preAllocatedList.Add(new Raindrop { Title = $"Item {i}", Link = $"https://example.com/{i}" });
         }
-    }
-
-    [GlobalCleanup]
-    public void Cleanup()
-    {
-        _cacheService.Dispose();
     }
 
     [Benchmark]

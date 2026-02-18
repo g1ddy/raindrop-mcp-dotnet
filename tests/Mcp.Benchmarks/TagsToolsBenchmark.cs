@@ -13,22 +13,21 @@ using System.Text.Json;
 namespace Mcp.Benchmarks;
 
 [MemoryDiagnoser]
-public class TagsToolsBenchmark
+public class TagsToolsBenchmark : RaindropBenchmarkBase
 {
     private TagsTools _tools;
     private Mock<ITagsApi> _tagsApiMock;
     private Mock<McpServer> _mcpServerMock;
-    private RaindropCacheService _cacheService;
     private List<string> _tags10;
     private List<string> _tags50;
     private List<string> _tags100;
 
-    [GlobalSetup]
-    public void Setup()
+    public override void SetupCache()
     {
+        base.SetupCache();
+
         _tagsApiMock = new Mock<ITagsApi>();
-        _cacheService = new RaindropCacheService();
-        _tools = new TagsTools(_tagsApiMock.Object, _cacheService);
+        _tools = new TagsTools(_tagsApiMock.Object, CacheService);
 
         _mcpServerMock = new Mock<McpServer>();
         _mcpServerMock.Setup(x => x.ClientCapabilities)
@@ -58,12 +57,6 @@ public class TagsToolsBenchmark
         _tags10 = GenerateTags(10);
         _tags50 = GenerateTags(50);
         _tags100 = GenerateTags(100);
-    }
-
-    [GlobalCleanup]
-    public void Cleanup()
-    {
-        _cacheService.Dispose();
     }
 
     private List<string> GenerateTags(int count)

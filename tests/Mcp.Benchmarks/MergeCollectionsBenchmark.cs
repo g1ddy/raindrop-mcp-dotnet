@@ -11,24 +11,22 @@ using System.Linq;
 namespace Mcp.Benchmarks;
 
 [MemoryDiagnoser]
-public class MergeCollectionsBenchmark
+public class MergeCollectionsBenchmark : RaindropBenchmarkBase
 {
     private CollectionsTools _tools;
     private Mock<ICollectionsApi> _collectionsApiMock;
     private Mock<IRaindropsApi> _raindropsApiMock;
-    private RaindropCacheService _cacheService;
     private HashSet<int> _ids;
     private int _targetId;
 
     [Params(10, 100, 500)]
     public int CollectionCount;
 
-    [GlobalSetup]
-    public void Setup()
+    public override void SetupCache()
     {
+        base.SetupCache();
         _collectionsApiMock = new Mock<ICollectionsApi>();
         _raindropsApiMock = new Mock<IRaindropsApi>();
-        _cacheService = new RaindropCacheService();
 
         _targetId = 999999;
         // Generate IDs ensuring targetId is not present to avoid ArgumentException
@@ -37,13 +35,7 @@ public class MergeCollectionsBenchmark
         _collectionsApiMock.Setup(x => x.MergeAsync(It.IsAny<CollectionsMergeRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new SuccessResponse(true));
 
-        _tools = new CollectionsTools(_collectionsApiMock.Object, _raindropsApiMock.Object, _cacheService);
-    }
-
-    [GlobalCleanup]
-    public void Cleanup()
-    {
-        _cacheService.Dispose();
+        _tools = new CollectionsTools(_collectionsApiMock.Object, _raindropsApiMock.Object, CacheService);
     }
 
     [Benchmark]
