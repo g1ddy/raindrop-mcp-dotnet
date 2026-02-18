@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Mcp.Highlights;
 
@@ -8,6 +9,7 @@ namespace Mcp.Highlights;
 [Description("Request payload for creating a new highlight")]
 public record HighlightCreateRequest
 {
+    [Required(AllowEmptyStrings = false)]
     [Description("The text content of the highlight. This field is required.")]
     public string Text { get; init; } = string.Empty;
 

@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
+using Mcp.Highlights;
 using Mcp.Raindrops;
 using Xunit;
 
@@ -11,6 +12,8 @@ public class ValidationAttributesTests
     [Theory]
     [InlineData(typeof(RaindropCreateRequest), nameof(RaindropCreateRequest.Link))]
     [InlineData(typeof(Raindrop), nameof(Raindrop.Link))]
+    [InlineData(typeof(HighlightCreateRequest), nameof(HighlightCreateRequest.Text))]
+    [InlineData(typeof(HighlightUpdateRequest), nameof(HighlightUpdateRequest.Id))]
     public void Property_HasRequiredAttribute(Type type, string propertyName)
     {
         var property = type.GetProperty(propertyName);

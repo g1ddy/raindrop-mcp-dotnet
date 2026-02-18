@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Mcp.Highlights;
 
@@ -8,6 +9,7 @@ namespace Mcp.Highlights;
 [Description("Request payload for updating an existing highlight")]
 public record HighlightUpdateRequest
 {
+    [Required(AllowEmptyStrings = false)]
     [Description("The unique identifier of the highlight to update. This field is required.")]
     public string Id { get; init; } = string.Empty;
 
