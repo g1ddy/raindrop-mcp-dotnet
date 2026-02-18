@@ -26,7 +26,7 @@ public class RaindropsToolsBenchmark
         _raindropsApiMock.Setup(x => x.CreateManyAsync(It.IsAny<RaindropCreateManyRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ItemsResponse<Raindrop>(true, new List<Raindrop>()));
 
-        _tools = new RaindropsTools(_raindropsApiMock.Object);
+        _tools = new RaindropsTools(_raindropsApiMock.Object, new RaindropCacheService());
 
         _preAllocatedList = new List<Raindrop>(ItemCount);
         for (int i = 0; i < ItemCount; i++)

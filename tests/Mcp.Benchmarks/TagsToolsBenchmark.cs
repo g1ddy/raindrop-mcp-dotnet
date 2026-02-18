@@ -26,7 +26,7 @@ public class TagsToolsBenchmark
     public void Setup()
     {
         _tagsApiMock = new Mock<ITagsApi>();
-        _tools = new TagsTools(_tagsApiMock.Object);
+        _tools = new TagsTools(_tagsApiMock.Object, new RaindropCacheService());
 
         _mcpServerMock = new Mock<McpServer>();
         _mcpServerMock.Setup(x => x.ClientCapabilities)

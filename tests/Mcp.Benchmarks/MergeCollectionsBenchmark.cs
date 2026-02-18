@@ -35,7 +35,7 @@ public class MergeCollectionsBenchmark
         _collectionsApiMock.Setup(x => x.MergeAsync(It.IsAny<CollectionsMergeRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new SuccessResponse(true));
 
-        _tools = new CollectionsTools(_collectionsApiMock.Object, _raindropsApiMock.Object);
+        _tools = new CollectionsTools(_collectionsApiMock.Object, _raindropsApiMock.Object, new RaindropCacheService());
     }
 
     [Benchmark]
