@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 
 namespace Mcp.Tests;
 
@@ -27,7 +28,9 @@ public class CollectionsCachingTests : IDisposable
         _raindropsApiMock = new Mock<IRaindropsApi>();
         _mcpServerMock = new Mock<McpServer>();
         _cacheService = new RaindropCacheService();
-        _tools = new CollectionsTools(_collectionsApiMock.Object, _raindropsApiMock.Object, _cacheService);
+
+        var options = Options.Create(new RaindropOptions { ApiToken = "dummy-token" });
+        _tools = new CollectionsTools(_collectionsApiMock.Object, _raindropsApiMock.Object, _cacheService, options);
 
         // Setup default responses
         _collectionsApiMock.Setup(x => x.ListAsync(It.IsAny<CancellationToken>()))

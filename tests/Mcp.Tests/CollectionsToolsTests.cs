@@ -8,6 +8,7 @@ using Xunit;
 using System.Text.Json;
 using Xunit.Abstractions;
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.Options;
 
 namespace Mcp.Tests;
 
@@ -26,7 +27,8 @@ public class CollectionsToolsTests
         _collectionsApiMock = new Mock<ICollectionsApi>();
         _raindropsApiMock = new Mock<IRaindropsApi>();
         _mcpServerMock = new Mock<McpServer>();
-        _tools = new CollectionsTools(_collectionsApiMock.Object, _raindropsApiMock.Object, new RaindropCacheService());
+        var options = Options.Create(new RaindropOptions { ApiToken = "dummy-token" });
+        _tools = new CollectionsTools(_collectionsApiMock.Object, _raindropsApiMock.Object, new RaindropCacheService(), options);
     }
 
     [Theory]

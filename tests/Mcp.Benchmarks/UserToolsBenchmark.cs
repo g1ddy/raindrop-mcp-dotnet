@@ -4,6 +4,7 @@ using Mcp.Common;
 using Moq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 
 namespace Mcp.Benchmarks;
 
@@ -25,7 +26,8 @@ public class UserToolsBenchmark
                 return new UserResponse(true, new UserInfo { Id = 123, Email = "test@example.com" });
             });
 
-        _tools = new UserTools(_userApiMock.Object, new RaindropCacheService());
+        var options = Options.Create(new RaindropOptions { ApiToken = "benchmark-token" });
+        _tools = new UserTools(_userApiMock.Object, new RaindropCacheService(), options);
     }
 
     [Benchmark]
