@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using Mcp.Raindrops;
 
 namespace Mcp.Highlights;
 
@@ -13,9 +14,11 @@ public record HighlightUpdateRequest
     [Description("The unique identifier of the highlight to update. This field is required.")]
     public string Id { get; init; } = string.Empty;
 
+    [MaxLength(Raindrop.MaxTextFieldLength)]
     [Description("The updated text content of the highlight.")]
     public string? Text { get; init; }
 
+    [MaxLength(Raindrop.MaxTextFieldLength)]
     [Description("The updated note for the highlight.")]
     public string? Note { get; init; }
 
