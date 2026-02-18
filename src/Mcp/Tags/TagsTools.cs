@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using Microsoft.Extensions.Options;
 using Mcp.Common;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
@@ -8,12 +9,13 @@ using ModelContextProtocol.Server;
 namespace Mcp.Tags;
 
 [McpServerToolType]
-public class TagsTools(ITagsApi api, RaindropCacheService cacheService) : RaindropToolBase<ITagsApi>(api)
+public class TagsTools(ITagsApi api, RaindropCacheService cacheService, IOptions<RaindropOptions> options) : RaindropToolBase<ITagsApi>(api)
 {
     private readonly RaindropCacheService _cacheService = cacheService;
+    private readonly string _cacheKey = options.Value.ApiToken;
 
     private Task<ItemsResponse<TagInfo>> GetCachedTagsAsync(CancellationToken cancellationToken)
-        => _cacheService.GetTagsAsync(Api.ListAsync, cancellationToken);
+        => _cacheService.GetTagsAsync(_cacheKey, Api.ListAsync, cancellationToken);
 
     private async Task<bool> ConfirmActionAsync(McpServer server, string message, CancellationToken cancellationToken)
     {

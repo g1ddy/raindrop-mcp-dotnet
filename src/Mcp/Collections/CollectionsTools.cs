@@ -2,6 +2,7 @@ using System.Buffers;
 using System.ComponentModel;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Options;
 using Mcp.Common;
 using Mcp.Raindrops;
 using ModelContextProtocol.Protocol;
@@ -10,17 +11,18 @@ using ModelContextProtocol.Server;
 namespace Mcp.Collections;
 
 [McpServerToolType]
-public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, RaindropCacheService cacheService) :
+public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, RaindropCacheService cacheService, IOptions<RaindropOptions> options) :
     RaindropToolBase<ICollectionsApi>(api)
 {
     private static readonly char[] _separators = ['|', '\n'];
     private static readonly char[] _trimChars = ['-', '*', ' ', '\'', '"', '.'];
     private readonly IRaindropsApi _raindropsApi = raindropsApi;
     private readonly RaindropCacheService _cacheService = cacheService;
+    private readonly string _cacheKey = options.Value.ApiToken;
     private const int DefaultMaxTokens = 1000;
 
     private Task<ItemsResponse<Collection>> GetCachedCollectionsAsync(CancellationToken cancellationToken)
-        => _cacheService.GetCollectionsAsync(Api.ListAsync, cancellationToken);
+        => _cacheService.GetCollectionsAsync(_cacheKey, Api.ListAsync, cancellationToken);
 
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
     Title = "List Collections"),
