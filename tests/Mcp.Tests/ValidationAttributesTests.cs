@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
+using Mcp.Highlights;
 using Mcp.Raindrops;
 using Xunit;
 
@@ -11,6 +12,8 @@ public class ValidationAttributesTests
     [Theory]
     [InlineData(typeof(RaindropCreateRequest), nameof(RaindropCreateRequest.Link))]
     [InlineData(typeof(Raindrop), nameof(Raindrop.Link))]
+    [InlineData(typeof(HighlightCreateRequest), nameof(HighlightCreateRequest.Text))]
+    [InlineData(typeof(HighlightUpdateRequest), nameof(HighlightUpdateRequest.Id))]
     public void Property_HasRequiredAttribute(Type type, string propertyName)
     {
         var property = type.GetProperty(propertyName);
@@ -36,6 +39,10 @@ public class ValidationAttributesTests
     [InlineData(typeof(RaindropUpdateRequest), nameof(RaindropUpdateRequest.Note), 10000)]
     [InlineData(typeof(Raindrop), nameof(Raindrop.Excerpt), 10000)]
     [InlineData(typeof(Raindrop), nameof(Raindrop.Note), 10000)]
+    [InlineData(typeof(HighlightCreateRequest), nameof(HighlightCreateRequest.Text), 10000)]
+    [InlineData(typeof(HighlightCreateRequest), nameof(HighlightCreateRequest.Note), 10000)]
+    [InlineData(typeof(HighlightUpdateRequest), nameof(HighlightUpdateRequest.Text), 10000)]
+    [InlineData(typeof(HighlightUpdateRequest), nameof(HighlightUpdateRequest.Note), 10000)]
     public void Property_HasMaxLengthAttribute(Type type, string propertyName, int expectedLength)
     {
         var property = type.GetProperty(propertyName);

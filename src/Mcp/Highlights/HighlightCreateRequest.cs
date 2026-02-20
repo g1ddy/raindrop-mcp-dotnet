@@ -1,4 +1,6 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using Mcp.Raindrops;
 
 namespace Mcp.Highlights;
 
@@ -8,9 +10,12 @@ namespace Mcp.Highlights;
 [Description("Request payload for creating a new highlight")]
 public record HighlightCreateRequest
 {
+    [Required(AllowEmptyStrings = false)]
+    [MaxLength(Raindrop.MaxTextFieldLength)]
     [Description("The text content of the highlight. This field is required.")]
     public string Text { get; init; } = string.Empty;
 
+    [MaxLength(Raindrop.MaxTextFieldLength)]
     [Description("An optional note to add to the highlight.")]
     public string? Note { get; init; }
 
