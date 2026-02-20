@@ -257,11 +257,21 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, R
             return new SuccessResponse(false);
         }
 
-        var suggestedTitles = textContent.Text.Split(_separators, StringSplitOptions.RemoveEmptyEntries)
-            .Select(t => t.Trim(_trimChars))
-            .Where(collectionTitles.ContainsKey)
-            .Take(3)
-            .ToList();
+        var suggestedTitles = new List<string>(3);
+        var textSpan = textContent.Text.AsSpan();
+        var lookup = collectionTitles.GetAlternateLookup<ReadOnlySpan<char>>();
+
+        foreach (var range in textSpan.SplitAny(_separators))
+        {
+            var segment = textSpan[range].Trim(_trimChars);
+            if (segment.IsEmpty) continue;
+
+            if (lookup.ContainsKey(segment))
+            {
+                suggestedTitles.Add(segment.ToString());
+                if (suggestedTitles.Count >= 3) break;
+            }
+        }
 
         if (suggestedTitles.Count == 0)
         {
