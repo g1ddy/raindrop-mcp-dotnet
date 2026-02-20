@@ -12,7 +12,7 @@ using Microsoft.Extensions.Options;
 namespace Mcp.Benchmarks;
 
 [MemoryDiagnoser]
-public class MergeCollectionsBenchmark
+public class MergeCollectionsBenchmark : RaindropBenchmarkBase
 {
     private CollectionsTools _tools;
     private Mock<ICollectionsApi> _collectionsApiMock;
@@ -23,9 +23,9 @@ public class MergeCollectionsBenchmark
     [Params(10, 100, 500)]
     public int CollectionCount;
 
-    [GlobalSetup]
-    public void Setup()
+    public override void SetupCache()
     {
+        base.SetupCache();
         _collectionsApiMock = new Mock<ICollectionsApi>();
         _raindropsApiMock = new Mock<IRaindropsApi>();
 

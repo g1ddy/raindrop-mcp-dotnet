@@ -215,7 +215,8 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, R
                 {
                     promptBuilder.Append('\n');
                 }
-                promptBuilder.Append($"- {title}");
+                promptBuilder.Append("- ");
+                promptBuilder.Append(title);
             }
         }
 

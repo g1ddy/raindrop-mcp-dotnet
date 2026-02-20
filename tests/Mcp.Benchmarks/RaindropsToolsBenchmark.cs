@@ -10,16 +10,16 @@ using System.Linq;
 namespace Mcp.Benchmarks;
 
 [MemoryDiagnoser]
-public class RaindropsToolsBenchmark
+public class RaindropsToolsBenchmark : RaindropBenchmarkBase
 {
     private RaindropsTools _tools;
     private Mock<IRaindropsApi> _raindropsApiMock;
     private List<Raindrop> _preAllocatedList;
     private const int ItemCount = 100;
 
-    [GlobalSetup]
-    public void Setup()
+    public override void SetupCache()
     {
+        base.SetupCache();
         _raindropsApiMock = new Mock<IRaindropsApi>();
 
         // Setup CreateManyAsync to return immediately

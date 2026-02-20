@@ -17,7 +17,7 @@ using Microsoft.Extensions.Options;
 namespace Mcp.Benchmarks;
 
 [MemoryDiagnoser]
-public class CollectionsToolsBenchmark
+public class CollectionsToolsBenchmark : RaindropBenchmarkBase
 {
     private CollectionsTools _tools;
     private Mock<McpServer> _mcpServerMock;
@@ -28,9 +28,10 @@ public class CollectionsToolsBenchmark
     [Params(100, 1000)]
     public int CollectionCount;
 
-    [GlobalSetup]
-    public void Setup()
+    public override void SetupCache()
     {
+        base.SetupCache();
+
         _collectionsApiMock = new Mock<ICollectionsApi>();
         _raindropsApiMock = new Mock<IRaindropsApi>();
         _mcpServerMock = new Mock<McpServer>();

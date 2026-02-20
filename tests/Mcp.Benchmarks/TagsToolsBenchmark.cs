@@ -14,7 +14,7 @@ using Microsoft.Extensions.Options;
 namespace Mcp.Benchmarks;
 
 [MemoryDiagnoser]
-public class TagsToolsBenchmark
+public class TagsToolsBenchmark : RaindropBenchmarkBase
 {
     private TagsTools _tools;
     private Mock<ITagsApi> _tagsApiMock;
@@ -23,9 +23,10 @@ public class TagsToolsBenchmark
     private List<string> _tags50;
     private List<string> _tags100;
 
-    [GlobalSetup]
-    public void Setup()
+    public override void SetupCache()
     {
+        base.SetupCache();
+
         _tagsApiMock = new Mock<ITagsApi>();
         var options = Options.Create(new RaindropOptions { ApiToken = "benchmark-token" });
         _tools = new TagsTools(_tagsApiMock.Object, new RaindropCacheService(), options);
