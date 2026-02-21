@@ -102,7 +102,11 @@ public class RaindropsTools(IRaindropsApi api, RaindropCacheService cacheService
             CancellationToken cancellationToken = default)
     {
         const int ChunkSize = 100;
-        var allItems = new List<Raindrop>();
+        // Optimization: Pre-allocate list capacity if count is known to avoid resizing
+        var allItems = raindrops.TryGetNonEnumeratedCount(out int count)
+            ? new List<Raindrop>(count)
+            : new List<Raindrop>();
+
         var overallResult = true;
 
         foreach (var chunk in raindrops.Chunk(ChunkSize))
