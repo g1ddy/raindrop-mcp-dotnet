@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 using Mcp;
 
@@ -36,6 +37,24 @@ builder.Services
     .WithToolsFromAssembly();
 
 var app = builder.Build();
+
+try
+{
+    // Accessing Value triggers validation because of ValidateDataAnnotations()
+    _ = app.Services.GetRequiredService<IOptions<RaindropOptions>>().Value;
+}
+catch (OptionsValidationException ex)
+{
+    Console.Error.WriteLine("Error: Raindrop configuration is invalid.");
+    foreach (var failure in ex.Failures)
+    {
+        Console.Error.WriteLine($" - {failure}");
+    }
+    Console.Error.WriteLine();
+    Console.Error.WriteLine("Please ensure the 'RAINDROP_API_TOKEN' environment variable is set.");
+    Console.Error.WriteLine("See README.md for setup instructions.");
+    Environment.Exit(1);
+}
 
 // app.MapMcp();
 
