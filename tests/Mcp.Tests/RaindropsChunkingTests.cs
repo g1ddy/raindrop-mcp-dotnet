@@ -1,5 +1,6 @@
 using Mcp.Common;
 using Mcp.Raindrops;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -13,7 +14,8 @@ public class RaindropsChunkingTests
     public RaindropsChunkingTests()
     {
         _apiMock = new Mock<IRaindropsApi>();
-        _tools = new RaindropsTools(_apiMock.Object, new RaindropCacheService());
+        var options = Options.Create(new RaindropOptions { ApiToken = "test-token" });
+        _tools = new RaindropsTools(_apiMock.Object, new RaindropCacheService(), options);
     }
 
     [Fact]

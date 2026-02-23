@@ -4,13 +4,16 @@ using Mcp.Common;
 using Mcp.Tags;
 using Mcp.Collections;
 
+using Microsoft.Extensions.Options;
+
 namespace Mcp.Raindrops;
 
 [McpServerToolType]
-public class RaindropsTools(IRaindropsApi api, RaindropCacheService cacheService) :
+public class RaindropsTools(IRaindropsApi api, RaindropCacheService cacheService, IOptions<RaindropOptions> options) :
     RaindropToolBase<IRaindropsApi>(api)
 {
     private readonly RaindropCacheService _cacheService = cacheService;
+    private readonly string _cacheKey = options.Value.ApiToken;
     private static readonly HashSet<string> ValidSortOptions = new(
         new[] { "created", "-created", "title", "-title", "domain", "-domain", "sort", "score" }
     );
@@ -24,7 +27,7 @@ public class RaindropsTools(IRaindropsApi api, RaindropCacheService cacheService
         var response = await Api.CreateAsync(payload, cancellationToken);
         if (response.Result)
         {
-            _cacheService.InvalidateAll();
+            _cacheService.InvalidateAll(_cacheKey);
         }
         return response;
     }
@@ -46,7 +49,7 @@ public class RaindropsTools(IRaindropsApi api, RaindropCacheService cacheService
         var response = await Api.UpdateAsync(id, payload, cancellationToken);
         if (response.Result)
         {
-            _cacheService.InvalidateAll();
+            _cacheService.InvalidateAll(_cacheKey);
         }
         return response;
     }
@@ -59,7 +62,7 @@ public class RaindropsTools(IRaindropsApi api, RaindropCacheService cacheService
         var response = await Api.DeleteAsync(id, cancellationToken);
         if (response.Result)
         {
-            _cacheService.InvalidateAll();
+            _cacheService.InvalidateAll(_cacheKey);
         }
         return response;
     }
@@ -121,7 +124,7 @@ public class RaindropsTools(IRaindropsApi api, RaindropCacheService cacheService
 
             if (response.Result)
             {
-                _cacheService.InvalidateAll();
+                _cacheService.InvalidateAll(_cacheKey);
                 if (response.Items is not null)
                 {
                     allItems.AddRange(response.Items);
@@ -149,7 +152,7 @@ public class RaindropsTools(IRaindropsApi api, RaindropCacheService cacheService
         var response = await Api.UpdateManyAsync(collectionId, update, nested, search, cancellationToken);
         if (response.Result)
         {
-            _cacheService.InvalidateAll();
+            _cacheService.InvalidateAll(_cacheKey);
         }
         return response;
     }

@@ -44,7 +44,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, R
         var response = await Api.CreateAsync(collection, cancellationToken);
         if (response.Result)
         {
-            _cacheService.InvalidateCollections();
+            _cacheService.InvalidateCollections(_cacheKey);
         }
         return response;
     }
@@ -58,7 +58,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, R
         var response = await Api.UpdateAsync(id, collection, cancellationToken);
         if (response.Result)
         {
-            _cacheService.InvalidateCollections();
+            _cacheService.InvalidateCollections(_cacheKey);
         }
         return response;
     }
@@ -70,7 +70,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, R
         var response = await Api.DeleteAsync(id, cancellationToken);
         if (response.Result)
         {
-            _cacheService.InvalidateCollections();
+            _cacheService.InvalidateCollections(_cacheKey);
         }
         return response;
     }
@@ -166,7 +166,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, R
         var response = await Api.MergeAsync(payload, cancellationToken);
         if (response.Result)
         {
-            _cacheService.InvalidateCollections();
+            _cacheService.InvalidateCollections(_cacheKey);
         }
         return response;
     }
@@ -313,7 +313,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, R
         var updateResponse = await _raindropsApi.UpdateAsync(bookmarkId, updateRequest, cancellationToken);
         if (updateResponse.Result)
         {
-            _cacheService.InvalidateCollections();
+            _cacheService.InvalidateCollections(_cacheKey);
         }
         return new SuccessResponse(updateResponse.Result);
     }

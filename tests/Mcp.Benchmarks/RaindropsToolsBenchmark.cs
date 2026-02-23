@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Options;
 
 namespace Mcp.Benchmarks;
 
@@ -26,7 +27,8 @@ public class RaindropsToolsBenchmark : RaindropBenchmarkBase
         _raindropsApiMock.Setup(x => x.CreateManyAsync(It.IsAny<RaindropCreateManyRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ItemsResponse<Raindrop>(true, new List<Raindrop>()));
 
-        _tools = new RaindropsTools(_raindropsApiMock.Object, new RaindropCacheService());
+        var options = Options.Create(new RaindropOptions { ApiToken = "bench-token" });
+        _tools = new RaindropsTools(_raindropsApiMock.Object, new RaindropCacheService(), options);
 
         _preAllocatedList = new List<Raindrop>(ItemCount);
         for (int i = 0; i < ItemCount; i++)
