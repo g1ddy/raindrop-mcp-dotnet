@@ -107,4 +107,24 @@ public class RaindropsChunkingTests
             Link = $"https://example.com/{i}"
         });
     }
+
+    [Fact]
+    public async Task CreateBookmarksAsync_WithList_UsesOptimizedPath()
+    {
+        // Arrange
+        // Using a List ensures TryGetNonEnumeratedCount returns true
+        var raindrops = CreateRaindrops(150).ToList();
+
+        _apiMock.Setup(x => x.CreateManyAsync(It.IsAny<RaindropCreateManyRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaindropCreateManyRequest req, CancellationToken _) =>
+                new ItemsResponse<Raindrop>(true, req.Items));
+
+        // Act
+        var result = await _tools.CreateBookmarksAsync(0, raindrops, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.Result);
+        Assert.Equal(150, result.Items.Count);
+        _apiMock.Verify(x => x.CreateManyAsync(It.IsAny<RaindropCreateManyRequest>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+    }
 }
