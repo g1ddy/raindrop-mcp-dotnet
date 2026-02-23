@@ -122,19 +122,19 @@ public class RaindropCacheService : IDisposable
         => GetOrFetchAsync(key, _userInfoCache, _userInfoLock, fetchFunc, cancellationToken);
 
     /// <summary>
-    /// Invalidates all caches (for all users).
-    /// Ideally, we should invalidate per user, but destructive actions imply a global state change for that user context.
+    /// Invalidates all caches for a specific user.
     /// </summary>
-    public void InvalidateAll()
+    /// <param name="key">The user's API token used as the cache key.</param>
+    public void InvalidateAll(string key)
     {
-        _collectionsCache.Clear();
-        _tagsCache.Clear();
-        _userInfoCache.Clear();
+        _collectionsCache.TryRemove(key, out _);
+        _tagsCache.TryRemove(key, out _);
+        _userInfoCache.TryRemove(key, out _);
     }
 
-    public void InvalidateCollections() => _collectionsCache.Clear();
-    public void InvalidateTags() => _tagsCache.Clear();
-    public void InvalidateUserInfo() => _userInfoCache.Clear();
+    public void InvalidateCollections(string key) => _collectionsCache.TryRemove(key, out _);
+    public void InvalidateTags(string key) => _tagsCache.TryRemove(key, out _);
+    public void InvalidateUserInfo(string key) => _userInfoCache.TryRemove(key, out _);
 
     public void Dispose()
     {

@@ -1,6 +1,7 @@
 using Mcp.Common;
 using Mcp.Raindrops;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 using Xunit.Abstractions;
@@ -25,7 +26,8 @@ public class RaindropsChunkingBenchmark
         apiMock.Setup(x => x.CreateManyAsync(It.IsAny<RaindropCreateManyRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ItemsResponse<Raindrop>(true, new List<Raindrop>()));
 
-        var tool = new RaindropsTools(apiMock.Object, new RaindropCacheService());
+        var options = Options.Create(new RaindropOptions { ApiToken = "bench-token" });
+        var tool = new RaindropsTools(apiMock.Object, new RaindropCacheService(), options);
         var uniqueId = Guid.NewGuid().ToString("N");
         _output.WriteLine($"TestID: {uniqueId}");
 

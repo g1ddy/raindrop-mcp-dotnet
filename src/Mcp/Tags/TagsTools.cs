@@ -44,7 +44,7 @@ public class TagsTools(ITagsApi api, RaindropCacheService cacheService, IOptions
         var response = await apiTask;
         if (response?.Result == true)
         {
-            _cacheService.InvalidateTags();
+            _cacheService.InvalidateTags(_cacheKey);
         }
         return response ?? new SuccessResponse(false);
     }
