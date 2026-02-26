@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Security.Cryptography;
+using System.Text;
 using Mcp.Collections;
 using Mcp.Tags;
 using Mcp.User;
@@ -70,9 +72,9 @@ public class RaindropCacheService : IDisposable
     private static bool TryGetValidCache<T>(
         string key,
         ConcurrentDictionary<string, CacheEntry<T>> cache,
-        [NotNullWhen(true)] out T? response)
+        [NotNullWhen(true)] out T? response) where T : class
     {
-        if (cache.TryGetValue(key, out var entry) && entry.Expiration > DateTimeOffset.UtcNow)
+        if (cache.TryGetValue(key, out var entry) && entry.Expiration > DateTimeOffset.UtcNow && entry.Response is not null)
         {
             response = CloneResponse(entry.Response);
             return true;
@@ -95,13 +97,24 @@ public class RaindropCacheService : IDisposable
     }
 
     /// <summary>
+    /// Computes a secure hash of the cache key (API token) to avoid storing it in memory.
+    /// </summary>
+    private static string ComputeCacheKey(string rawKey)
+    {
+        ArgumentNullException.ThrowIfNull(rawKey);
+        var bytes = Encoding.UTF8.GetBytes(rawKey);
+        var hash = SHA256.HashData(bytes);
+        return Convert.ToHexString(hash);
+    }
+
+    /// <summary>
     /// Gets the cached collections list or fetches it using the provided function.
     /// </summary>
     public Task<ItemsResponse<Collection>> GetCollectionsAsync(
         string key,
         Func<CancellationToken, Task<ItemsResponse<Collection>>> fetchFunc,
         CancellationToken cancellationToken)
-        => GetOrFetchAsync(key, _collectionsCache, _collectionsLock, fetchFunc, cancellationToken);
+        => GetOrFetchAsync(ComputeCacheKey(key), _collectionsCache, _collectionsLock, fetchFunc, cancellationToken);
 
     /// <summary>
     /// Gets the cached tags list or fetches it using the provided function.
@@ -110,7 +123,7 @@ public class RaindropCacheService : IDisposable
         string key,
         Func<CancellationToken, Task<ItemsResponse<TagInfo>>> fetchFunc,
         CancellationToken cancellationToken)
-        => GetOrFetchAsync(key, _tagsCache, _tagsLock, fetchFunc, cancellationToken);
+        => GetOrFetchAsync(ComputeCacheKey(key), _tagsCache, _tagsLock, fetchFunc, cancellationToken);
 
     /// <summary>
     /// Gets the cached user info or fetches it using the provided function.
@@ -119,7 +132,7 @@ public class RaindropCacheService : IDisposable
         string key,
         Func<CancellationToken, Task<ItemResponse<UserInfo>>> fetchFunc,
         CancellationToken cancellationToken)
-        => GetOrFetchAsync(key, _userInfoCache, _userInfoLock, fetchFunc, cancellationToken);
+        => GetOrFetchAsync(ComputeCacheKey(key), _userInfoCache, _userInfoLock, fetchFunc, cancellationToken);
 
     /// <summary>
     /// Invalidates all caches for a specific user.
@@ -127,14 +140,15 @@ public class RaindropCacheService : IDisposable
     /// <param name="key">The user's API token used as the cache key.</param>
     public void InvalidateAll(string key)
     {
-        _collectionsCache.TryRemove(key, out _);
-        _tagsCache.TryRemove(key, out _);
-        _userInfoCache.TryRemove(key, out _);
+        var hashedKey = ComputeCacheKey(key);
+        _collectionsCache.TryRemove(hashedKey, out _);
+        _tagsCache.TryRemove(hashedKey, out _);
+        _userInfoCache.TryRemove(hashedKey, out _);
     }
 
-    public void InvalidateCollections(string key) => _collectionsCache.TryRemove(key, out _);
-    public void InvalidateTags(string key) => _tagsCache.TryRemove(key, out _);
-    public void InvalidateUserInfo(string key) => _userInfoCache.TryRemove(key, out _);
+    public void InvalidateCollections(string key) => _collectionsCache.TryRemove(ComputeCacheKey(key), out _);
+    public void InvalidateTags(string key) => _tagsCache.TryRemove(ComputeCacheKey(key), out _);
+    public void InvalidateUserInfo(string key) => _userInfoCache.TryRemove(ComputeCacheKey(key), out _);
 
     public void Dispose()
     {
