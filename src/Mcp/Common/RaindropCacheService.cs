@@ -101,6 +101,7 @@ public class RaindropCacheService : IDisposable
     /// </summary>
     private static string ComputeCacheKey(string rawKey)
     {
+        ArgumentNullException.ThrowIfNull(rawKey);
         var bytes = Encoding.UTF8.GetBytes(rawKey);
         var hash = SHA256.HashData(bytes);
         return Convert.ToHexString(hash);
