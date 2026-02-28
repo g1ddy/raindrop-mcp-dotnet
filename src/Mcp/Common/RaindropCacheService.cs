@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Buffers;
 using System.Security.Cryptography;
 using System.Text;
 using Mcp.Collections;
@@ -102,9 +103,27 @@ public class RaindropCacheService : IDisposable
     private static string ComputeCacheKey(string rawKey)
     {
         ArgumentNullException.ThrowIfNull(rawKey);
-        var bytes = Encoding.UTF8.GetBytes(rawKey);
-        var hash = SHA256.HashData(bytes);
-        return Convert.ToHexString(hash);
+
+        int maxByteCount = Encoding.UTF8.GetMaxByteCount(rawKey.Length);
+        byte[]? rentedBytes = null;
+        Span<byte> buffer = maxByteCount <= 512
+            ? stackalloc byte[maxByteCount]
+            : (rentedBytes = ArrayPool<byte>.Shared.Rent(maxByteCount));
+
+        try
+        {
+            int byteCount = Encoding.UTF8.GetBytes(rawKey, buffer);
+            Span<byte> hashBuffer = stackalloc byte[SHA256.HashSizeInBytes];
+            SHA256.HashData(buffer.Slice(0, byteCount), hashBuffer);
+            return Convert.ToHexString(hashBuffer);
+        }
+        finally
+        {
+            if (rentedBytes != null)
+            {
+                ArrayPool<byte>.Shared.Return(rentedBytes);
+            }
+        }
     }
 
     /// <summary>
