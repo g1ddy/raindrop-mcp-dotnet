@@ -26,7 +26,7 @@ public class TagsTools(ITagsApi api, RaindropCacheService cacheService, IOptions
             {
                 Properties =
                 {
-                    ["confirm"] = new ElicitRequestParams.BooleanSchema { Description = "Confirm action" }
+                    ["confirm"] = new ElicitRequestParams.BooleanSchema { Description = "Type 'true' to confirm this destructive action." }
                 }
             }
         };

@@ -80,15 +80,15 @@ public class RaindropsTools(IRaindropsApi api, RaindropCacheService cacheService
             CancellationToken cancellationToken = default)
     {
         if (page is < 0)
-            throw new ArgumentOutOfRangeException(nameof(page), "Page number cannot be negative.");
+            throw new ArgumentOutOfRangeException(nameof(page), $"Page number cannot be negative. You provided: {page}.");
 
         if (perPage is > 50 or < 1)
-            throw new ArgumentOutOfRangeException(nameof(perPage), "Number of items per page must be between 1 and 50.");
+            throw new ArgumentOutOfRangeException(nameof(perPage), $"Number of items per page must be between 1 and 50. You provided: {perPage}.");
 
         if (sort is not null)
         {
             if (!ValidSortOptions.Contains(sort))
-                throw new ArgumentOutOfRangeException(nameof(sort), $"Valid values are '{string.Join("', '", ValidSortOptions)}'.");
+                throw new ArgumentOutOfRangeException(nameof(sort), $"Invalid sort value: '{sort}'. Valid values are '{string.Join("', '", ValidSortOptions)}'.");
 
             if (sort == "score" && string.IsNullOrWhiteSpace(search))
                 throw new ArgumentException("Sort 'score' is only allowed when using a search query.", nameof(sort));
