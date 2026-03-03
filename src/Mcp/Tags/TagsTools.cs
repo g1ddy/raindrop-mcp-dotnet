@@ -77,7 +77,7 @@ public class TagsTools(ITagsApi api, RaindropCacheService cacheService, IOptions
         [Description("Collection ID if scoped")] int? collectionId = null,
         CancellationToken cancellationToken = default)
     {
-        var tagsList = tags.ToList();
+        var tagsList = tags as IReadOnlyList<string> ?? tags.ToList();
         const string BaseMessage = "Are you sure you want to merge these tags? This action cannot be undone.";
 
         string message = TagFormatter.FormatConfirmationMessage(tagsList, BaseMessage);
@@ -111,7 +111,7 @@ public class TagsTools(ITagsApi api, RaindropCacheService cacheService, IOptions
         [Description("Collection ID if scoped")] int? collectionId = null,
         CancellationToken cancellationToken = default)
     {
-        var tagsList = tags.ToList();
+        var tagsList = tags as IReadOnlyList<string> ?? tags.ToList();
         const string BaseMessage = "Are you sure you want to delete these tags? This action cannot be undone.";
 
         string message = TagFormatter.FormatConfirmationMessage(tagsList, BaseMessage);
