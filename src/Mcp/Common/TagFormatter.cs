@@ -4,7 +4,7 @@ namespace Mcp.Common;
 
 public static class TagFormatter
 {
-    public static string FormatConfirmationMessage(IList<string> tagsList, string baseMessage)
+    public static string FormatConfirmationMessage(IReadOnlyList<string> tagsList, string baseMessage)
     {
         // Calculate initial capacity to avoid resizing.
         // Base message length

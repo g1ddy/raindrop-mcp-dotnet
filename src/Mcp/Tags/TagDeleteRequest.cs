@@ -9,5 +9,5 @@ namespace Mcp.Tags;
 public record TagDeleteRequest
 {
     [Description("Tags to remove")]
-    public List<string> Tags { get; init; } = new();
+    public IReadOnlyList<string> Tags { get; init; } = Array.Empty<string>();
 }

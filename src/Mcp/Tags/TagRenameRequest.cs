@@ -14,5 +14,5 @@ public record TagRenameRequest
     public string? Replace { get; init; }
 
     [Description("List of tags to rename")]
-    public List<string> Tags { get; init; } = new();
+    public IReadOnlyList<string> Tags { get; init; } = Array.Empty<string>();
 }
