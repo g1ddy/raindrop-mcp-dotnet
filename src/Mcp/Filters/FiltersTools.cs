@@ -17,7 +17,7 @@ public class FiltersTools(IFiltersApi api) : RaindropToolBase<IFiltersApi>(api)
         CancellationToken cancellationToken = default)
     {
         if (tagsSort is not null && tagsSort != "-count" && tagsSort != "_id")
-            throw new ArgumentOutOfRangeException(nameof(tagsSort), "Valid values are '-count' or '_id'.");
+            throw new ArgumentOutOfRangeException(nameof(tagsSort), tagsSort, "Valid values are '-count' or '_id'.");
 
         return Api.GetAsync(collectionId, tagsSort, search, cancellationToken);
     }
