@@ -12,3 +12,8 @@
 **Vulnerability:** The `HighlightCreateRequest` and `HighlightUpdateRequest` DTOs relied on documentation ("This field is required") but lacked the `[Required]` validation attribute, allowing invalid requests (e.g., empty text or ID) to be processed.
 **Learning:** Documentation comments do not enforce validation. DTOs exposed to external inputs must explicitly use validation attributes like `[Required]` to guarantee data integrity before processing.
 **Prevention:** Audit all request DTOs to ensure that fields described as required are backed by `[Required]` attributes, and include unit tests to verify the presence of these attributes.
+
+## 2024-05-26 - Missing Input Length Limits on Highlight Domain Model
+**Vulnerability:** The `Highlight` domain entity, which represents user-created highlights, lacked `[MaxLength]` validation attributes on its `Text` and `Note` properties. These properties represent arbitrary text input from users, posing a risk of denial-of-service (DoS) or unexpected database constraints violations if exceptionally large strings are passed to endpoints that use the base domain entity instead of the request DTOs.
+**Learning:** Shared domain entities used across various endpoints (single vs. bulk operations) must maintain consistent data length limits as their corresponding DTOs (e.g., `HighlightCreateRequest` and `HighlightUpdateRequest`). Relying entirely on specialized DTOs for length limits introduces security gaps if the domain model is used elsewhere without limits.
+**Prevention:** Always mirror the `[MaxLength(MaxTextFieldLength)]` constraint onto the base domain entity fields whenever it exists on any DTO mapping to those fields.

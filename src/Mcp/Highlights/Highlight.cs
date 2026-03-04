@@ -1,5 +1,7 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using Mcp.Raindrops;
 
 namespace Mcp.Highlights;
 
@@ -13,6 +15,7 @@ public record Highlight
     [Description("Unique identifier for the highlight")]
     public string? Id { get; init; }
 
+    [MaxLength(Raindrop.MaxTextFieldLength)]
     [Description("Highlighted text")]
     public string? Text { get; init; }
 
@@ -22,6 +25,7 @@ public record Highlight
     [Description("Color of the highlight")]
     public string? Color { get; init; }
 
+    [MaxLength(Raindrop.MaxTextFieldLength)]
     [Description("Optional note attached to the highlight")]
     public string? Note { get; init; }
 
