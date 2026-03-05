@@ -13,9 +13,9 @@ namespace Mcp.Benchmarks;
 [MemoryDiagnoser]
 public class RaindropsToolsBenchmark : RaindropBenchmarkBase
 {
-    private RaindropsTools _tools;
-    private Mock<IRaindropsApi> _raindropsApiMock;
-    private List<Raindrop> _preAllocatedList;
+    private RaindropsTools _tools = null!;
+    private Mock<IRaindropsApi> _raindropsApiMock = null!;
+    private List<Raindrop> _preAllocatedList = null!;
     private const int ItemCount = 100;
 
     public override void SetupCache()

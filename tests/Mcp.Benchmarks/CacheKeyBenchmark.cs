@@ -10,7 +10,7 @@ namespace Mcp.Benchmarks;
 [MemoryDiagnoser]
 public class CacheKeyBenchmark
 {
-    private string _token;
+    private string _token = null!;
 
     [Params(
         "12345678-1234-1234-1234-123456789012-12345678-1234-1234-1234-123456789012",

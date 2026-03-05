@@ -19,11 +19,11 @@ namespace Mcp.Benchmarks;
 [MemoryDiagnoser]
 public class CollectionsToolsBenchmark : RaindropBenchmarkBase
 {
-    private CollectionsTools _tools;
-    private Mock<McpServer> _mcpServerMock;
-    private Mock<ICollectionsApi> _collectionsApiMock;
-    private Mock<IRaindropsApi> _raindropsApiMock;
-    private List<Collection> _largeCollectionList;
+    private CollectionsTools _tools = null!;
+    private Mock<McpServer> _mcpServerMock = null!;
+    private Mock<ICollectionsApi> _collectionsApiMock = null!;
+    private Mock<IRaindropsApi> _raindropsApiMock = null!;
+    private List<Collection> _largeCollectionList = null!;
 
     [Params(100, 1000)]
     public int CollectionCount;

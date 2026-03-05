@@ -14,10 +14,10 @@ namespace Mcp.Benchmarks;
 [MemoryDiagnoser]
 public class MergeCollectionsBenchmark : RaindropBenchmarkBase
 {
-    private CollectionsTools _tools;
-    private Mock<ICollectionsApi> _collectionsApiMock;
-    private Mock<IRaindropsApi> _raindropsApiMock;
-    private HashSet<int> _ids;
+    private CollectionsTools _tools = null!;
+    private Mock<ICollectionsApi> _collectionsApiMock = null!;
+    private Mock<IRaindropsApi> _raindropsApiMock = null!;
+    private HashSet<int> _ids = null!;
     private int _targetId;
 
     [Params(10, 100, 500)]
