@@ -10,7 +10,17 @@ namespace Mcp.Benchmarks;
 [MemoryDiagnoser]
 public class CacheKeyBenchmark
 {
-    private string _token = "12345678-1234-1234-1234-123456789012-12345678-1234-1234-1234-123456789012";
+    private string _token;
+
+    [Params(
+        "12345678-1234-1234-1234-123456789012-12345678-1234-1234-1234-123456789012",
+        "12345678-1234-1234-1234-123456789012-12345678-1234-1234-1234-123456789012-12345678-1234-1234-1234-123456789012-12345678-1234-1234-1234-123456789012-12345678-1234-1234-1234-123456789012-12345678-1234-1234-1234-123456789012-12345678-1234-1234-1234-123456789012"
+    )]
+    public string Token
+    {
+        get => _token;
+        set => _token = value;
+    }
 
     [Benchmark(Baseline = true)]
     public string Original()
@@ -38,9 +48,10 @@ public class CacheKeyBenchmark
         }
         finally
         {
+            buffer.Clear();
             if (rentedBytes != null)
             {
-                ArrayPool<byte>.Shared.Return(rentedBytes);
+                ArrayPool<byte>.Shared.Return(rentedBytes, clearArray: true);
             }
         }
     }

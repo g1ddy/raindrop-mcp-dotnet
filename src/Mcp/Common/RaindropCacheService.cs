@@ -119,9 +119,10 @@ public class RaindropCacheService : IDisposable
         }
         finally
         {
+            buffer.Clear();
             if (rentedBytes != null)
             {
-                ArrayPool<byte>.Shared.Return(rentedBytes);
+                ArrayPool<byte>.Shared.Return(rentedBytes, clearArray: true);
             }
         }
     }
