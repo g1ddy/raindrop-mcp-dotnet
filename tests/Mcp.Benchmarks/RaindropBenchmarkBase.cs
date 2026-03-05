@@ -5,7 +5,7 @@ namespace Mcp.Benchmarks;
 
 public abstract class RaindropBenchmarkBase
 {
-    protected RaindropCacheService CacheService { get; private set; }
+    protected RaindropCacheService CacheService { get; private set; } = null!;
 
     [GlobalSetup]
     public virtual void SetupCache()

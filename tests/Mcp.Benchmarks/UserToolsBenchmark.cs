@@ -11,8 +11,8 @@ namespace Mcp.Benchmarks;
 [MemoryDiagnoser]
 public class UserToolsBenchmark
 {
-    private UserTools _tools;
-    private Mock<IUserApi> _userApiMock;
+    private UserTools _tools = null!;
+    private Mock<IUserApi> _userApiMock = null!;
 
     [GlobalSetup]
     public void Setup()

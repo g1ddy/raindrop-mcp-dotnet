@@ -16,12 +16,12 @@ namespace Mcp.Benchmarks;
 [MemoryDiagnoser]
 public class TagsToolsBenchmark : RaindropBenchmarkBase
 {
-    private TagsTools _tools;
-    private Mock<ITagsApi> _tagsApiMock;
-    private Mock<McpServer> _mcpServerMock;
-    private List<string> _tags10;
-    private List<string> _tags50;
-    private List<string> _tags100;
+    private TagsTools _tools = null!;
+    private Mock<ITagsApi> _tagsApiMock = null!;
+    private Mock<McpServer> _mcpServerMock = null!;
+    private List<string> _tags10 = null!;
+    private List<string> _tags50 = null!;
+    private List<string> _tags100 = null!;
 
     public override void SetupCache()
     {
