@@ -260,11 +260,34 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, R
             return new SuccessResponse(false);
         }
 
-        var suggestedTitles = textContent.Text.Split(_separators, StringSplitOptions.RemoveEmptyEntries)
-            .Select(t => t.Trim(_trimChars))
-            .Where(collectionTitles.ContainsKey)
-            .Take(3)
-            .ToList();
+        var suggestedTitles = new List<string>(3);
+        var altLookup = collectionTitles.GetAlternateLookup<ReadOnlySpan<char>>();
+        var textSpan = textContent.Text.AsSpan();
+
+        foreach (var range in textSpan.SplitAny(_separators))
+        {
+            var span = textSpan[range].Trim(_trimChars);
+            if (span.IsEmpty) continue;
+
+            if (altLookup.TryGetValue(span, out var collection))
+            {
+                bool isDistinct = true;
+                foreach (var t in suggestedTitles)
+                {
+                    if (span.SequenceEqual(t.AsSpan()))
+                    {
+                        isDistinct = false;
+                        break;
+                    }
+                }
+
+                if (isDistinct) // Ensure distinct
+                {
+                    suggestedTitles.Add(span.ToString());
+                    if (suggestedTitles.Count == 3) break;
+                }
+            }
+        }
 
         if (suggestedTitles.Count == 0)
         {
