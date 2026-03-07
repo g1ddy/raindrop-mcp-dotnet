@@ -271,9 +271,19 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, R
 
             if (altLookup.TryGetValue(span, out var collection))
             {
-                if (!suggestedTitles.Contains(collection.Title!)) // Ensure distinct
+                bool isDistinct = true;
+                foreach (var t in suggestedTitles)
                 {
-                    suggestedTitles.Add(collection.Title!);
+                    if (span.SequenceEqual(t.AsSpan()))
+                    {
+                        isDistinct = false;
+                        break;
+                    }
+                }
+
+                if (isDistinct) // Ensure distinct
+                {
+                    suggestedTitles.Add(span.ToString());
                     if (suggestedTitles.Count == 3) break;
                 }
             }
