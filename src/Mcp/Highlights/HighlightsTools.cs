@@ -11,20 +11,36 @@ public class HighlightsTools(IHighlightsApi api) : RaindropToolBase<IHighlightsA
         Title = "List Highlights"),
      Description("Retrieves all highlights across all bookmarks.")]
     public Task<ItemsResponse<Highlight>> ListHighlightsAsync(
-        [Description("Page number starting from 0")] int? page = null,
-        [Description("Items per page")] int? perPage = null,
+        [Description("Page number starting from 0.")] int? page = null,
+        [Description("How many highlights per page, up to 50.")] int? perPage = null,
         CancellationToken cancellationToken = default)
-        => Api.ListAsync(page, perPage, cancellationToken);
+    {
+        if (page is < 0)
+            throw new ArgumentOutOfRangeException(nameof(page), page, "Page number cannot be negative.");
+
+        if (perPage is > 50 or < 1)
+            throw new ArgumentOutOfRangeException(nameof(perPage), perPage, "Number of items per page must be between 1 and 50.");
+
+        return Api.ListAsync(page, perPage, cancellationToken);
+    }
 
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
         Title = "List Highlights By Collection"),
      Description("Retrieves highlights in a specific collection.")]
     public Task<ItemsResponse<Highlight>> ListHighlightsByCollectionAsync(
         [Description("Collection ID containing the bookmarks")] int collectionId,
-        [Description("Page number starting from 0")] int? page = null,
-        [Description("Items per page")] int? perPage = null,
+        [Description("Page number starting from 0.")] int? page = null,
+        [Description("How many highlights per page, up to 50.")] int? perPage = null,
         CancellationToken cancellationToken = default)
-        => Api.ListByCollectionAsync(collectionId, page, perPage, cancellationToken);
+    {
+        if (page is < 0)
+            throw new ArgumentOutOfRangeException(nameof(page), page, "Page number cannot be negative.");
+
+        if (perPage is > 50 or < 1)
+            throw new ArgumentOutOfRangeException(nameof(perPage), perPage, "Number of items per page must be between 1 and 50.");
+
+        return Api.ListByCollectionAsync(collectionId, page, perPage, cancellationToken);
+    }
 
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
         Title = "Get Bookmark Highlights"),

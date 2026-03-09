@@ -1,0 +1,3 @@
+## 2024-05-14 - Improve Exception Messaging for MCP
+**Learning:** For this backend MCP server, UX improvements focus on the Developer/AI experience by ensuring exception messages (e.g., `ArgumentOutOfRangeException`) include the specific invalid values provided, and that schema descriptions offer explicit instructions. `ArgumentOutOfRangeException` natively includes the actual value when instantiated properly using `throw new ArgumentOutOfRangeException(nameof(param), paramValue, "Message");`.
+**Action:** When updating exceptions, make sure we provide `paramName`, `actualValue`, and `message` to `ArgumentOutOfRangeException`.
