@@ -8,7 +8,7 @@ using Xunit.Abstractions;
 
 namespace Mcp.Tests;
 
-public class RaindropsToolsPerformanceTests
+public class RaindropsToolsPerformanceTests : IDisposable
 {
     private readonly ITestOutputHelper _output;
     private readonly Mock<IRaindropsApi> _apiMock;
@@ -52,5 +52,10 @@ public class RaindropsToolsPerformanceTests
         Assert.Equal(itemCount, result.Items.Count);
 
         _output.WriteLine($"Time taken for {itemCount} items (50 chunks): {sw.Elapsed.TotalMilliseconds}ms");
+    }
+
+    public void Dispose()
+    {
+        _cacheService.Dispose();
     }
 }
