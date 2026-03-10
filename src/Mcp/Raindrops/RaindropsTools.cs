@@ -124,7 +124,6 @@ public class RaindropsTools(IRaindropsApi api, RaindropCacheService cacheService
 
             if (response.Result)
             {
-                _cacheService.InvalidateAll(_cacheKey);
                 if (response.Items is not null)
                 {
                     allItems.AddRange(response.Items);
@@ -135,6 +134,11 @@ public class RaindropsTools(IRaindropsApi api, RaindropCacheService cacheService
                 overallResult = false;
                 break;
             }
+        }
+
+        if (allItems.Count > 0)
+        {
+            _cacheService.InvalidateAll(_cacheKey);
         }
 
         return new ItemsResponse<Raindrop>(overallResult, allItems);
