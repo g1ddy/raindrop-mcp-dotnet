@@ -7,6 +7,15 @@ namespace Mcp.Highlights;
 [McpServerToolType]
 public class HighlightsTools(IHighlightsApi api) : RaindropToolBase<IHighlightsApi>(api)
 {
+    private static void ValidatePagination(int? page, int? perPage)
+    {
+        if (page is < 0)
+            throw new ArgumentOutOfRangeException(nameof(page), page, "Page number cannot be negative.");
+
+        if (perPage is > 50 or < 1)
+            throw new ArgumentOutOfRangeException(nameof(perPage), perPage, "Number of items per page must be between 1 and 50.");
+    }
+
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
         Title = "List Highlights"),
      Description("Retrieves all highlights across all bookmarks.")]
@@ -15,12 +24,7 @@ public class HighlightsTools(IHighlightsApi api) : RaindropToolBase<IHighlightsA
         [Description("How many highlights per page, up to 50.")] int? perPage = null,
         CancellationToken cancellationToken = default)
     {
-        if (page is < 0)
-            throw new ArgumentOutOfRangeException(nameof(page), page, "Page number cannot be negative.");
-
-        if (perPage is > 50 or < 1)
-            throw new ArgumentOutOfRangeException(nameof(perPage), perPage, "Number of items per page must be between 1 and 50.");
-
+        ValidatePagination(page, perPage);
         return Api.ListAsync(page, perPage, cancellationToken);
     }
 
@@ -33,12 +37,7 @@ public class HighlightsTools(IHighlightsApi api) : RaindropToolBase<IHighlightsA
         [Description("How many highlights per page, up to 50.")] int? perPage = null,
         CancellationToken cancellationToken = default)
     {
-        if (page is < 0)
-            throw new ArgumentOutOfRangeException(nameof(page), page, "Page number cannot be negative.");
-
-        if (perPage is > 50 or < 1)
-            throw new ArgumentOutOfRangeException(nameof(perPage), perPage, "Number of items per page must be between 1 and 50.");
-
+        ValidatePagination(page, perPage);
         return Api.ListByCollectionAsync(collectionId, page, perPage, cancellationToken);
     }
 
