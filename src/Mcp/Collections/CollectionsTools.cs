@@ -199,14 +199,24 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, R
         var collectionTitles = new Dictionary<string, Collection>(StringComparer.OrdinalIgnoreCase);
         var promptBuilder = new StringBuilder();
 
-        var filteredCollections = collectionsResponse.Items
-            .Where(c => !string.IsNullOrEmpty(c.Title))
-            .Where(c => c.Parent == null) // Filter out child collections
-            .OrderBy(c => c.Count)
-            .Take(25);
-
-        foreach (var c in filteredCollections)
+        // Optimization: Replace allocative LINQ with pre-allocated List and in-place Sort
+        var items = collectionsResponse.Items;
+        var filteredCollections = new List<Collection>(items.Count);
+        for (int i = 0; i < items.Count; i++)
         {
+            var c = items[i];
+            if (!string.IsNullOrEmpty(c.Title) && c.Parent == null)
+            {
+                filteredCollections.Add(c);
+            }
+        }
+
+        filteredCollections.Sort((a, b) => a.Count.CompareTo(b.Count));
+
+        int takeCount = Math.Min(filteredCollections.Count, 25);
+        for (int i = 0; i < takeCount; i++)
+        {
+            var c = filteredCollections[i];
             // We've already filtered for null/empty title above
             var title = Sanitize(c.Title!);
             if (collectionTitles.TryAdd(title, c))
