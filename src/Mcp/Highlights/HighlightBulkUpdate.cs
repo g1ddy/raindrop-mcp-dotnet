@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace Mcp.Highlights;
@@ -13,9 +14,11 @@ public record HighlightBulkUpdate
     [Description("Identifier of the highlight")]
     public string? Id { get; init; }
 
+    [MaxLength(Raindrops.Raindrop.MaxTextFieldLength)]
     [Description("Updated highlight text or empty to delete")]
     public string? Text { get; init; }
 
+    [MaxLength(Raindrops.Raindrop.MaxTextFieldLength)]
     [Description("Updated note text")]
     public string? Note { get; init; }
 
