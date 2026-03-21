@@ -40,7 +40,7 @@ public class RaindropsToolsPerformanceTests : IDisposable
                 new ItemsResponse<Raindrop>(true, req.Items));
 
         // Warm up
-        await _tools.CreateBookmarksAsync(0, raindrops.Take(100), CancellationToken.None);
+        await _tools.CreateBookmarksAsync(0, raindrops.Take(100).ToList(), CancellationToken.None);
 
         // Act
         var sw = Stopwatch.StartNew();

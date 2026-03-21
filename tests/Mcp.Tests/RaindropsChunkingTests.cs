@@ -101,13 +101,13 @@ public class RaindropsChunkingTests
         _apiMock.Verify(api => api.CreateManyAsync(It.IsAny<RaindropCreateManyRequest>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
-    private IEnumerable<Raindrop> CreateRaindrops(int count)
+    private IReadOnlyList<Raindrop> CreateRaindrops(int count)
     {
         return Enumerable.Range(0, count).Select(i => new Raindrop
         {
             Title = $"Title {i}",
             Link = $"https://example.com/{i}"
-        });
+        }).ToList();
     }
 
     [Fact]

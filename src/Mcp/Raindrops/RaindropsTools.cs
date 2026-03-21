@@ -101,19 +101,19 @@ public class RaindropsTools(IRaindropsApi api, RaindropCacheService cacheService
          Description("Creates multiple bookmarks in a single request.")]
     public async Task<ItemsResponse<Raindrop>> CreateBookmarksAsync(
             [Description("Collection ID for the new bookmarks")] int collectionId,
-            [Description("A collection of bookmark details to create.")] IEnumerable<Raindrop> raindrops,
+            [Description("A collection of bookmark details to create.")] IReadOnlyList<Raindrop> raindrops,
             CancellationToken cancellationToken = default)
     {
         const int ChunkSize = 100;
-        // Optimization: Pre-allocate list capacity if count is known to avoid resizing
-        var allItems = raindrops.TryGetNonEnumeratedCount(out int count)
-            ? new List<Raindrop>(count)
-            : new List<Raindrop>();
-
+        int count = raindrops.Count;
+        var allItems = new List<Raindrop>(count);
         var overallResult = true;
 
-        foreach (var chunk in raindrops.Chunk(ChunkSize))
+        for (int i = 0; i < count; i += ChunkSize)
         {
+            int currentChunkSize = Math.Min(ChunkSize, count - i);
+            var chunk = new ReadOnlyListSlice<Raindrop>(raindrops, i, currentChunkSize);
+
             var payload = new RaindropCreateManyRequest
             {
                 CollectionId = collectionId,
@@ -142,6 +142,57 @@ public class RaindropsTools(IRaindropsApi api, RaindropCacheService cacheService
         }
 
         return new ItemsResponse<Raindrop>(overallResult, allItems);
+    }
+
+    /// <summary>
+    /// A zero-allocation slice of an IReadOnlyList.
+    /// Implements IList to allow System.Text.Json to serialize without allocating enumerators.
+    /// </summary>
+    private sealed class ReadOnlyListSlice<T> : IReadOnlyList<T>, IList<T>
+    {
+        private readonly IReadOnlyList<T> _source;
+        private readonly int _offset;
+        private readonly int _count;
+
+        public ReadOnlyListSlice(IReadOnlyList<T> source, int offset, int count)
+        {
+            _source = source;
+            _offset = offset;
+            _count = count;
+        }
+
+        public T this[int index]
+        {
+            get => index >= 0 && index < _count ? _source[_offset + index] : throw new ArgumentOutOfRangeException(nameof(index));
+            set => throw new NotSupportedException();
+        }
+
+        public int Count => _count;
+        public bool IsReadOnly => true;
+
+        public void Add(T item) => throw new NotSupportedException();
+        public void Clear() => throw new NotSupportedException();
+        public bool Contains(T item) => IndexOf(item) >= 0;
+        public void CopyTo(T[] array, int arrayIndex)
+        {
+            for (int i = 0; i < _count; i++) array[arrayIndex + i] = _source[_offset + i];
+        }
+        public int IndexOf(T item)
+        {
+            for (int i = 0; i < _count; i++)
+                if (EqualityComparer<T>.Default.Equals(_source[_offset + i], item)) return i;
+            return -1;
+        }
+        public void Insert(int index, T item) => throw new NotSupportedException();
+        public bool Remove(T item) => throw new NotSupportedException();
+        public void RemoveAt(int index) => throw new NotSupportedException();
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            for (int i = 0; i < _count; i++) yield return _source[_offset + i];
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
     [McpServerTool(Idempotent = true, Title = "Update Bookmarks"),
