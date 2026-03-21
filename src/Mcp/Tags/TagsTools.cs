@@ -9,9 +9,9 @@ using ModelContextProtocol.Server;
 namespace Mcp.Tags;
 
 [McpServerToolType]
-public class TagsTools(ITagsApi api, RaindropCacheService cacheService, IOptions<RaindropOptions> options) : RaindropToolBase<ITagsApi>(api)
+public class TagsTools(ITagsApi api, IRaindropCacheService cacheService, IOptions<RaindropOptions> options) : RaindropToolBase<ITagsApi>(api)
 {
-    private readonly RaindropCacheService _cacheService = cacheService;
+    private readonly IRaindropCacheService _cacheService = cacheService;
     private readonly string _cacheKey = options.Value.ApiToken;
 
     private Task<ItemsResponse<TagInfo>> GetCachedTagsAsync(CancellationToken cancellationToken)

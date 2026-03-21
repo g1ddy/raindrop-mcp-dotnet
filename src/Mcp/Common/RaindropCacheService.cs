@@ -14,7 +14,7 @@ namespace Mcp.Common;
 /// This ensures thread-safe access and proper disposal of resources like semaphores.
 /// caches are keyed by user identity (API token) to prevent data leakage in multi-user environments.
 /// </summary>
-public class RaindropCacheService : IDisposable
+public class RaindropCacheService : IRaindropCacheService
 {
     private record CacheEntry<T>(T Response, DateTimeOffset Expiration);
 

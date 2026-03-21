@@ -11,13 +11,13 @@ using ModelContextProtocol.Server;
 namespace Mcp.Collections;
 
 [McpServerToolType]
-public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, RaindropCacheService cacheService, IOptions<RaindropOptions> options) :
+public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, IRaindropCacheService cacheService, IOptions<RaindropOptions> options) :
     RaindropToolBase<ICollectionsApi>(api)
 {
     private static readonly char[] _separators = ['|', '\n'];
     private static readonly char[] _trimChars = ['-', '*', ' ', '\'', '"', '.'];
     private readonly IRaindropsApi _raindropsApi = raindropsApi;
-    private readonly RaindropCacheService _cacheService = cacheService;
+    private readonly IRaindropCacheService _cacheService = cacheService;
     private readonly string _cacheKey = options.Value.ApiToken;
     private const int DefaultMaxTokens = 1000;
 

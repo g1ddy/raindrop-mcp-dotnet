@@ -9,10 +9,10 @@ using Microsoft.Extensions.Options;
 namespace Mcp.Raindrops;
 
 [McpServerToolType]
-public class RaindropsTools(IRaindropsApi api, RaindropCacheService cacheService, IOptions<RaindropOptions> options) :
+public class RaindropsTools(IRaindropsApi api, IRaindropCacheService cacheService, IOptions<RaindropOptions> options) :
     RaindropToolBase<IRaindropsApi>(api)
 {
-    private readonly RaindropCacheService _cacheService = cacheService;
+    private readonly IRaindropCacheService _cacheService = cacheService;
     private readonly string _cacheKey = options.Value.ApiToken;
     private static readonly HashSet<string> ValidSortOptions = new(
         new[] { "created", "-created", "title", "-title", "domain", "-domain", "sort", "score" }
@@ -136,7 +136,7 @@ public class RaindropsTools(IRaindropsApi api, RaindropCacheService cacheService
             }
         }
 
-        if (allItems.Count > 0)
+        if (overallResult && allItems.Count > 0)
         {
             _cacheService.InvalidateAll(_cacheKey);
         }

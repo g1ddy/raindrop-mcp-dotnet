@@ -35,7 +35,7 @@ public static class RaindropServiceCollectionExtensions
             .ValidateOnStart();
 
         services.AddSingleton<RaindropClientConfig>();
-        services.AddSingleton<RaindropCacheService>();
+        services.AddSingleton<IRaindropCacheService, RaindropCacheService>();
 
         var settings = new RefitSettings
         {

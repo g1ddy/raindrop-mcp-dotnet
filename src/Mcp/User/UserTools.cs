@@ -6,9 +6,9 @@ using ModelContextProtocol.Server;
 namespace Mcp.User;
 
 [McpServerToolType]
-public class UserTools(IUserApi api, RaindropCacheService cacheService, IOptions<RaindropOptions> options) : RaindropToolBase<IUserApi>(api)
+public class UserTools(IUserApi api, IRaindropCacheService cacheService, IOptions<RaindropOptions> options) : RaindropToolBase<IUserApi>(api)
 {
-    private readonly RaindropCacheService _cacheService = cacheService;
+    private readonly IRaindropCacheService _cacheService = cacheService;
     private readonly string _cacheKey = options.Value.ApiToken;
 
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
