@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 using Mcp.Common;
@@ -16,9 +17,11 @@ public record Collection
     [Description("Unique identifier of the collection")]
     public int Id { get; init; }
 
+    [MaxLength(Raindrops.Raindrop.MaxTextFieldLength)]
     [Description("Collection title")]
     public string? Title { get; init; }
 
+    [MaxLength(Raindrops.Raindrop.MaxTextFieldLength)]
     [Description("Collection description")]
     public string? Description { get; init; }
 

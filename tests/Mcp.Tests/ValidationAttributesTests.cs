@@ -43,6 +43,8 @@ public class ValidationAttributesTests
     [InlineData(typeof(HighlightCreateRequest), nameof(HighlightCreateRequest.Note), 10000)]
     [InlineData(typeof(HighlightUpdateRequest), nameof(HighlightUpdateRequest.Text), 10000)]
     [InlineData(typeof(HighlightUpdateRequest), nameof(HighlightUpdateRequest.Note), 10000)]
+    [InlineData(typeof(Mcp.Collections.Collection), nameof(Mcp.Collections.Collection.Title), 10000)]
+    [InlineData(typeof(Mcp.Collections.Collection), nameof(Mcp.Collections.Collection.Description), 10000)]
     public void Property_HasMaxLengthAttribute(Type type, string propertyName, int expectedLength)
     {
         var property = type.GetProperty(propertyName);
