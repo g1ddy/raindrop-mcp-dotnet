@@ -123,6 +123,24 @@ public class RaindropsChunkingTests
         _cacheMock.Verify(x => x.InvalidateAll(It.IsAny<string>()), Times.Never);
     }
 
+    [Fact]
+    public async Task CreateBookmarksAsync_Success_InvalidatesCache()
+    {
+        // Arrange
+        var raindrops = CreateRaindrops(150);
+        _apiMock.Setup(x => x.CreateManyAsync(It.IsAny<RaindropCreateManyRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaindropCreateManyRequest req, CancellationToken _) =>
+                new ItemsResponse<Raindrop>(true, req.Items));
+
+        // Act
+        var result = await _tools.CreateBookmarksAsync(0, raindrops, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.Result);
+        Assert.Equal(150, result.Items.Count);
+        _cacheMock.Verify(x => x.InvalidateAll(It.IsAny<string>()), Times.Once);
+    }
+
     private IEnumerable<Raindrop> CreateRaindrops(int count)
     {
         return Enumerable.Range(0, count).Select(i => new Raindrop
