@@ -52,3 +52,10 @@ When modifying C# models or integration tests, strict adherence to the Raindrop.
 - **CI Workflow**:
     - The CI workflow uses `git status --porcelain` to detect changes.
     - *Critical*: `git diff` does not detect untracked files. Since VCR recording creates *new* JSON files, the workflow must use `git status` to verify that no new recordings were unexpectedly generated during a test run (which would indicate non-determinism or leakage).
+
+## Performance and Complexity Guidelines
+
+- **Prioritize Readability**: Code should be straightforward and maintainable. Avoid complex optimizations (e.g., manual array manipulations, `StringBuilder` for small concatenations, `stackalloc`) unless there is a proven, significant performance bottleneck.
+- **Micro-optimizations**: Avoid micro-optimizations that provide negligible or inconclusive gains but increase code complexity or add many lines of code.
+- **LINQ vs. Imperative**: Use simple LINQ statements over manual loops where it improves clarity, unless working in a high-frequency, performance-critical path (e.g., inside a large loop).
+- **Simple Idioms**: Favor standard C# idioms (like string interpolation and `string.Join`) for UI/message generation tasks where the performance impact is dwarfed by I/O.

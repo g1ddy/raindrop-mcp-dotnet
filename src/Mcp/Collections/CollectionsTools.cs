@@ -295,30 +295,13 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, R
         }
 
         // 4. Elicit choice from user
-        var messageBuilder = new StringBuilder("I found some great collections for ");
-        if (string.IsNullOrWhiteSpace(bookmark.Title))
-        {
-            messageBuilder.Append("this bookmark");
-        }
-        else
-        {
-            messageBuilder.Append('"');
-            messageBuilder.Append(Sanitize(bookmark.Title));
-            messageBuilder.Append('"');
-        }
-        messageBuilder.Append(":\n\n");
-
-        for (int i = 0; i < suggestedTitles.Count; i++)
-        {
-            if (i > 0) messageBuilder.Append('\n');
-            messageBuilder.Append("📂 ");
-            messageBuilder.Append(suggestedTitles[i]);
-        }
-        messageBuilder.Append("\n\nWhich one would you like to move it to?");
+        var bookmarkText = string.IsNullOrWhiteSpace(bookmark.Title) ? "this bookmark" : $"\"{Sanitize(bookmark.Title)}\"";
+        var optionsText = string.Join("\n", suggestedTitles.Select(t => $"📂 {t}"));
+        var message = $"I found some great collections for {bookmarkText}:\n\n{optionsText}\n\nWhich one would you like to move it to?";
 
         var confirmationRequest = new ElicitRequestParams
         {
-            Message = messageBuilder.ToString(),
+            Message = message,
             RequestedSchema = new ElicitRequestParams.RequestSchema
             {
                 Properties =
