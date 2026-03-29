@@ -120,7 +120,7 @@ public class RaindropsChunkingTests
         // Assert
         Assert.False(result.Result);
         Assert.Equal(100, result.Items.Count);
-        _cacheMock.Verify(x => x.InvalidateAll(It.IsAny<string>()), Times.Never);
+        _cacheMock.Verify(x => x.InvalidateAllAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -138,7 +138,7 @@ public class RaindropsChunkingTests
         // Assert
         Assert.True(result.Result);
         Assert.Equal(150, result.Items.Count);
-        _cacheMock.Verify(x => x.InvalidateAll(It.IsAny<string>()), Times.Once);
+        _cacheMock.Verify(x => x.InvalidateAllAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     private IEnumerable<Raindrop> CreateRaindrops(int count)

@@ -27,7 +27,7 @@ public class RaindropsTools(IRaindropsApi api, IRaindropCacheService cacheServic
         var response = await Api.CreateAsync(payload, cancellationToken);
         if (response.Result)
         {
-            _cacheService.InvalidateAll(_cacheKey);
+            await _cacheService.InvalidateAllAsync(_cacheKey, cancellationToken);
         }
         return response;
     }
@@ -49,7 +49,7 @@ public class RaindropsTools(IRaindropsApi api, IRaindropCacheService cacheServic
         var response = await Api.UpdateAsync(id, payload, cancellationToken);
         if (response.Result)
         {
-            _cacheService.InvalidateAll(_cacheKey);
+            await _cacheService.InvalidateAllAsync(_cacheKey, cancellationToken);
         }
         return response;
     }
@@ -62,7 +62,7 @@ public class RaindropsTools(IRaindropsApi api, IRaindropCacheService cacheServic
         var response = await Api.DeleteAsync(id, cancellationToken);
         if (response.Result)
         {
-            _cacheService.InvalidateAll(_cacheKey);
+            await _cacheService.InvalidateAllAsync(_cacheKey, cancellationToken);
         }
         return response;
     }
@@ -138,7 +138,7 @@ public class RaindropsTools(IRaindropsApi api, IRaindropCacheService cacheServic
 
         if (overallResult && allItems.Count > 0)
         {
-            _cacheService.InvalidateAll(_cacheKey);
+            await _cacheService.InvalidateAllAsync(_cacheKey, cancellationToken);
         }
 
         return new ItemsResponse<Raindrop>(overallResult, allItems);
@@ -156,7 +156,7 @@ public class RaindropsTools(IRaindropsApi api, IRaindropCacheService cacheServic
         var response = await Api.UpdateManyAsync(collectionId, update, nested, search, cancellationToken);
         if (response.Result)
         {
-            _cacheService.InvalidateAll(_cacheKey);
+            await _cacheService.InvalidateAllAsync(_cacheKey, cancellationToken);
         }
         return response;
     }

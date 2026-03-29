@@ -34,7 +34,7 @@ public class CacheInvalidationTests
         Assert.Equal(1, fetchCount2);
 
         // New behavior: InvalidateAll only affects specific user
-        cacheService.InvalidateAll(user1);
+        await cacheService.InvalidateAllAsync(user1);
 
         await cacheService.GetCollectionsAsync(user1, fetch1, default);
         await cacheService.GetCollectionsAsync(user2, fetch2, default);
@@ -60,7 +60,7 @@ public class CacheInvalidationTests
         await cacheService.GetCollectionsAsync(user1, fetch1, default);
         await cacheService.GetCollectionsAsync(user2, fetch2, default);
 
-        cacheService.InvalidateCollections(user1);
+        await cacheService.InvalidateCollectionsAsync(user1);
 
         await cacheService.GetCollectionsAsync(user1, fetch1, default);
         await cacheService.GetCollectionsAsync(user2, fetch2, default);

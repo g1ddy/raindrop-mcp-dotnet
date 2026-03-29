@@ -36,20 +36,20 @@ public interface IRaindropCacheService : IDisposable
     /// <summary>
     /// Invalidates all caches for a specific user.
     /// </summary>
-    void InvalidateAll(string key);
+    Task InvalidateAllAsync(string key, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Invalidates collections cache for a specific user.
     /// </summary>
-    void InvalidateCollections(string key);
+    Task InvalidateCollectionsAsync(string key, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Invalidates tags cache for a specific user.
     /// </summary>
-    void InvalidateTags(string key);
+    Task InvalidateTagsAsync(string key, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Invalidates user info cache for a specific user.
     /// </summary>
-    void InvalidateUserInfo(string key);
+    Task InvalidateUserInfoAsync(string key, CancellationToken cancellationToken = default);
 }
