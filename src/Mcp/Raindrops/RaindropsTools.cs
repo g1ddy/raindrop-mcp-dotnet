@@ -105,38 +105,58 @@ public class RaindropsTools(IRaindropsApi api, IRaindropCacheService cacheServic
             CancellationToken cancellationToken = default)
     {
         const int ChunkSize = 100;
+        const int MaxDegreeOfParallelism = 5;
+
         // Optimization: Pre-allocate list capacity if count is known to avoid resizing
         var allItems = raindrops.TryGetNonEnumeratedCount(out int count)
             ? new List<Raindrop>(count)
             : new List<Raindrop>();
 
+        var chunks = raindrops.Chunk(ChunkSize).Select((chunk, index) => new { Chunk = chunk, Index = index }).ToList();
+
+        using var semaphore = new SemaphoreSlim(MaxDegreeOfParallelism, MaxDegreeOfParallelism);
+
+        var tasks = chunks.Select(async item =>
+        {
+            await semaphore.WaitAsync(cancellationToken);
+            try
+            {
+                var payload = new RaindropCreateManyRequest
+                {
+                    CollectionId = collectionId,
+                    Items = item.Chunk
+                };
+
+                var response = await Api.CreateManyAsync(payload, cancellationToken);
+                return new { item.Index, Response = response };
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        });
+
+        var results = await Task.WhenAll(tasks);
+
         var overallResult = true;
 
-        foreach (var chunk in raindrops.Chunk(ChunkSize))
+        foreach (var result in results.OrderBy(r => r.Index))
         {
-            var payload = new RaindropCreateManyRequest
+            if (result.Response.Result)
             {
-                CollectionId = collectionId,
-                Items = chunk
-            };
-
-            var response = await Api.CreateManyAsync(payload, cancellationToken);
-
-            if (response.Result)
-            {
-                if (response.Items is not null)
+                if (result.Response.Items is not null)
                 {
-                    allItems.AddRange(response.Items);
+                    allItems.AddRange(result.Response.Items);
                 }
             }
             else
             {
                 overallResult = false;
-                break;
             }
         }
 
-        if (overallResult && allItems.Count > 0)
+        // Only invalidate if we actually created at least one item, even if not overall success
+        if (allItems.Count > 0)
         {
             await _cacheService.InvalidateAllAsync(_cacheKey, cancellationToken);
         }
