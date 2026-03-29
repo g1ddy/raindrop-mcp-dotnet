@@ -14,7 +14,7 @@ namespace Mcp.Common;
 /// This ensures thread-safe access and proper disposal of resources like semaphores.
 /// caches are keyed by user identity (API token) to prevent data leakage in multi-user environments.
 /// </summary>
-public class RaindropCacheService : IDisposable
+public class RaindropCacheService : IRaindropCacheService
 {
     private record CacheEntry<T>(T Response, DateTimeOffset Expiration);
 
@@ -158,17 +158,32 @@ public class RaindropCacheService : IDisposable
     /// Invalidates all caches for a specific user.
     /// </summary>
     /// <param name="key">The user's API token used as the cache key.</param>
-    public void InvalidateAll(string key)
+    public Task InvalidateAllAsync(string key, CancellationToken cancellationToken = default)
     {
         var hashedKey = ComputeCacheKey(key);
         _collectionsCache.TryRemove(hashedKey, out _);
         _tagsCache.TryRemove(hashedKey, out _);
         _userInfoCache.TryRemove(hashedKey, out _);
+        return Task.CompletedTask;
     }
 
-    public void InvalidateCollections(string key) => _collectionsCache.TryRemove(ComputeCacheKey(key), out _);
-    public void InvalidateTags(string key) => _tagsCache.TryRemove(ComputeCacheKey(key), out _);
-    public void InvalidateUserInfo(string key) => _userInfoCache.TryRemove(ComputeCacheKey(key), out _);
+    public Task InvalidateCollectionsAsync(string key, CancellationToken cancellationToken = default)
+    {
+        _collectionsCache.TryRemove(ComputeCacheKey(key), out _);
+        return Task.CompletedTask;
+    }
+
+    public Task InvalidateTagsAsync(string key, CancellationToken cancellationToken = default)
+    {
+        _tagsCache.TryRemove(ComputeCacheKey(key), out _);
+        return Task.CompletedTask;
+    }
+
+    public Task InvalidateUserInfoAsync(string key, CancellationToken cancellationToken = default)
+    {
+        _userInfoCache.TryRemove(ComputeCacheKey(key), out _);
+        return Task.CompletedTask;
+    }
 
     public void Dispose()
     {

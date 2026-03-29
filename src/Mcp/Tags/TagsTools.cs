@@ -9,9 +9,9 @@ using ModelContextProtocol.Server;
 namespace Mcp.Tags;
 
 [McpServerToolType]
-public class TagsTools(ITagsApi api, RaindropCacheService cacheService, IOptions<RaindropOptions> options) : RaindropToolBase<ITagsApi>(api)
+public class TagsTools(ITagsApi api, IRaindropCacheService cacheService, IOptions<RaindropOptions> options) : RaindropToolBase<ITagsApi>(api)
 {
-    private readonly RaindropCacheService _cacheService = cacheService;
+    private readonly IRaindropCacheService _cacheService = cacheService;
     private readonly string _cacheKey = options.Value.ApiToken;
 
     private Task<ItemsResponse<TagInfo>> GetCachedTagsAsync(CancellationToken cancellationToken)
@@ -39,12 +39,12 @@ public class TagsTools(ITagsApi api, RaindropCacheService cacheService, IOptions
                value.ValueKind == JsonValueKind.True;
     }
 
-    private async Task<SuccessResponse> ExecuteAndInvalidateAsync(Task<SuccessResponse> apiTask)
+    private async Task<SuccessResponse> ExecuteAndInvalidateAsync(Task<SuccessResponse> apiTask, CancellationToken cancellationToken)
     {
         var response = await apiTask;
         if (response?.Result == true)
         {
-            _cacheService.InvalidateTags(_cacheKey);
+            await _cacheService.InvalidateTagsAsync(_cacheKey, cancellationToken);
         }
         return response ?? new SuccessResponse(false);
     }
@@ -91,7 +91,7 @@ public class TagsTools(ITagsApi api, RaindropCacheService cacheService, IOptions
         var payload = new TagRenameRequest { Replace = newTag, Tags = tagsList };
         return await ExecuteAndInvalidateAsync(collectionId is null
             ? Api.UpdateAsync(payload, cancellationToken)
-            : Api.UpdateForCollectionAsync(collectionId.Value, payload, cancellationToken));
+            : Api.UpdateForCollectionAsync(collectionId.Value, payload, cancellationToken), cancellationToken);
     }
 
     [McpServerTool(Idempotent = true, Title = "Delete Tag", Destructive = true),
@@ -124,6 +124,6 @@ public class TagsTools(ITagsApi api, RaindropCacheService cacheService, IOptions
         var payload = new TagDeleteRequest { Tags = tagsList };
         return await ExecuteAndInvalidateAsync(collectionId is null
             ? Api.DeleteAsync(payload, cancellationToken)
-            : Api.DeleteForCollectionAsync(collectionId.Value, payload, cancellationToken));
+            : Api.DeleteForCollectionAsync(collectionId.Value, payload, cancellationToken), cancellationToken);
     }
 }

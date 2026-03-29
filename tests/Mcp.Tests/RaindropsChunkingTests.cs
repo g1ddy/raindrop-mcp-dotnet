@@ -9,13 +9,15 @@ namespace Mcp.Tests;
 public class RaindropsChunkingTests
 {
     private readonly Mock<IRaindropsApi> _apiMock;
+    private readonly Mock<IRaindropCacheService> _cacheMock;
     private readonly RaindropsTools _tools;
 
     public RaindropsChunkingTests()
     {
         _apiMock = new Mock<IRaindropsApi>();
+        _cacheMock = new Mock<IRaindropCacheService>();
         var options = Options.Create(new RaindropOptions { ApiToken = "test-token" });
-        _tools = new RaindropsTools(_apiMock.Object, new RaindropCacheService(), options);
+        _tools = new RaindropsTools(_apiMock.Object, _cacheMock.Object, options);
     }
 
     [Fact]
@@ -99,6 +101,44 @@ public class RaindropsChunkingTests
         Assert.Equal(100, result.Items.Count);
         // This verifies that processing stops after failure, as recommended in the other comment.
         _apiMock.Verify(api => api.CreateManyAsync(It.IsAny<RaindropCreateManyRequest>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+    }
+
+    [Fact]
+    public async Task CreateBookmarksAsync_PartialFailure_DoesNotInvalidateCache()
+    {
+        // Arrange
+        var raindrops = CreateRaindrops(150); // 2 chunks: 100 success, 50 failure
+        var firstChunkResponseItems = raindrops.Take(100).ToList();
+
+        _apiMock.SetupSequence(api => api.CreateManyAsync(It.IsAny<RaindropCreateManyRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ItemsResponse<Raindrop>(true, firstChunkResponseItems)) // First chunk succeeds
+            .ReturnsAsync(new ItemsResponse<Raindrop>(false, Array.Empty<Raindrop>())); // Second chunk fails
+
+        // Act
+        var result = await _tools.CreateBookmarksAsync(0, raindrops, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.Result);
+        Assert.Equal(100, result.Items.Count);
+        _cacheMock.Verify(x => x.InvalidateAllAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task CreateBookmarksAsync_Success_InvalidatesCache()
+    {
+        // Arrange
+        var raindrops = CreateRaindrops(150);
+        _apiMock.Setup(x => x.CreateManyAsync(It.IsAny<RaindropCreateManyRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaindropCreateManyRequest req, CancellationToken _) =>
+                new ItemsResponse<Raindrop>(true, req.Items));
+
+        // Act
+        var result = await _tools.CreateBookmarksAsync(0, raindrops, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.Result);
+        Assert.Equal(150, result.Items.Count);
+        _cacheMock.Verify(x => x.InvalidateAllAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     private IEnumerable<Raindrop> CreateRaindrops(int count)

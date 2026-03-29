@@ -11,13 +11,13 @@ using ModelContextProtocol.Server;
 namespace Mcp.Collections;
 
 [McpServerToolType]
-public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, RaindropCacheService cacheService, IOptions<RaindropOptions> options) :
+public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, IRaindropCacheService cacheService, IOptions<RaindropOptions> options) :
     RaindropToolBase<ICollectionsApi>(api)
 {
     private static readonly char[] _separators = ['|', '\n'];
     private static readonly char[] _trimChars = ['-', '*', ' ', '\'', '"', '.'];
     private readonly IRaindropsApi _raindropsApi = raindropsApi;
-    private readonly RaindropCacheService _cacheService = cacheService;
+    private readonly IRaindropCacheService _cacheService = cacheService;
     private readonly string _cacheKey = options.Value.ApiToken;
     private const int DefaultMaxTokens = 1000;
 
@@ -44,7 +44,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, R
         var response = await Api.CreateAsync(collection, cancellationToken);
         if (response.Result)
         {
-            _cacheService.InvalidateCollections(_cacheKey);
+            await _cacheService.InvalidateCollectionsAsync(_cacheKey, cancellationToken);
         }
         return response;
     }
@@ -58,7 +58,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, R
         var response = await Api.UpdateAsync(id, collection, cancellationToken);
         if (response.Result)
         {
-            _cacheService.InvalidateCollections(_cacheKey);
+            await _cacheService.InvalidateCollectionsAsync(_cacheKey, cancellationToken);
         }
         return response;
     }
@@ -70,7 +70,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, R
         var response = await Api.DeleteAsync(id, cancellationToken);
         if (response.Result)
         {
-            _cacheService.InvalidateCollections(_cacheKey);
+            await _cacheService.InvalidateCollectionsAsync(_cacheKey, cancellationToken);
         }
         return response;
     }
@@ -166,7 +166,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, R
         var response = await Api.MergeAsync(payload, cancellationToken);
         if (response.Result)
         {
-            _cacheService.InvalidateCollections(_cacheKey);
+            await _cacheService.InvalidateCollectionsAsync(_cacheKey, cancellationToken);
         }
         return response;
     }
@@ -336,7 +336,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, R
         var updateResponse = await _raindropsApi.UpdateAsync(bookmarkId, updateRequest, cancellationToken);
         if (updateResponse.Result)
         {
-            _cacheService.InvalidateCollections(_cacheKey);
+            await _cacheService.InvalidateCollectionsAsync(_cacheKey, cancellationToken);
         }
         return new SuccessResponse(updateResponse.Result);
     }
