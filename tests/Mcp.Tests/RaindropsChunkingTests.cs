@@ -87,8 +87,6 @@ public class RaindropsChunkingTests
     {
         // Arrange
         var raindrops = CreateRaindrops(250); // 3 chunks
-        var firstChunkResponseItems = raindrops.Take(100).ToList();
-        var thirdChunkResponseItems = raindrops.Skip(200).Take(50).ToList();
 
         _apiMock.Setup(api => api.CreateManyAsync(It.IsAny<RaindropCreateManyRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((RaindropCreateManyRequest req, CancellationToken ct) =>
