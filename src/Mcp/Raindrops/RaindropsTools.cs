@@ -114,39 +114,35 @@ public class RaindropsTools(IRaindropsApi api, IRaindropCacheService cacheServic
 
         var chunks = raindrops.Chunk(ChunkSize).Select((chunk, index) => new { Chunk = chunk, Index = index }).ToList();
 
-        using var semaphore = new SemaphoreSlim(MaxDegreeOfParallelism, MaxDegreeOfParallelism);
+        var responses = new ItemsResponse<Raindrop>[chunks.Count];
 
-        var tasks = chunks.Select(async item =>
+        var parallelOptions = new ParallelOptions
         {
-            await semaphore.WaitAsync(cancellationToken);
-            try
-            {
-                var payload = new RaindropCreateManyRequest
-                {
-                    CollectionId = collectionId,
-                    Items = item.Chunk
-                };
+            MaxDegreeOfParallelism = MaxDegreeOfParallelism,
+            CancellationToken = cancellationToken
+        };
 
-                var response = await Api.CreateManyAsync(payload, cancellationToken);
-                return new { item.Index, Response = response };
-            }
-            finally
+        await Parallel.ForEachAsync(chunks, parallelOptions, async (item, ct) =>
+        {
+            var payload = new RaindropCreateManyRequest
             {
-                semaphore.Release();
-            }
+                CollectionId = collectionId,
+                Items = item.Chunk
+            };
+
+            var response = await Api.CreateManyAsync(payload, ct);
+            responses[item.Index] = response;
         });
-
-        var results = await Task.WhenAll(tasks);
 
         var overallResult = true;
 
-        foreach (var result in results.OrderBy(r => r.Index))
+        foreach (var response in responses)
         {
-            if (result.Response.Result)
+            if (response.Result)
             {
-                if (result.Response.Items is not null)
+                if (response.Items is not null)
                 {
-                    allItems.AddRange(result.Response.Items);
+                    allItems.AddRange(response.Items);
                 }
             }
             else
