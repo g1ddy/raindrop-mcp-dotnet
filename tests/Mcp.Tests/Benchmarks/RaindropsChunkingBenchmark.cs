@@ -24,7 +24,11 @@ public class RaindropsChunkingBenchmark
         // Setup Mock API
         var apiMock = new Mock<IRaindropsApi>();
         apiMock.Setup(x => x.CreateManyAsync(It.IsAny<RaindropCreateManyRequest>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ItemsResponse<Raindrop>(true, new List<Raindrop>()));
+            .Returns(async (RaindropCreateManyRequest req, CancellationToken ct) =>
+            {
+                await Task.Delay(50, ct); // Simulate 50ms API latency
+                return new ItemsResponse<Raindrop>(true, req.Items);
+            });
 
         var options = Options.Create(new RaindropOptions { ApiToken = "bench-token" });
         var tool = new RaindropsTools(apiMock.Object, new RaindropCacheService(), options);
@@ -52,7 +56,7 @@ public class RaindropsChunkingBenchmark
         // Measure
         long totalBytes = 0;
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-        int iterations = 100;
+        int iterations = 10; // Reduced iterations since we added delay
 
         for (int i = 0; i < iterations; i++)
         {
@@ -67,5 +71,6 @@ public class RaindropsChunkingBenchmark
         _output.WriteLine($"Total Allocations ({iterations} runs): {totalBytes / 1024.0:F2} KB");
         _output.WriteLine($"Average Allocation per run: {totalBytes / iterations} bytes");
         _output.WriteLine($"Total Time: {stopwatch.ElapsedMilliseconds} ms");
+        _output.WriteLine($"Average Time per run: {stopwatch.ElapsedMilliseconds / iterations} ms");
     }
 }

@@ -105,23 +105,39 @@ public class RaindropsTools(IRaindropsApi api, IRaindropCacheService cacheServic
             CancellationToken cancellationToken = default)
     {
         const int ChunkSize = 100;
+        const int MaxDegreeOfParallelism = 5;
+
         // Optimization: Pre-allocate list capacity if count is known to avoid resizing
         var allItems = raindrops.TryGetNonEnumeratedCount(out int count)
             ? new List<Raindrop>(count)
             : new List<Raindrop>();
 
-        var overallResult = true;
+        var chunks = raindrops.Chunk(ChunkSize).Select((chunk, index) => new { Chunk = chunk, Index = index }).ToList();
 
-        foreach (var chunk in raindrops.Chunk(ChunkSize))
+        var responses = new ItemsResponse<Raindrop>[chunks.Count];
+
+        var parallelOptions = new ParallelOptions
+        {
+            MaxDegreeOfParallelism = MaxDegreeOfParallelism,
+            CancellationToken = cancellationToken
+        };
+
+        await Parallel.ForEachAsync(chunks, parallelOptions, async (item, ct) =>
         {
             var payload = new RaindropCreateManyRequest
             {
                 CollectionId = collectionId,
-                Items = chunk
+                Items = item.Chunk
             };
 
-            var response = await Api.CreateManyAsync(payload, cancellationToken);
+            var response = await Api.CreateManyAsync(payload, ct);
+            responses[item.Index] = response;
+        });
 
+        var overallResult = true;
+
+        foreach (var response in responses)
+        {
             if (response.Result)
             {
                 if (response.Items is not null)
@@ -132,11 +148,11 @@ public class RaindropsTools(IRaindropsApi api, IRaindropCacheService cacheServic
             else
             {
                 overallResult = false;
-                break;
             }
         }
 
-        if (overallResult && allItems.Count > 0)
+        // Only invalidate if we actually created at least one item, even if not overall success
+        if (allItems.Count > 0)
         {
             await _cacheService.InvalidateAllAsync(_cacheKey, cancellationToken);
         }
