@@ -1,3 +1,6 @@
 ## 2024-05-24 - Zero-allocation Cache Key Hashing
 **Learning:** Computing cache keys by hashing strings (e.g., API tokens) using `Encoding.UTF8.GetBytes()` followed by `SHA256.HashData(byte[])` causes unnecessary heap allocations for the byte array on every cache access.
 **Action:** Use `stackalloc byte[]` for small strings combined with `ArrayPool<byte>.Shared.Rent` for larger ones, and pass `Span<byte>` to `SHA256.HashData`. This reduces allocations per hash by ~50% (from 312B to 152B for a typical token), allocating only the final hex string.
+## 2025-04-04 - Zero-allocation Array Indexing for Parallel Processing
+**Learning:** Using LINQ's `.Select()` to project arrays into anonymous objects (e.g., `{ Chunk = chunk, Index = index }`) prior to `Parallel.ForEachAsync` allocates unnecessary heap memory for enumerators, anonymous objects, and lists. In high-throughput methods like `CreateBookmarksAsync`, this increases GC pressure.
+**Action:** Instead, materialize data directly into an array (`.ToArray()`), pre-allocate the results array, and use `Parallel.ForAsync(0, chunkedArray.Length, ...)` to iterate safely by index, preserving item order and eliminating intermediate object allocations altogether.
