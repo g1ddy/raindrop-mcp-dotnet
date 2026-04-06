@@ -112,9 +112,10 @@ public class RaindropsTools(IRaindropsApi api, IRaindropCacheService cacheServic
             ? new List<Raindrop>(count)
             : new List<Raindrop>();
 
-        var chunks = raindrops.Chunk(ChunkSize).Select((chunk, index) => new { Chunk = chunk, Index = index }).ToList();
-
-        var responses = new ItemsResponse<Raindrop>[chunks.Count];
+        // Optimization: Pre-evaluate the chunks to an array.
+        // This avoids creating an intermediate list of anonymous objects and reduces allocations.
+        var chunkedArray = raindrops.Chunk(ChunkSize).ToArray();
+        var responses = new ItemsResponse<Raindrop>[chunkedArray.Length];
 
         var parallelOptions = new ParallelOptions
         {
@@ -122,16 +123,18 @@ public class RaindropsTools(IRaindropsApi api, IRaindropCacheService cacheServic
             CancellationToken = cancellationToken
         };
 
-        await Parallel.ForEachAsync(chunks, parallelOptions, async (item, ct) =>
+        // Optimization: Use Parallel.ForAsync instead of Parallel.ForEachAsync(Enumerable.Range(...))
+        // to avoid enumerator allocation. It also preserves original order deterministically.
+        await Parallel.ForAsync(0, chunkedArray.Length, parallelOptions, async (i, ct) =>
         {
             var payload = new RaindropCreateManyRequest
             {
                 CollectionId = collectionId,
-                Items = item.Chunk
+                Items = chunkedArray[i]
             };
 
             var response = await Api.CreateManyAsync(payload, ct);
-            responses[item.Index] = response;
+            responses[i] = response;
         });
 
         var overallResult = true;
