@@ -15,6 +15,12 @@ internal sealed class RaindropClientConfig
     {
         var opts = options.Value;
         BaseUri = new Uri(opts.BaseUrl);
+
+        if (BaseUri.Scheme != Uri.UriSchemeHttps)
+        {
+            throw new InvalidOperationException($"Insecure BaseUrl configured: '{opts.BaseUrl}'. HTTPS is strictly required to prevent API token exposure.");
+        }
+
         AuthorizationHeader = new AuthenticationHeaderValue("Bearer", opts.ApiToken);
     }
 }

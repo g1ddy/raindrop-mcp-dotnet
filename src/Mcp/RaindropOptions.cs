@@ -18,5 +18,6 @@ public class RaindropOptions
     /// </summary>
     [Required(AllowEmptyStrings = false)]
     [Url]
+    [RegularExpression(@"^(?i)https://.*", ErrorMessage = "BaseUrl must use HTTPS to prevent exposing the API token.")]
     public string BaseUrl { get; set; } = "https://api.raindrop.io/rest/v1";
 }

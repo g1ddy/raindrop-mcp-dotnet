@@ -22,3 +22,8 @@
 **Vulnerability:** The `Collection` domain entity lacked `[MaxLength]` validation attributes on user-controlled text fields (`Title`, `Description`). If these objects are created or updated using the bulk API, or used as intermediary objects in operations like `SuggestCollectionForBookmarkAsync` that manipulate text sizes in buffers, exceptionally large inputs could lead to Denial of Service (DoS) due to excessive memory consumption.
 **Learning:** Shared domain entities used across various endpoints must maintain consistent data length limits. Relying entirely on downstream API validation introduces security gaps when processing or transforming this data locally (e.g., in ArrayPool allocations).
 **Prevention:** Apply `[MaxLength]` validation attributes to all text properties in domain models used for user input and data parsing to ensure safe bounds within the local application logic before passing downstream.
+
+## 2024-05-24 - [Enforce HTTPS]
+**Vulnerability:** API tokens could be transmitted in plaintext if HTTP was accidentally configured.
+**Learning:** We need layered checks (DataAnnotations and runtime validation) when handling sensitive tokens over external networks.
+**Prevention:** Always enforce HTTPS scheme validation both at configuration binding and right before HttpClient dispatch for third-party APIs.
