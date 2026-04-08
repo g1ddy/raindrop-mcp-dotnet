@@ -37,6 +37,18 @@ builder.Services
 
 var app = builder.Build();
 
+// Fail-fast configuration check
+try
+{
+    _ = app.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<RaindropOptions>>().Value;
+}
+catch (Microsoft.Extensions.Options.OptionsValidationException ex)
+{
+    Console.Error.WriteLine($"\nError: Configuration validation failed. {ex.Message}");
+    Console.Error.WriteLine("Please ensure the 'Raindrop:ApiToken' environment variable or configuration value is set.");
+    Environment.Exit(1);
+}
+
 // app.MapMcp();
 
 await app.RunAsync();
