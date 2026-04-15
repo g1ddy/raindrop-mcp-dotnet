@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 using Mcp;
 
@@ -36,6 +37,18 @@ builder.Services
     .WithToolsFromAssembly();
 
 var app = builder.Build();
+
+try
+{
+    // Fail fast: validate options before starting the host
+    _ = app.Services.GetRequiredService<IOptions<RaindropOptions>>().Value;
+}
+catch (OptionsValidationException ex)
+{
+    Console.Error.WriteLine($"Configuration Error: {ex.Message}");
+    Environment.ExitCode = 1;
+    return;
+}
 
 // app.MapMcp();
 

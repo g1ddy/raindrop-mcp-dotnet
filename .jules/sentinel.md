@@ -27,3 +27,7 @@
 **Vulnerability:** API tokens could be transmitted in plaintext if HTTP was accidentally configured.
 **Learning:** We need layered checks (DataAnnotations and runtime validation) when handling sensitive tokens over external networks.
 **Prevention:** Always enforce HTTPS scheme validation both at configuration binding and right before HttpClient dispatch for third-party APIs.
+## 2026-04-15 - Fail-Fast Startup Validation
+**Vulnerability:** Missing required configuration (like an API token) could lead to delayed application failure, potentially exposing raw stack traces containing system paths or internal logic.
+**Learning:** For application configuration, especially those bound with `DataAnnotations`, deferring validation until the first service resolution hides configuration errors and causes unhandled exceptions that leak details.
+**Prevention:** Always implement eager "Fail-Fast" validation in the entry point (`Program.cs`) by explicitly requesting and evaluating the configuration options (e.g., `_ = app.Services.GetRequiredService<IOptions<T>>().Value;`) inside a try-catch block, safely handling the `OptionsValidationException` to print a user-friendly error and exit securely.
