@@ -13,9 +13,10 @@ public class TagsTools(ITagsApi api, IRaindropCacheService cacheService, IOption
 {
     private readonly IRaindropCacheService _cacheService = cacheService;
     private readonly string _cacheKey = options.Value.ApiToken;
+    private readonly Func<CancellationToken, Task<ItemsResponse<TagInfo>>> _fetchTagsFunc = api.ListAsync;
 
     private Task<ItemsResponse<TagInfo>> GetCachedTagsAsync(CancellationToken cancellationToken)
-        => _cacheService.GetTagsAsync(_cacheKey, Api.ListAsync, cancellationToken);
+        => _cacheService.GetTagsAsync(_cacheKey, _fetchTagsFunc, cancellationToken);
 
     private async Task<bool> ConfirmActionAsync(McpServer server, string message, CancellationToken cancellationToken)
     {
