@@ -45,7 +45,7 @@ try
 catch (Microsoft.Extensions.Options.OptionsValidationException ex)
 {
     Console.Error.WriteLine($"\nError: Configuration validation failed. {ex.Message}");
-    Console.Error.WriteLine("Please ensure the 'Raindrop:ApiToken' environment variable or configuration value is set.");
+    app.Dispose();
     Environment.Exit(1);
 }
 
