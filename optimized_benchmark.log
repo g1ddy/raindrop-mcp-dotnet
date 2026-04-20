@@ -1,0 +1,166 @@
+// Validating benchmarks:
+// ***** BenchmarkRunner: Start   *****
+// ***** Found 1 benchmark(s) in total *****
+// ***** Building 1 exe(s) in Parallel: Start   *****
+// start dotnet  restore --nodeReuse:false /p:UseSharedCompilation=false /p:Deterministic=true /p:Optimize=true /p:ArtifactsPath="/app/tests/Mcp.Benchmarks/bin/Release/net10.0/Mcp.Benchmarks-DefaultJob-1/" /p:OutDir="/app/tests/Mcp.Benchmarks/bin/Release/net10.0/Mcp.Benchmarks-DefaultJob-1/bin/Release/net10.0/" /p:OutputPath="/app/tests/Mcp.Benchmarks/bin/Release/net10.0/Mcp.Benchmarks-DefaultJob-1/bin/Release/net10.0/" /p:PublishDir="/app/tests/Mcp.Benchmarks/bin/Release/net10.0/Mcp.Benchmarks-DefaultJob-1/publish/" in /app/tests/Mcp.Benchmarks/bin/Release/net10.0/Mcp.Benchmarks-DefaultJob-1
+// command took 2.45 sec and exited with 0
+// start dotnet  build -c Release --no-restore --nodeReuse:false /p:UseSharedCompilation=false /p:Deterministic=true /p:Optimize=true /p:ArtifactsPath="/app/tests/Mcp.Benchmarks/bin/Release/net10.0/Mcp.Benchmarks-DefaultJob-1/" /p:OutDir="/app/tests/Mcp.Benchmarks/bin/Release/net10.0/Mcp.Benchmarks-DefaultJob-1/bin/Release/net10.0/" /p:OutputPath="/app/tests/Mcp.Benchmarks/bin/Release/net10.0/Mcp.Benchmarks-DefaultJob-1/bin/Release/net10.0/" /p:PublishDir="/app/tests/Mcp.Benchmarks/bin/Release/net10.0/Mcp.Benchmarks-DefaultJob-1/publish/" --output "/app/tests/Mcp.Benchmarks/bin/Release/net10.0/Mcp.Benchmarks-DefaultJob-1/bin/Release/net10.0/" in /app/tests/Mcp.Benchmarks/bin/Release/net10.0/Mcp.Benchmarks-DefaultJob-1
+// command took 18.36 sec and exited with 0
+// ***** Done, took 00:00:20 (20.89 sec)   *****
+// Found 1 benchmarks:
+//   FiltersToolsBenchmark.GetAvailableFilters: DefaultJob
+
+// **************************
+// Benchmark: FiltersToolsBenchmark.GetAvailableFilters: DefaultJob
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet Mcp.Benchmarks-DefaultJob-1.dll --anonymousPipes 144 145 --benchmarkName Mcp.Benchmarks.FiltersToolsBenchmark.GetAvailableFilters --job Default --benchmarkId 0 in /app/tests/Mcp.Benchmarks/bin/Release/net10.0/Mcp.Benchmarks-DefaultJob-1/bin/Release/net10.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.15.8
+// Runtime=.NET 10.0.4 (10.0.4, 10.0.426.12010), X64 RyuJIT x86-64-v3
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL VectorSize=256
+// Job: DefaultJob
+
+OverheadJitting  1: 1 op, 261880.00 ns, 261.8800 us/op
+WorkloadJitting  1: 1 op, 79173760.00 ns, 79.1738 ms/op
+
+WorkloadPilot    1: 2 op, 453778.00 ns, 226.8890 us/op
+WorkloadPilot    2: 3 op, 35595.00 ns, 11.8650 us/op
+WorkloadPilot    3: 4 op, 34476.00 ns, 8.6190 us/op
+WorkloadPilot    4: 5 op, 34290.00 ns, 6.8580 us/op
+WorkloadPilot    5: 6 op, 35403.00 ns, 5.9005 us/op
+WorkloadPilot    6: 7 op, 37945.00 ns, 5.4207 us/op
+WorkloadPilot    7: 8 op, 56139.00 ns, 7.0174 us/op
+WorkloadPilot    8: 9 op, 64761.00 ns, 7.1957 us/op
+WorkloadPilot    9: 10 op, 72965.00 ns, 7.2965 us/op
+WorkloadPilot   10: 11 op, 106014.00 ns, 9.6376 us/op
+WorkloadPilot   11: 12 op, 71150.00 ns, 5.9292 us/op
+WorkloadPilot   12: 13 op, 74740.00 ns, 5.7492 us/op
+WorkloadPilot   13: 14 op, 75886.00 ns, 5.4204 us/op
+WorkloadPilot   14: 15 op, 84628.00 ns, 5.6419 us/op
+WorkloadPilot   15: 16 op, 119870.00 ns, 7.4919 us/op
+WorkloadPilot   16: 32 op, 126834.00 ns, 3.9636 us/op
+WorkloadPilot   17: 64 op, 226727.00 ns, 3.5426 us/op
+WorkloadPilot   18: 128 op, 474908.00 ns, 3.7102 us/op
+WorkloadPilot   19: 256 op, 846123.00 ns, 3.3052 us/op
+WorkloadPilot   20: 512 op, 1889601.00 ns, 3.6906 us/op
+WorkloadPilot   21: 1024 op, 3482622.00 ns, 3.4010 us/op
+WorkloadPilot   22: 2048 op, 6714103.00 ns, 3.2784 us/op
+WorkloadPilot   23: 4096 op, 13124519.00 ns, 3.2042 us/op
+WorkloadPilot   24: 8192 op, 25452746.00 ns, 3.1070 us/op
+WorkloadPilot   25: 16384 op, 51125070.00 ns, 3.1204 us/op
+WorkloadPilot   26: 32768 op, 112118366.00 ns, 3.4216 us/op
+WorkloadPilot   27: 65536 op, 178823270.00 ns, 2.7286 us/op
+WorkloadPilot   28: 131072 op, 203501979.00 ns, 1.5526 us/op
+WorkloadPilot   29: 262144 op, 411268141.00 ns, 1.5689 us/op
+WorkloadPilot   30: 524288 op, 827246164.00 ns, 1.5778 us/op
+
+WorkloadWarmup   1: 524288 op, 815201070.00 ns, 1.5549 us/op
+WorkloadWarmup   2: 524288 op, 823598814.00 ns, 1.5709 us/op
+WorkloadWarmup   3: 524288 op, 831132895.00 ns, 1.5853 us/op
+WorkloadWarmup   4: 524288 op, 843774141.00 ns, 1.6094 us/op
+WorkloadWarmup   5: 524288 op, 827607562.00 ns, 1.5785 us/op
+WorkloadWarmup   6: 524288 op, 829069812.00 ns, 1.5813 us/op
+WorkloadWarmup   7: 524288 op, 823954831.00 ns, 1.5716 us/op
+
+// BeforeActualRun
+WorkloadActual   1: 524288 op, 823839891.00 ns, 1.5713 us/op
+WorkloadActual   2: 524288 op, 832265104.00 ns, 1.5874 us/op
+WorkloadActual   3: 524288 op, 926228937.00 ns, 1.7666 us/op
+WorkloadActual   4: 524288 op, 843090035.00 ns, 1.6081 us/op
+WorkloadActual   5: 524288 op, 826084822.00 ns, 1.5756 us/op
+WorkloadActual   6: 524288 op, 823495259.00 ns, 1.5707 us/op
+WorkloadActual   7: 524288 op, 826478002.00 ns, 1.5764 us/op
+WorkloadActual   8: 524288 op, 828876328.00 ns, 1.5810 us/op
+WorkloadActual   9: 524288 op, 818178847.00 ns, 1.5606 us/op
+WorkloadActual  10: 524288 op, 828789689.00 ns, 1.5808 us/op
+WorkloadActual  11: 524288 op, 821861110.00 ns, 1.5676 us/op
+WorkloadActual  12: 524288 op, 819429946.00 ns, 1.5629 us/op
+WorkloadActual  13: 524288 op, 823356922.00 ns, 1.5704 us/op
+WorkloadActual  14: 524288 op, 830002402.00 ns, 1.5831 us/op
+WorkloadActual  15: 524288 op, 825429180.00 ns, 1.5744 us/op
+
+// AfterActualRun
+WorkloadResult   1: 524288 op, 823839891.00 ns, 1.5713 us/op
+WorkloadResult   2: 524288 op, 832265104.00 ns, 1.5874 us/op
+WorkloadResult   3: 524288 op, 826084822.00 ns, 1.5756 us/op
+WorkloadResult   4: 524288 op, 823495259.00 ns, 1.5707 us/op
+WorkloadResult   5: 524288 op, 826478002.00 ns, 1.5764 us/op
+WorkloadResult   6: 524288 op, 828876328.00 ns, 1.5810 us/op
+WorkloadResult   7: 524288 op, 818178847.00 ns, 1.5606 us/op
+WorkloadResult   8: 524288 op, 828789689.00 ns, 1.5808 us/op
+WorkloadResult   9: 524288 op, 821861110.00 ns, 1.5676 us/op
+WorkloadResult  10: 524288 op, 819429946.00 ns, 1.5629 us/op
+WorkloadResult  11: 524288 op, 823356922.00 ns, 1.5704 us/op
+WorkloadResult  12: 524288 op, 830002402.00 ns, 1.5831 us/op
+WorkloadResult  13: 524288 op, 825429180.00 ns, 1.5744 us/op
+// GC:  12 0 0 297795584 524288
+// Threading:  0 0 524288
+
+// AfterAll
+// Benchmark Process 61276 has exited with code 0.
+
+Mean = 1.574 us, StdErr = 0.002 us (0.14%), N = 13, StdDev = 0.008 us
+Min = 1.561 us, Q1 = 1.570 us, Median = 1.574 us, Q3 = 1.581 us, Max = 1.587 us
+IQR = 0.010 us, LowerFence = 1.555 us, UpperFence = 1.596 us
+ConfidenceInterval = [1.565 us; 1.583 us] (CI 99.9%), Margin = 0.009 us (0.60% of Mean)
+Skewness = -0.05, Kurtosis = 1.89, MValue = 2
+
+// ** Remained 0 (0.0 %) benchmark(s) to run. Estimated finish 2026-04-20 6:00 (0h 0m from now) **
+// ***** BenchmarkRunner: Finish  *****
+
+// * Export *
+  BenchmarkDotNet.Artifacts/results/Mcp.Benchmarks.FiltersToolsBenchmark-report.csv
+  BenchmarkDotNet.Artifacts/results/Mcp.Benchmarks.FiltersToolsBenchmark-report-github.md
+  BenchmarkDotNet.Artifacts/results/Mcp.Benchmarks.FiltersToolsBenchmark-report.html
+
+// * Detailed results *
+FiltersToolsBenchmark.GetAvailableFilters: DefaultJob
+Runtime = .NET 10.0.4 (10.0.4, 10.0.426.12010), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+Mean = 1.574 us, StdErr = 0.002 us (0.14%), N = 13, StdDev = 0.008 us
+Min = 1.561 us, Q1 = 1.570 us, Median = 1.574 us, Q3 = 1.581 us, Max = 1.587 us
+IQR = 0.010 us, LowerFence = 1.555 us, UpperFence = 1.596 us
+ConfidenceInterval = [1.565 us; 1.583 us] (CI 99.9%), Margin = 0.009 us (0.60% of Mean)
+Skewness = -0.05, Kurtosis = 1.89, MValue = 2
+-------------------- Histogram --------------------
+[1.558 us ; 1.589 us) | @@@@@@@@@@@@@
+---------------------------------------------------
+
+// * Summary *
+
+BenchmarkDotNet v0.15.8, Linux Ubuntu 24.04.4 LTS (Noble Numbat)
+Intel Xeon Processor 2.30GHz, 1 CPU, 4 logical and 4 physical cores
+.NET SDK 10.0.104
+  [Host]     : .NET 10.0.4 (10.0.4, 10.0.426.12010), X64 RyuJIT x86-64-v3
+  DefaultJob : .NET 10.0.4 (10.0.4, 10.0.426.12010), X64 RyuJIT x86-64-v3
+
+
+| Method              | Mean     | Error     | StdDev    | Gen0   | Allocated |
+|-------------------- |---------:|----------:|----------:|-------:|----------:|
+| GetAvailableFilters | 1.574 us | 0.0094 us | 0.0079 us | 0.0229 |     568 B |
+
+// * Hints *
+Outliers
+  FiltersToolsBenchmark.GetAvailableFilters: Default -> 2 outliers were removed (1.61 us, 1.77 us)
+
+// * Legends *
+  Mean      : Arithmetic mean of all measurements
+  Error     : Half of 99.9% confidence interval
+  StdDev    : Standard deviation of all measurements
+  Gen0      : GC Generation 0 collects per 1000 operations
+  Allocated : Allocated memory per single operation (managed only, inclusive, 1KB = 1024B)
+  1 us      : 1 Microsecond (0.000001 sec)
+
+// * Diagnostic Output - MemoryDiagnoser *
+
+
+// ***** BenchmarkRunner: End *****
+Run time: 00:00:21 (21.7 sec), executed benchmarks: 1
+
+Global total time: 00:00:42 (42.76 sec), executed benchmarks: 1
+// * Artifacts cleanup *
+Artifacts cleanup is finished

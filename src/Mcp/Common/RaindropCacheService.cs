@@ -28,6 +28,9 @@ public class RaindropCacheService : IRaindropCacheService
     private readonly ConcurrentDictionary<string, CacheEntry<ItemResponse<UserInfo>>> _userInfoCache = new();
     private readonly SemaphoreSlim _userInfoLock = new(1, 1);
 
+    private readonly ConcurrentDictionary<string, CacheEntry<Mcp.Filters.AvailableFilters>> _filtersCache = new();
+    private readonly SemaphoreSlim _filtersLock = new(1, 1);
+
     private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
 
     /// <summary>
@@ -55,6 +58,7 @@ public class RaindropCacheService : IRaindropCacheService
             if (response is ItemsResponse<Collection> c) isSuccess = c.Result && c.Items != null;
             else if (response is ItemsResponse<TagInfo> t) isSuccess = t.Result && t.Items != null;
             else if (response is ItemResponse<UserInfo> u) isSuccess = u.Result && u.Item != null;
+            else if (response is Mcp.Filters.AvailableFilters f) isSuccess = f.Result;
 
             if (isSuccess)
             {
@@ -93,6 +97,8 @@ public class RaindropCacheService : IRaindropCacheService
             return (T)(object)(t with { Items = [.. t.Items] });
         if (response is ItemResponse<UserInfo> u)
             return (T)(object)(u with { }); // Shallow copy is enough for records if properties are immutable
+        if (response is Mcp.Filters.AvailableFilters f)
+            return (T)(object)(f with { Tags = f.Tags != null ? [.. f.Tags] : null, Types = f.Types != null ? [.. f.Types] : null });
 
         return response;
     }
@@ -136,6 +142,20 @@ public class RaindropCacheService : IRaindropCacheService
         CancellationToken cancellationToken)
         => GetOrFetchAsync(ComputeCacheKey(key), _collectionsCache, _collectionsLock, fetchFunc, cancellationToken);
 
+    public Task<Mcp.Filters.AvailableFilters> GetFiltersAsync(
+        string key,
+        long collectionId,
+        string? tagsSort,
+        string? search,
+        Func<CancellationToken, Task<Mcp.Filters.AvailableFilters>> fetchFunc,
+        CancellationToken cancellationToken)
+    {
+        var hashedKey = ComputeCacheKey(key);
+        // Combine with query parameters to create a unique cache key per user + query
+        var cacheKey = $"{hashedKey}_{collectionId}_{tagsSort}_{search}";
+        return GetOrFetchAsync(cacheKey, _filtersCache, _filtersLock, fetchFunc, cancellationToken);
+    }
+
     /// <summary>
     /// Gets the cached tags list or fetches it using the provided function.
     /// </summary>
@@ -164,6 +184,16 @@ public class RaindropCacheService : IRaindropCacheService
         _collectionsCache.TryRemove(hashedKey, out _);
         _tagsCache.TryRemove(hashedKey, out _);
         _userInfoCache.TryRemove(hashedKey, out _);
+
+        // Remove all filter caches that start with the user's hashed key
+        foreach (var cacheKey in _filtersCache.Keys)
+        {
+            if (cacheKey.StartsWith(hashedKey))
+            {
+                _filtersCache.TryRemove(cacheKey, out _);
+            }
+        }
+
         return Task.CompletedTask;
     }
 
@@ -185,11 +215,28 @@ public class RaindropCacheService : IRaindropCacheService
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Invalidates filters cache for a specific user.
+    /// </summary>
+    public Task InvalidateFiltersAsync(string key, CancellationToken cancellationToken = default)
+    {
+        var hashedKey = ComputeCacheKey(key);
+        foreach (var cacheKey in _filtersCache.Keys)
+        {
+            if (cacheKey.StartsWith(hashedKey))
+            {
+                _filtersCache.TryRemove(cacheKey, out _);
+            }
+        }
+        return Task.CompletedTask;
+    }
+
     public void Dispose()
     {
         _collectionsLock.Dispose();
         _tagsLock.Dispose();
         _userInfoLock.Dispose();
+        _filtersLock.Dispose();
         GC.SuppressFinalize(this);
     }
 }

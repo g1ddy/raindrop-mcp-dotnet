@@ -18,6 +18,17 @@ public interface IRaindropCacheService : IDisposable
         CancellationToken cancellationToken);
 
     /// <summary>
+    /// Gets the cached filters or fetches them using the provided function.
+    /// </summary>
+    Task<Mcp.Filters.AvailableFilters> GetFiltersAsync(
+        string key,
+        long collectionId,
+        string? tagsSort,
+        string? search,
+        Func<CancellationToken, Task<Mcp.Filters.AvailableFilters>> fetchFunc,
+        CancellationToken cancellationToken);
+
+    /// <summary>
     /// Gets the cached tags list or fetches it using the provided function.
     /// </summary>
     Task<ItemsResponse<TagInfo>> GetTagsAsync(
@@ -52,4 +63,9 @@ public interface IRaindropCacheService : IDisposable
     /// Invalidates user info cache for a specific user.
     /// </summary>
     Task InvalidateUserInfoAsync(string key, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Invalidates filters cache for a specific user.
+    /// </summary>
+    Task InvalidateFiltersAsync(string key, CancellationToken cancellationToken = default);
 }
