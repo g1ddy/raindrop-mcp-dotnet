@@ -27,3 +27,7 @@
 **Vulnerability:** API tokens could be transmitted in plaintext if HTTP was accidentally configured.
 **Learning:** We need layered checks (DataAnnotations and runtime validation) when handling sensitive tokens over external networks.
 **Prevention:** Always enforce HTTPS scheme validation both at configuration binding and right before HttpClient dispatch for third-party APIs.
+## 2024-03-24 - [Information Leakage via Unhandled Exceptions]
+**Vulnerability:** The application was exposing internal framework details (stack traces) to stderr when starting without required configurations (like the Raindrop API token).
+**Learning:** By default, .NET Generic Host allows configuration validation exceptions to crash the application, resulting in a verbose, generic stack trace that leaks internal code paths and framework versions.
+**Prevention:** Implement fail-fast configuration checks early in the application startup pipeline (Program.cs) before the main Host run loop. Catch OptionsValidationException to provide clean, generic error messages and exit gracefully (Environment.Exit), preventing stack trace leaks.

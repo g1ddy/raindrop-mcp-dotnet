@@ -37,6 +37,18 @@ builder.Services
 
 var app = builder.Build();
 
+// Fail-fast configuration check
+try
+{
+    _ = app.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<RaindropOptions>>().Value;
+}
+catch (Microsoft.Extensions.Options.OptionsValidationException ex)
+{
+    Console.Error.WriteLine($"\nError: Configuration validation failed. {ex.Message}");
+    app.Dispose();
+    Environment.Exit(1);
+}
+
 // app.MapMcp();
 
 await app.RunAsync();
