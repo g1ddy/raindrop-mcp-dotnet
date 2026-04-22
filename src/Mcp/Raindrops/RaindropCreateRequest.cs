@@ -14,6 +14,7 @@ public record RaindropCreateRequest : IRaindropRequest
     [Description("The URL of the bookmark. This field is required.")]
     public string Link { get; init; } = string.Empty;
 
+    [MaxLength(Raindrop.MaxTextFieldLength)]
     [Description("The title of the bookmark. If not provided, Raindrop.io will attempt to parse it from the URL.")]
     public string? Title { get; init; }
 
