@@ -4,6 +4,7 @@ using System.Buffers;
 using System.Security.Cryptography;
 using System.Text;
 using Mcp.Collections;
+using Mcp.Filters;
 using Mcp.Tags;
 using Mcp.User;
 
@@ -27,6 +28,9 @@ public class RaindropCacheService : IRaindropCacheService
 
     private readonly ConcurrentDictionary<string, CacheEntry<ItemResponse<UserInfo>>> _userInfoCache = new();
     private readonly SemaphoreSlim _userInfoLock = new(1, 1);
+
+    private readonly ConcurrentDictionary<string, CacheEntry<AvailableFilters>> _filtersCache = new();
+    private readonly SemaphoreSlim _filtersLock = new(1, 1);
 
     private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
 
@@ -55,6 +59,7 @@ public class RaindropCacheService : IRaindropCacheService
             if (response is ItemsResponse<Collection> c) isSuccess = c.Result && c.Items != null;
             else if (response is ItemsResponse<TagInfo> t) isSuccess = t.Result && t.Items != null;
             else if (response is ItemResponse<UserInfo> u) isSuccess = u.Result && u.Item != null;
+            else if (response is AvailableFilters f) isSuccess = f.Result;
 
             if (isSuccess)
             {
@@ -93,6 +98,8 @@ public class RaindropCacheService : IRaindropCacheService
             return (T)(object)(t with { Items = [.. t.Items] });
         if (response is ItemResponse<UserInfo> u)
             return (T)(object)(u with { }); // Shallow copy is enough for records if properties are immutable
+        if (response is AvailableFilters f)
+            return (T)(object)(f with { Tags = f.Tags != null ? [.. f.Tags] : null, Types = f.Types != null ? [.. f.Types] : null });
 
         return response;
     }
@@ -155,6 +162,21 @@ public class RaindropCacheService : IRaindropCacheService
         => GetOrFetchAsync(ComputeCacheKey(key), _userInfoCache, _userInfoLock, fetchFunc, cancellationToken);
 
     /// <summary>
+    /// Gets the cached filters list or fetches it using the provided function.
+    /// </summary>
+    public Task<AvailableFilters> GetFiltersAsync(
+        string key,
+        long collectionId,
+        string? tagsSort,
+        string? search,
+        Func<CancellationToken, Task<AvailableFilters>> fetchFunc,
+        CancellationToken cancellationToken)
+    {
+        var compositeKey = ComputeCacheKey(key) + $"_{collectionId}_{tagsSort}_{search}";
+        return GetOrFetchAsync(compositeKey, _filtersCache, _filtersLock, fetchFunc, cancellationToken);
+    }
+
+    /// <summary>
     /// Invalidates all caches for a specific user.
     /// </summary>
     /// <param name="key">The user's API token used as the cache key.</param>
@@ -164,6 +186,16 @@ public class RaindropCacheService : IRaindropCacheService
         _collectionsCache.TryRemove(hashedKey, out _);
         _tagsCache.TryRemove(hashedKey, out _);
         _userInfoCache.TryRemove(hashedKey, out _);
+
+        var prefix = hashedKey + "_";
+        foreach (var k in _filtersCache.Keys)
+        {
+            if (k.StartsWith(prefix))
+            {
+                _filtersCache.TryRemove(k, out _);
+            }
+        }
+
         return Task.CompletedTask;
     }
 
@@ -179,6 +211,19 @@ public class RaindropCacheService : IRaindropCacheService
         return Task.CompletedTask;
     }
 
+    public Task InvalidateFiltersAsync(string key, CancellationToken cancellationToken = default)
+    {
+        var prefix = ComputeCacheKey(key) + "_";
+        foreach (var k in _filtersCache.Keys)
+        {
+            if (k.StartsWith(prefix))
+            {
+                _filtersCache.TryRemove(k, out _);
+            }
+        }
+        return Task.CompletedTask;
+    }
+
     public Task InvalidateUserInfoAsync(string key, CancellationToken cancellationToken = default)
     {
         _userInfoCache.TryRemove(ComputeCacheKey(key), out _);
@@ -190,6 +235,7 @@ public class RaindropCacheService : IRaindropCacheService
         _collectionsLock.Dispose();
         _tagsLock.Dispose();
         _userInfoLock.Dispose();
+        _filtersLock.Dispose();
         GC.SuppressFinalize(this);
     }
 }

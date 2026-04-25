@@ -7,3 +7,6 @@
 ## 2026-04-11 - Pre-allocating Delegates to Prevent Closure Allocations
 **Learning:** Passing method groups (like `Api.ListAsync`) or lambda expressions capturing instance fields (like `async (ct) => await Api.GetAsync(ct)`) into methods like `_cacheService.GetAsync` causes the runtime to allocate a new `Func<...>` delegate closure on the heap for every single method invocation. While small (e.g., 320 bytes), these allocations accumulate quickly on hot paths (reads/lists).
 **Action:** To prevent these repeated allocations, instantiate the delegate once in the class constructor and store it as a `readonly Func<...>` instance field, passing the field to the method instead. This guarantees zero per-call closure allocations.
+## 2025-04-25 - Caching Parameterized Queries
+**Learning:** When caching parameterized API queries (like AvailableFilters), the cache implementation must use composite keys incorporating all relevant query parameters (e.g., collectionId, tagsSort, search) to prevent cross-contamination of cached results.
+**Action:** Use a composite string key combining the hashed API token and all query parameters to ensure uniqueness in the cache dictionary.
