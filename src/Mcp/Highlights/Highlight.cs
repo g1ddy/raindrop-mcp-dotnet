@@ -19,6 +19,7 @@ public record Highlight
     [Description("Highlighted text")]
     public string? Text { get; init; }
 
+    [MaxLength(Raindrop.MaxTextFieldLength)]
     [Description("Title of the bookmarked page")]
     public string? Title { get; init; }
 

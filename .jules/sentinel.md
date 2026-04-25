@@ -31,3 +31,8 @@
 **Vulnerability:** The application was exposing internal framework details (stack traces) to stderr when starting without required configurations (like the Raindrop API token).
 **Learning:** By default, .NET Generic Host allows configuration validation exceptions to crash the application, resulting in a verbose, generic stack trace that leaks internal code paths and framework versions.
 **Prevention:** Implement fail-fast configuration checks early in the application startup pipeline (Program.cs) before the main Host run loop. Catch OptionsValidationException to provide clean, generic error messages and exit gracefully (Environment.Exit), preventing stack trace leaks.
+
+## 2024-05-28 - Missing Validation on Title Fields
+**Vulnerability:** Several domain entities (`Raindrop`, `Highlight`) and DTOs (`RaindropCreateRequest`, `RaindropUpdateRequest`) lacked `[MaxLength]` validation attributes on the `Title` property, posing a risk of denial-of-service (DoS) or unexpected database constraints violations if exceptionally large strings are passed. This could lead to excessive memory consumption, particularly when processing or transforming this data locally (e.g., in ArrayPool allocations within `Sanitize`).
+**Learning:** Shared domain entities and DTOs must maintain consistent data length limits across all text fields that handle arbitrary user input.
+**Prevention:** Always verify and apply `[MaxLength(MaxTextFieldLength)]` constraint onto text properties (like `Title`, `Description`, `Excerpt`, `Note`) in domain models and request DTOs used for user input and data parsing.

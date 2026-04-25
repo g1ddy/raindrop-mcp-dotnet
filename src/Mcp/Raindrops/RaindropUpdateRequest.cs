@@ -13,6 +13,7 @@ public record RaindropUpdateRequest : IRaindropRequest
     [Description("The new URL for the bookmark.")]
     public string? Link { get; init; }
 
+    [MaxLength(Raindrop.MaxTextFieldLength)]
     [Description("The new title for the bookmark.")]
     public string? Title { get; init; }
 

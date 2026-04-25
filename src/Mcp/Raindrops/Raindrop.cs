@@ -23,6 +23,7 @@ public record Raindrop
     public long Id { get; init; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [MaxLength(MaxTextFieldLength)]
     [Description("Title of the bookmarked page")]
     public string? Title { get; init; }
 
