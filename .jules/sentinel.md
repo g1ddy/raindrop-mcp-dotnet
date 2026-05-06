@@ -36,3 +36,8 @@
 **Vulnerability:** Several domain entities (`Raindrop`, `Highlight`) and DTOs (`RaindropCreateRequest`, `RaindropUpdateRequest`) lacked `[MaxLength]` validation attributes on the `Title` property, posing a risk of denial-of-service (DoS) or unexpected database constraints violations if exceptionally large strings are passed. This could lead to excessive memory consumption, particularly when processing or transforming this data locally (e.g., in ArrayPool allocations within `Sanitize`).
 **Learning:** Shared domain entities and DTOs must maintain consistent data length limits across all text fields that handle arbitrary user input.
 **Prevention:** Always verify and apply `[MaxLength(MaxTextFieldLength)]` constraint onto text properties (like `Title`, `Description`, `Excerpt`, `Note`) in domain models and request DTOs used for user input and data parsing.
+
+## $(date +%Y-%m-%d) - Prevent DoS from Large String Allocations in TagRenameRequest
+**Vulnerability:** The `Replace` property in `TagRenameRequest` lacked input length validation, allowing potentially unbounded string allocations.
+**Learning:** Even internal API wrappers and DTOs that do not directly hit a database must have input limits (`[MaxLength]`) to prevent Denial of Service (DoS) attacks caused by memory exhaustion, especially when the underlying API or serialization process might choke on extremely large strings.
+**Prevention:** Apply `[MaxLength]` validation using the domain's maximum string constants (like `Raindrops.Raindrop.MaxTextFieldLength`) to all user-provided string properties in Request DTOs, ensuring consistency with domain rules.

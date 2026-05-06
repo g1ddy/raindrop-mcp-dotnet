@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace Mcp.Tags;
@@ -10,6 +11,7 @@ namespace Mcp.Tags;
 public record TagRenameRequest
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [MaxLength(Raindrops.Raindrop.MaxTextFieldLength)]
     [Description("New tag value to replace existing tags")]
     public string? Replace { get; init; }
 
