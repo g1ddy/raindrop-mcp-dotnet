@@ -21,8 +21,11 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, I
     private readonly string _cacheKey = options.Value.ApiToken;
     private const int DefaultMaxTokens = 1000;
 
+    // Pre-allocate delegate to prevent closure allocations per call on the hot path
+    private readonly Func<CancellationToken, Task<ItemsResponse<Collection>>> _fetchCollectionsFunc = api.ListAsync;
+
     private Task<ItemsResponse<Collection>> GetCachedCollectionsAsync(CancellationToken cancellationToken)
-        => _cacheService.GetCollectionsAsync(_cacheKey, Api.ListAsync, cancellationToken);
+        => _cacheService.GetCollectionsAsync(_cacheKey, _fetchCollectionsFunc, cancellationToken);
 
     [McpServerTool(Destructive = false, Idempotent = true, ReadOnly = true,
     Title = "List Collections"),
