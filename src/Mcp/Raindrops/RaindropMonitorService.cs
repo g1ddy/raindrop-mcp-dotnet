@@ -10,18 +10,22 @@ using Mcp.Common;
 
 namespace Mcp.Raindrops;
 
+using Microsoft.Extensions.Logging;
+
 public class RaindropMonitorService : BackgroundService
 {
     private readonly McpServer _server;
     private readonly IRaindropsApi _apiClient;
+    private readonly ILogger<RaindropMonitorService> _logger;
 
     // First Boot Strategy: Look back exactly 10 minutes from startup
     private DateTime _newestBookmarkSeen = DateTime.UtcNow.AddMinutes(-10);
 
-    public RaindropMonitorService(McpServer server, IRaindropsApi apiClient)
+    public RaindropMonitorService(McpServer server, IRaindropsApi apiClient, ILogger<RaindropMonitorService> logger)
     {
         _server = server;
         _apiClient = apiClient;
+        _logger = logger;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -40,7 +44,8 @@ public class RaindropMonitorService : BackgroundService
 
                     foreach (var bookmark in response.Items)
                     {
-                        if (bookmark.Created <= _newestBookmarkSeen) break;
+                        if (!bookmark.Created.HasValue) continue;
+                        if (bookmark.Created.Value.ToUniversalTime() <= _newestBookmarkSeen) break;
                         newBookmarks.Add(bookmark);
                     }
 
@@ -54,19 +59,19 @@ public class RaindropMonitorService : BackgroundService
                             // MUST be awaited. Synchronous writes can deadlock the Stdio stream.
                             await _server.SendNotificationAsync("notifications/claude/channel", new
                             {
-                                content = $"New bookmark: {bookmark.Title}\nURL: {bookmark.Link}",
+                                content = $"New bookmark: {bookmark.Title}\nURL: {bookmark.Link}\nID: {bookmark.Id}",
                                 meta = new { severity = "info" }
                             });
                         }
 
-                        _newestBookmarkSeen = newBookmarks.Last().Created.GetValueOrDefault(DateTime.UtcNow);
+                        _newestBookmarkSeen = newBookmarks.Last().Created!.Value.ToUniversalTime();
                     }
                 }
             }
             catch (Exception ex)
             {
-                // Simple retry: Log to stderr (never stdout!) and let the loop naturally wait 10 mins
-                Console.Error.WriteLine($"[RaindropMonitor] Best-effort sync failed: {ex.Message}");
+                // Simple retry: let the loop naturally wait 10 mins
+                _logger.LogError(ex, "[RaindropMonitor] Best-effort sync failed: {Message}", ex.Message);
             }
 
             // Wait 10 minutes before the next loop
