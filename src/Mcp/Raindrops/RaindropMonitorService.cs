@@ -10,6 +10,7 @@ using Mcp.Common;
 
 namespace Mcp.Raindrops;
 
+using System.Text;
 using Microsoft.Extensions.Logging;
 
 public class RaindropMonitorService : BackgroundService
@@ -38,35 +39,45 @@ public class RaindropMonitorService : BackgroundService
                 // Fetch recent bookmarks from the API (collection 0 = all)
                 // We'll get the first page of recent bookmarks, ordered by created desc
                 var response = await _apiClient.ListAsync(0, null, "-created", 0, 50, true, stoppingToken);
-                if (response?.Result == true && response.Items != null)
+                if (response?.Result != true || response.Items == null)
+                    continue;
+
+                var newBookmarks = new List<Raindrop>();
+
+                foreach (var bookmark in response.Items)
                 {
-                    var newBookmarks = new List<Raindrop>();
-
-                    foreach (var bookmark in response.Items)
-                    {
-                        if (!bookmark.Created.HasValue) continue;
-                        if (bookmark.Created.Value.ToUniversalTime() <= _newestBookmarkSeen) break;
-                        newBookmarks.Add(bookmark);
-                    }
-
-                    if (newBookmarks.Any())
-                    {
-                        // Process oldest to newest so Claude reads them in chronological order
-                        newBookmarks.Reverse();
-
-                        foreach (var bookmark in newBookmarks)
-                        {
-                            // MUST be awaited. Synchronous writes can deadlock the Stdio stream.
-                            await _server.SendNotificationAsync("notifications/claude/channel", new
-                            {
-                                content = $"New bookmark: {bookmark.Title}\nURL: {bookmark.Link}\nID: {bookmark.Id}",
-                                meta = new { severity = "info" }
-                            });
-                        }
-
-                        _newestBookmarkSeen = newBookmarks.Last().Created!.Value.ToUniversalTime();
-                    }
+                    if (!bookmark.Created.HasValue) continue;
+                    if (bookmark.Created.Value.ToUniversalTime() <= _newestBookmarkSeen) break;
+                    newBookmarks.Add(bookmark);
                 }
+
+                if (!newBookmarks.Any())
+                    continue;
+
+                // 1. Process oldest to newest
+                newBookmarks.Reverse();
+
+                // 2. Build the bulk payload
+                var contentBuilder = new StringBuilder();
+                contentBuilder.AppendLine($"Detected {newBookmarks.Count} new bookmarks:");
+
+                foreach (var bookmark in newBookmarks)
+                {
+                    contentBuilder.AppendLine($"- [{bookmark.Title}]({bookmark.Link}) (ID: {bookmark.Id})");
+                }
+
+                // 3. Send exactly once per 10-minute cycle
+                await _server.SendNotificationAsync("notifications/claude/channel", new
+                {
+                    content = contentBuilder.ToString(),
+                    meta = new
+                    {
+                        severity = "info",
+                        batch_count = newBookmarks.Count // Helpful metadata for Claude to know the scale
+                    }
+                });
+
+                _newestBookmarkSeen = newBookmarks.Last().Created!.Value.ToUniversalTime();
             }
             catch (Exception ex)
             {
