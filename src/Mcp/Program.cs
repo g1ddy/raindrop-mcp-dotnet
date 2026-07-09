@@ -16,11 +16,16 @@ builder.Logging.AddConsole(o => o.LogToStandardErrorThreshold = LogLevel.Trace);
 
 // Add the MCP services: the transport to use (stdio) and the tools to register.
 builder.Services
+    .AddHostedService<Mcp.Raindrops.RaindropMonitorService>()
     .AddRaindropApiClient(builder.Configuration)
     .AddMcpServer(options =>
     {
+        options.Capabilities ??= new ModelContextProtocol.Protocol.ServerCapabilities();
+        options.Capabilities.Experimental ??= new System.Collections.Generic.Dictionary<string, object>();
+        options.Capabilities.Experimental["claude/channel"] = new object();
         options.ServerInstructions = """
             This Raindrop MCP server exposes bookmark-management tools for Raindrop.io.
+            Note: This server fires background notifications to the `claude/channel` when new bookmarks are detected.
             Follow the workflow: Explore → Plan → Create → Move → Verify.
             Start with ListCollections and ListChildCollections to review your hierarchy.
             Create new collections using the parent field for subcollections.
