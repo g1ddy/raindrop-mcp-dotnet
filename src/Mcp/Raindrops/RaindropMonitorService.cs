@@ -37,19 +37,7 @@ public class RaindropMonitorService : BackgroundService
             try
             {
                 // Fetch recent bookmarks from the API (collection 0 = all)
-                // We'll get the first page of recent bookmarks, ordered by created desc
-                var response = await _apiClient.ListAsync(0, null, "-created", 0, 50, true, stoppingToken);
-                if (response?.Result != true || response.Items == null)
-                    continue;
-
-                var newBookmarks = new List<Raindrop>();
-
-                foreach (var bookmark in response.Items)
-                {
-                    if (!bookmark.Created.HasValue) continue;
-                    if (bookmark.Created.Value.ToUniversalTime() <= _newestBookmarkSeen) break;
-                    newBookmarks.Add(bookmark);
-                }
+                var newBookmarks = (await _apiClient.GetNewestSinceAsync(_newestBookmarkSeen, 0, stoppingToken)).ToList();
 
                 if (!newBookmarks.Any())
                     continue;
