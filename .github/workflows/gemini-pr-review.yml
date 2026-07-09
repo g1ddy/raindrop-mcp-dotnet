@@ -97,7 +97,7 @@ jobs:
           echo "pr_number=${PR_NUMBER}" >> "${GITHUB_OUTPUT}"
 
           # Get PR details
-          PR_DATA="$(gh pr view "${PR_NUMBER}" --json title,body,additions,deletions,changedFiles,baseRefName,headRefName)"
+          PR_DATA="$(gh pr view "${PR_NUMBER}" --json title,body,additions,deletions,changedFiles,baseRefName,headRefName,isDraft)"
           echo "pr_data=${PR_DATA}" >> "${GITHUB_OUTPUT}"
 
           # Get file changes
@@ -109,14 +109,14 @@ jobs:
           } >> "${GITHUB_OUTPUT}"
 
 
-      - name: 'Get PR details (issue_comment)'
+      - name: 'Get PR details (comment & review)'
         id: 'get_pr_comment'
         if: |-
-          ${{ github.event_name == 'issue_comment' }}
+          ${{ github.event_name == 'issue_comment' || github.event_name == 'pull_request_review' || github.event_name == 'pull_request_review_comment' }}
         env:
           GITHUB_TOKEN: '${{ steps.generate_token.outputs.token || secrets.GITHUB_TOKEN }}'
-          COMMENT_BODY: '${{ github.event.comment.body }}'
-          PR_NUMBER: '${{ github.event.issue.number }}'
+          COMMENT_BODY: '${{ github.event.comment.body || github.event.review.body }}'
+          PR_NUMBER: '${{ github.event.issue.number || github.event.pull_request.number }}'
         run: |-
           set -euo pipefail
 
@@ -129,7 +129,7 @@ jobs:
           echo "additional_instructions=${ADDITIONAL_INSTRUCTIONS}" >> "${GITHUB_OUTPUT}"
 
           # Get PR details
-          PR_DATA="$(gh pr view "${PR_NUMBER}" --json title,body,additions,deletions,changedFiles,baseRefName,headRefName)"
+          PR_DATA="$(gh pr view "${PR_NUMBER}" --json title,body,additions,deletions,changedFiles,baseRefName,headRefName,isDraft)"
           echo "pr_data=${PR_DATA}" >> "${GITHUB_OUTPUT}"
 
           # Get file changes
@@ -278,7 +278,13 @@ jobs:
                 ensure that the code selected by the comment does not already do this, otherwise it's confusing let alone unnecessary.
             12. Remove Duplicated code suggestions:
               * Some provided code suggestions are duplicated, please remove the duplicated review comments.
-            13. Don't Approve The Pull Request
+            13. Conditional Auto-Approval:
+              * After completing the review, determine if the PR is eligible for automatic approval.
+              * A PR is eligible for approval ONLY if:
+                - It is NOT a draft (check `isDraft` in `PR_DATA`).
+                - There are NO issues with `critical` or `high` severity.
+              * If eligible, append the following signal at the very end of your final summary comment: `AUTO_APPROVAL: APPROVE`.
+              * If not eligible, append: `AUTO_APPROVAL: REJECT`.
             14. Reference all shell variables as "${VAR}" (with quotes and braces)
 
             ### Review Criteria (Prioritized in Review)
@@ -439,7 +445,25 @@ jobs:
             ## Final Instructions
 
             Remember, you are running in a VM and no one reviewing your output. Your review must be posted to GitHub using the MCP tools to create a pending review, add comments to the pending review, and submit the pending review.
+            Ensure that the `AUTO_APPROVAL` signal is included at the end of your review summary.
 
+
+      - name: 'Conditional Auto-Approval'
+        if: |-
+          ${{ success() && steps.gemini_pr_review.outcome == 'success' }}
+        env:
+          GITHUB_TOKEN: '${{ steps.generate_token.outputs.token || secrets.GITHUB_TOKEN }}'
+          PR_NUMBER: '${{ steps.get_pr.outputs.pr_number || steps.get_pr_comment.outputs.pr_number }}'
+          GEMINI_SUMMARY: '${{ steps.gemini_pr_review.outputs.summary }}'
+        run: |-
+          set -euo pipefail
+
+          if echo "${GEMINI_SUMMARY}" | grep -q "AUTO_APPROVAL: APPROVE"; then
+            echo "Gemini suggested approval. Approving PR #${PR_NUMBER}..."
+            gh pr review "${PR_NUMBER}" --approve --body "Auto-approved by Gemini based on review analysis."
+          else
+            echo "Gemini did not suggest approval or suggested rejection."
+          fi
 
       - name: 'Post PR review failure comment'
         if: |-
