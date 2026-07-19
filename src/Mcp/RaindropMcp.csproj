@@ -38,16 +38,15 @@
     </Content>
   </ItemGroup>
 
-  <Target Name="InjectVersionIntoServerJson" BeforeTargets="GenerateNuspec">
+  <Target Name="InjectVersionIntoServerJson" BeforeTargets="_GetPackageFiles">
     <PropertyGroup>
       <IntermediateServerJsonPath>$(IntermediateOutputPath)server.json</IntermediateServerJsonPath>
     </PropertyGroup>
     <Message Importance="High" Text="Injecting PackageVersion ($(PackageVersion)) into server.json" />
+    <MakeDir Directories="$(IntermediateOutputPath)" />
     <WriteLinesToFile File="$(IntermediateServerJsonPath)" Lines="$([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)/server.json').Replace('0.0.0-dev', '$(PackageVersion)'))" Overwrite="true" />
     <ItemGroup>
-      <_PackageFiles Include="$(IntermediateServerJsonPath)">
-        <PackagePath>.mcp/server.json</PackagePath>
-      </_PackageFiles>
+      <None Include="$(IntermediateServerJsonPath)" Pack="true" PackagePath=".mcp/server.json" />
     </ItemGroup>
   </Target>
 
