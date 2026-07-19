@@ -23,23 +23,27 @@ public class ServerJsonTests
         using var jsonDoc = JsonDocument.Parse(jsonContent);
 
         // Act
-        // Navigate to servers.RaindropMcp
-        var servers = jsonDoc.RootElement.GetProperty("servers");
-        var raindropServer = servers.GetProperty("RaindropMcp");
-        var command = raindropServer.GetProperty("command").GetString();
-        var args = raindropServer.GetProperty("args");
-        var nuget = raindropServer.GetProperty("nuget");
+        // Verify root properties
+        var schema = jsonDoc.RootElement.GetProperty("$schema").GetString();
+        var name = jsonDoc.RootElement.GetProperty("name").GetString();
+        var version = jsonDoc.RootElement.GetProperty("version").GetString();
 
         // Assert
-        Assert.Equal("dnx", command);
+        Assert.NotNull(schema);
+        Assert.Equal("io.github.g1ddy/raindrop-mcp-dotnet", name);
+        Assert.Equal("0.0.0-dev", version);
 
-        // Verify args contains the package name
-        var argsArray = args.EnumerateArray().Select(a => a.GetString()).ToArray();
-        Assert.Contains("Raindrop.Mcp.DotNet", argsArray);
+        // Verify packages array
+        var packages = jsonDoc.RootElement.GetProperty("packages");
+        Assert.True(packages.GetArrayLength() > 0);
 
-        // Verify nuget properties
-        Assert.Equal("Raindrop.Mcp.DotNet", nuget.GetProperty("id").GetString());
-        Assert.Equal("0.0.0-dev", nuget.GetProperty("version").GetString());
+        var firstPackage = packages[0];
+        Assert.Equal("nuget", firstPackage.GetProperty("registryType").GetString());
+        Assert.Equal("Raindrop.Mcp.DotNet", firstPackage.GetProperty("identifier").GetString());
+        Assert.Equal("0.0.0-dev", firstPackage.GetProperty("version").GetString());
+
+        var transportType = firstPackage.GetProperty("transport").GetProperty("type").GetString();
+        Assert.Equal("stdio", transportType);
     }
 
     private string FindRepoRoot()

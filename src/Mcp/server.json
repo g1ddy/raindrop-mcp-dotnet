@@ -1,21 +1,45 @@
 {
-  "servers": {
-    "RaindropMcp": {
-      "type": "stdio",
-      "command": "dnx",
-      "args": [
-        "Raindrop.Mcp.DotNet",
-        "--prerelease",
-        "--yes"
-      ],
-      "nuget": {
-        "id": "Raindrop.Mcp.DotNet",
-        "version": "0.0.0-dev"
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.g1ddy/raindrop-mcp-dotnet",
+  "version": "0.0.0-dev",
+  "description": "A .NET-based MCP server for interacting with your Raindrop.io bookmarks using natural language.",
+  "title": "Raindrop MCP Server",
+  "websiteUrl": "https://github.com/g1ddy/raindrop-mcp-dotnet",
+  "packages": [
+    {
+      "registryType": "nuget",
+      "identifier": "Raindrop.Mcp.DotNet",
+      "version": "0.0.0-dev",
+      "transport": {
+        "type": "stdio"
       },
-      "env": {
-        "Raindrop:ApiToken": "${env:RAINDROP_API_TOKEN}",
-        "Raindrop:BaseUrl": "https://api.raindrop.io/rest/v1"
-      }
+      "packageArguments": [
+        {
+          "type": "positional",
+          "value": "--prerelease"
+        },
+        {
+          "type": "positional",
+          "value": "--yes"
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "Raindrop:ApiToken",
+          "description": "The API token for Raindrop.io. Generate this in the Raindrop.io settings under 'Integrations'.",
+          "isRequired": true
+        },
+        {
+          "name": "Raindrop:BaseUrl",
+          "description": "The base URL for the Raindrop.io API.",
+          "isRequired": false,
+          "defaultValue": "https://api.raindrop.io/rest/v1"
+        }
+      ]
     }
+  ],
+  "repository": {
+    "url": "https://github.com/g1ddy/raindrop-mcp-dotnet",
+    "source": "github"
   }
 }
