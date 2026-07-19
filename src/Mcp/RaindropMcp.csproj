@@ -42,7 +42,7 @@
     </Content>
   </ItemGroup>
 
-  <Target Name="InjectVersionIntoServerJson">
+  <Target Name="InjectVersionIntoServerJson" DependsOnTargets="MinVer">
     <PropertyGroup>
       <IntermediateServerJsonPath>$(IntermediateOutputPath)server.json</IntermediateServerJsonPath>
     </PropertyGroup>
