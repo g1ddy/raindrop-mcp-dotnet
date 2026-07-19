@@ -9,6 +9,9 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
 
+    <!-- Extensibility point for adding files dynamically -->
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);InjectVersionIntoServerJson</TargetsForTfmSpecificContentInPackage>
+
     <!-- Set up the NuGet package to be an MCP server -->
     <PackAsTool>true</PackAsTool>
     <PackageType>McpServer</PackageType>
@@ -39,7 +42,7 @@
     </Content>
   </ItemGroup>
 
-  <Target Name="InjectVersionIntoServerJson" BeforeTargets="_GetPackageFiles">
+  <Target Name="InjectVersionIntoServerJson">
     <PropertyGroup>
       <IntermediateServerJsonPath>$(IntermediateOutputPath)server.json</IntermediateServerJsonPath>
     </PropertyGroup>
@@ -47,7 +50,7 @@
     <MakeDir Directories="$(IntermediateOutputPath)" />
     <WriteLinesToFile File="$(IntermediateServerJsonPath)" Lines="$([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)/server.json').Replace('0.0.0-dev', '$(PackageVersion)'))" Overwrite="true" />
     <ItemGroup>
-      <None Include="$(IntermediateServerJsonPath)" Pack="true" PackagePath=".mcp/server.json" />
+      <TfmSpecificPackageFile Include="$(IntermediateServerJsonPath)" PackagePath=".mcp/server.json" />
     </ItemGroup>
   </Target>
 
