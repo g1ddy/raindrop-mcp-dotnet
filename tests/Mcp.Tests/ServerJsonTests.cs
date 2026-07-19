@@ -28,6 +28,7 @@ public class ServerJsonTests
         var raindropServer = servers.GetProperty("RaindropMcp");
         var command = raindropServer.GetProperty("command").GetString();
         var args = raindropServer.GetProperty("args");
+        var nuget = raindropServer.GetProperty("nuget");
 
         // Assert
         Assert.Equal("dnx", command);
@@ -35,6 +36,10 @@ public class ServerJsonTests
         // Verify args contains the package name
         var argsArray = args.EnumerateArray().Select(a => a.GetString()).ToArray();
         Assert.Contains("Raindrop.Mcp.DotNet", argsArray);
+
+        // Verify nuget properties
+        Assert.Equal("Raindrop.Mcp.DotNet", nuget.GetProperty("id").GetString());
+        Assert.Equal("0.0.0-dev", nuget.GetProperty("version").GetString());
     }
 
     private string FindRepoRoot()
