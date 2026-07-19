@@ -39,7 +39,7 @@
     </Content>
   </ItemGroup>
 
-  <Target Name="InjectVersionIntoServerJson" BeforeTargets="_GetPackageFiles" DependsOnTargets="MinVer">
+  <Target Name="InjectVersionIntoServerJson" BeforeTargets="GenerateNuspec" DependsOnTargets="MinVer">
     <PropertyGroup>
       <IntermediateServerJsonPath>$(IntermediateOutputPath)server.json</IntermediateServerJsonPath>
     </PropertyGroup>
