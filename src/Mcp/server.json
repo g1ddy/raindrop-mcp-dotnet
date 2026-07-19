@@ -8,6 +8,10 @@
         "--prerelease",
         "--yes"
       ],
+      "nuget": {
+        "id": "Raindrop.Mcp.DotNet",
+        "version": "0.0.0-dev"
+      },
       "env": {
         "Raindrop:ApiToken": "${env:RAINDROP_API_TOKEN}",
         "Raindrop:BaseUrl": "https://api.raindrop.io/rest/v1"
