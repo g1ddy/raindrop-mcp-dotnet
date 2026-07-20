@@ -12,6 +12,7 @@ var builder = Host.CreateApplicationBuilder(args);
 // var builder = WebApplication.CreateBuilder(args);
 
 // Configure all logs to go to stderr (stdout is used for the MCP protocol messages).
+builder.Logging.ClearProviders();
 builder.Logging.AddConsole(o => o.LogToStandardErrorThreshold = LogLevel.Trace);
 
 // Add the MCP services: the transport to use (stdio) and the tools to register.
