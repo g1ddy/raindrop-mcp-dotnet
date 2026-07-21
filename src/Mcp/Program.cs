@@ -39,7 +39,8 @@ builder.Services
     .WithStdioServerTransport()
     // .WithHttpTransport()
     .WithPromptsFromAssembly()
-    .WithToolsFromAssembly();
+    .WithToolsFromAssembly()
+    .WithResourcesFromAssembly();
 
 var app = builder.Build();
 
