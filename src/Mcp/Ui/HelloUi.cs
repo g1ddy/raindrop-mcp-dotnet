@@ -13,7 +13,9 @@ namespace Mcp.Ui;
 [McpServerToolType]
 public class HelloUi
 {
-    [McpServerResource(UriTemplate = "ui://raindrop/hello", Name = "Hello World UI", MimeType = "text/html")]
+    private const string HelloUri = "ui://raindrop/hello";
+
+    [McpServerResource(UriTemplate = HelloUri, Name = "Hello World UI", MimeType = "text/html")]
     [Description("Returns a basic Hello World HTML string")]
     public static TextResourceContents GetHelloUi()
     {
@@ -31,7 +33,7 @@ public class HelloUi
 
         return new TextResourceContents
         {
-            Uri = "ui://raindrop/hello",
+            Uri = HelloUri,
             MimeType = "text/html",
             Text = html
         };
@@ -46,7 +48,7 @@ public class HelloUi
             Content = new List<ContentBlock> { new TextContentBlock { Text = "Opening the Raindrop test UI dashboard..." } },
             Meta = new JsonObject
             {
-                ["ui"] = new JsonObject { ["ResourceUri"] = "ui://raindrop/hello" }
+                ["ui"] = new JsonObject { ["ResourceUri"] = HelloUri }
             }
         };
     }
