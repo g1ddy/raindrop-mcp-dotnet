@@ -74,4 +74,20 @@ public class UiTools
             }
         };
     }
+
+    [McpServerTool(Name = "fetch_bookmark_details", Title = "Fetch Bookmark Details"), Description("Fetches extended metadata for a specific bookmark. Used by the UI.")]
+    public async Task<CallToolResult> FetchBookmarkDetailsAsync(
+        [Description("ID of the bookmark to retrieve")] int bookmarkId,
+        CancellationToken cancellationToken = default)
+    {
+        var rawData = await _raindropsApi.GetAsync(bookmarkId, cancellationToken);
+        var jsonText = System.Text.Json.JsonSerializer.Serialize(rawData);
+        return new CallToolResult
+        {
+            Content = new List<ContentBlock>
+            {
+                new TextContentBlock { Text = jsonText }
+            }
+        };
+    }
 }

@@ -11,6 +11,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Bookmark Explorer</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@picocss/pico@2/css/pico.min.css">
+    <script type="module">
+        import { Client } from 'https://cdn.jsdelivr.net/npm/@@modelcontextprotocol/ext-apps/dist/client.js';
+        window.mcpClient = new Client();
+    </script>
     <style>
         .bookmark-grid {
             display: grid;
@@ -41,6 +45,9 @@
         .bookmark-footer {
             margin-top: auto;
             font-size: 0.8rem;
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
     </style>
 </head>
@@ -71,7 +78,9 @@
                             {
                                 <span> &bull; @bookmark.Domain</span>
                             }
+                            <button class="outline" onclick="window.loadDetails(@bookmark.Id)">Load Details</button>
                         </footer>
+                        <pre id="details-@bookmark.Id" style="display: none;"></pre>
                     </article>
                 }
             }
@@ -81,6 +90,18 @@
             }
         </div>
     </main>
+    <script>
+        window.loadDetails = async (id) => {
+            try {
+                const response = await window.mcpClient.callTool('fetch_bookmark_details', { bookmarkId: id });
+                const detailsBlock = document.getElementById(`details-${id}`);
+                detailsBlock.innerText = JSON.stringify(response.content, null, 2);
+                detailsBlock.style.display = 'block';
+            } catch (err) {
+                console.error("Error loading details:", err);
+            }
+        };
+    </script>
 </body>
 </html>
 
