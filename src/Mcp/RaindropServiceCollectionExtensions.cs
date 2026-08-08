@@ -37,6 +37,10 @@ public static class RaindropServiceCollectionExtensions
         services.AddSingleton<RaindropClientConfig>();
         services.AddSingleton<IRaindropCacheService, RaindropCacheService>();
 
+        // UI Services
+        services.AddSingleton<Mcp.Ui.IUiCacheService, Mcp.Ui.UiCacheService>();
+        services.AddSingleton<Mcp.Ui.IHtmlRenderingService, Mcp.Ui.HtmlRenderingService>();
+
         var settings = new RefitSettings
         {
             ContentSerializer = new SystemTextJsonContentSerializer(new System.Text.Json.JsonSerializerOptions

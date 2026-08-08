@@ -1,3 +1,7 @@
 ## 2024-05-14 - Improve Exception Messaging for MCP
 **Learning:** For this backend MCP server, UX improvements focus on the Developer/AI experience by ensuring exception messages (e.g., `ArgumentOutOfRangeException`) include the specific invalid values provided, and that schema descriptions offer explicit instructions. `ArgumentOutOfRangeException` natively includes the actual value when instantiated properly using `throw new ArgumentOutOfRangeException(nameof(param), paramValue, "Message");`.
 **Action:** When updating exceptions, make sure we provide `paramName`, `actualValue`, and `message` to `ArgumentOutOfRangeException`.
+
+## 2024-05-15 - [Blazor HtmlRenderer Integration for UI Views]
+**Learning:** Returning static UI views from MCP tools requires encapsulation of `HtmlRenderer` via a dedicated service (e.g., `IHtmlRenderingService`) to manage DI scope and dispatch rendering securely on the correct thread. In addition, using a unique `{id}` mapped via `UriTemplate` is crucial to prevent cache overwriting when the user navigates chat history. To allow Blazor `.razor` components to compile in the console app, the `Microsoft.NET.Sdk.Razor` SDK must be utilized.
+**Action:** Always create dedicated UI generation tools (leaving raw JSON tools untouched for headless reasoning), inject a proper caching mechanism for historical navigation, and utilize a dedicated HTML rendering service rather than injecting `IServiceProvider` directly.

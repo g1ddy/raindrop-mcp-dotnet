@@ -1,0 +1,90 @@
+@namespace Mcp.Ui
+@using Microsoft.AspNetCore.Components
+@using Mcp.Raindrops
+@using System.Collections.Generic
+@using System.Linq
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bookmark Explorer</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@picocss/pico@2/css/pico.min.css">
+    <style>
+        .bookmark-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+        .bookmark-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .bookmark-card img {
+            max-width: 100%;
+            height: auto;
+            border-radius: var(--pico-border-radius);
+            margin-bottom: 1rem;
+        }
+        .bookmark-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            word-break: break-word;
+        }
+        .bookmark-excerpt {
+            font-size: 0.9rem;
+            color: var(--pico-muted-color);
+            margin-bottom: 1rem;
+        }
+        .bookmark-footer {
+            margin-top: auto;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <h2>Bookmark Explorer</h2>
+        <div class="bookmark-grid">
+            @if (Bookmarks != null && Bookmarks.Any())
+            {
+                @foreach (var bookmark in Bookmarks)
+                {
+                    <article class="bookmark-card">
+                        <div>
+                            <header>
+                                @if (!string.IsNullOrEmpty(bookmark.Cover))
+                                {
+                                    <img src="@bookmark.Cover" alt="Cover image for @bookmark.Title" />
+                                }
+                                <div class="bookmark-title">
+                                    <strong>@bookmark.Title</strong>
+                                </div>
+                            </header>
+                            <p class="bookmark-excerpt">@bookmark.Excerpt</p>
+                        </div>
+                        <footer class="bookmark-footer">
+                            <a href="@bookmark.Link" target="_blank" rel="noopener noreferrer">Visit Link</a>
+                            @if (!string.IsNullOrEmpty(bookmark.Domain))
+                            {
+                                <span> &bull; @bookmark.Domain</span>
+                            }
+                        </footer>
+                    </article>
+                }
+            }
+            else
+            {
+                <p>No bookmarks to display.</p>
+            }
+        </div>
+    </main>
+</body>
+</html>
+
+@code {
+    [Parameter]
+    public required IEnumerable<Raindrop> Bookmarks { get; set; }
+}
