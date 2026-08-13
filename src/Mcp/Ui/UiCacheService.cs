@@ -14,6 +14,11 @@ public class UiCacheService : IUiCacheService
         return key;
     }
 
+    public void StoreHtml(string key, string html)
+    {
+        _cache[key] = html;
+    }
+
     public string? GetHtml(string key)
     {
         _cache.TryGetValue(key, out var html);
