@@ -10,6 +10,9 @@ public interface IUiCacheService
     /// </summary>
     string StoreHtml(string html);
 
+    /// <summary>Stores or replaces HTML at a stable resource key.</summary>
+    void StoreHtml(string key, string html);
+
     /// <summary>
     /// Retrieves the HTML by key. Returns null if not found.
     /// </summary>
