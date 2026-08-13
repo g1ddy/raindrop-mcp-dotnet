@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using ModelContextProtocol.Extensions.Apps;
 
 using Mcp;
 
@@ -40,7 +41,8 @@ builder.Services
     // .WithHttpTransport()
     .WithPromptsFromAssembly()
     .WithToolsFromAssembly()
-    .WithResourcesFromAssembly();
+    .WithResourcesFromAssembly()
+    .WithMcpApps();
 
 var app = builder.Build();
 

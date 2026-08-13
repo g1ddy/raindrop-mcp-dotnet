@@ -1,19 +1,20 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Mcp.Common;
 using Mcp.Raindrops;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
+using ModelContextProtocol.Extensions.Apps;
 
 namespace Mcp.Ui;
 
 [McpServerToolType]
 public class UiTools
 {
+    public const string ExplorerUri = "ui://raindrop/explorer";
     private readonly IRaindropsApi _raindropsApi;
     private readonly IHtmlRenderingService _htmlRenderingService;
     private readonly IUiCacheService _uiCacheService;
@@ -29,6 +30,7 @@ public class UiTools
     }
 
     [McpServerTool(Name = "visualize_bookmarks", Title = "Visualize Bookmarks"), Description("Searches for bookmarks and displays them in a visual, read-only UI grid for the human user. Use this instead of list_bookmarks when the user wants to visually explore their bookmarks.")]
+    [McpAppUi(ResourceUri = ExplorerUri)]
     public async Task<CallToolResult> VisualizeBookmarksAsync(
         [Description("The ID of the collection to retrieve bookmarks from. Use 0 for all, -1 for unsorted, -99 for trash.")] int collectionId,
         [Description(SearchSyntax.Description)] string? search = null,
@@ -58,24 +60,19 @@ public class UiTools
         var bookmarks = response.Items ?? Array.Empty<Raindrop>();
 
         var html = await _htmlRenderingService.RenderBookmarksAsync(bookmarks);
-        var guid = _uiCacheService.StoreHtml(html);
-
-        var uri = $"ui://raindrop/explorer/{guid}";
+        _uiCacheService.StoreHtml(ExplorerUri, html);
 
         return new CallToolResult
         {
             Content = new List<ContentBlock>
             {
                 new TextContentBlock { Text = $"Opening the Visual Bookmark Explorer...\nFound {bookmarks.Count} bookmarks." }
-            },
-            Meta = new JsonObject
-            {
-                ["ui"] = new JsonObject { ["ResourceUri"] = uri }
             }
         };
     }
 
     [McpServerTool(Name = "fetch_bookmark_details", Title = "Fetch Bookmark Details", ReadOnly = true, Destructive = false, Idempotent = true), Description("Fetches extended metadata for a specific bookmark. Used by the UI.")]
+    [McpAppUi(ResourceUri = ExplorerUri, Visibility = [McpUiToolVisibility.App])]
     public async Task<CallToolResult> FetchBookmarkDetailsAsync(
         [Description("ID of the bookmark to retrieve")] long bookmarkId,
         CancellationToken cancellationToken = default)

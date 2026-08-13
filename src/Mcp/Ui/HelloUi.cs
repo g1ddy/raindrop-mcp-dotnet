@@ -1,8 +1,7 @@
-using System.Collections.Generic;
+using ModelContextProtocol.Extensions.Apps;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using System.ComponentModel;
-using System.Text.Json.Nodes;
 
 namespace Mcp.Ui;
 
@@ -15,7 +14,7 @@ public class HelloUi
 {
     private const string HelloUri = "ui://raindrop/hello";
 
-    [McpServerResource(UriTemplate = HelloUri, Name = "Hello World UI", MimeType = "text/html")]
+    [McpServerResource(UriTemplate = HelloUri, Name = "Hello World UI", MimeType = McpApps.HtmlMimeType)]
     [Description("Returns a basic Hello World HTML string")]
     public static TextResourceContents GetHelloUi()
     {
@@ -34,22 +33,19 @@ public class HelloUi
         return new TextResourceContents
         {
             Uri = HelloUri,
-            MimeType = "text/html",
+            MimeType = McpApps.HtmlMimeType,
             Text = html
         };
     }
 
     [McpServerTool(Name = "show_raindrop_hello")]
+    [McpAppUi(ResourceUri = HelloUri)]
     [Description("Displays the initial test UI view inside the chat window.")]
     public static CallToolResult ShowRaindropHello()
     {
         return new CallToolResult
         {
-            Content = new List<ContentBlock> { new TextContentBlock { Text = "Opening the Raindrop test UI dashboard..." } },
-            Meta = new JsonObject
-            {
-                ["ui"] = new JsonObject { ["ResourceUri"] = HelloUri }
-            }
+            Content = [new TextContentBlock { Text = "Opening the Raindrop test UI dashboard..." }]
         };
     }
 }
