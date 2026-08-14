@@ -81,13 +81,18 @@ public class UiTools
             Items = items
         };
 
+        var serializerOptions = new System.Text.Json.JsonSerializerOptions
+        {
+            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+        };
+
         return new CallToolResult
         {
             Content = new List<ContentBlock>
             {
                 new TextContentBlock { Text = $"Opening the Visual Bookmark Explorer...\nFound {items.Count} bookmarks." }
             },
-            StructuredContent = System.Text.Json.JsonSerializer.SerializeToElement(result)
+            StructuredContent = System.Text.Json.JsonSerializer.SerializeToElement(result, serializerOptions)
         };
     }
 
@@ -114,17 +119,27 @@ public class UiTools
                 Created = rawData.Created
             };
 
+            var serializerOptions = new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+            };
+
             return new CallToolResult
             {
                 Content = new List<ContentBlock>
                 {
                     new TextContentBlock { Text = $"Fetched details for bookmark {bookmarkId}." }
                 },
-                StructuredContent = System.Text.Json.JsonSerializer.SerializeToElement(details)
+                StructuredContent = System.Text.Json.JsonSerializer.SerializeToElement(details, serializerOptions)
             };
         }
         catch (Exception)
         {
+            var serializerOptions = new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+            };
+
             return new CallToolResult
             {
                 IsError = true,
@@ -132,7 +147,7 @@ public class UiTools
                 {
                     new TextContentBlock { Text = $"Failed to fetch details for bookmark {bookmarkId}." }
                 },
-                StructuredContent = System.Text.Json.JsonSerializer.SerializeToElement(new ExplorerErrorResult { Error = "Failed to fetch bookmark details." })
+                StructuredContent = System.Text.Json.JsonSerializer.SerializeToElement(new ExplorerErrorResult { Error = "Failed to fetch bookmark details." }, serializerOptions)
             };
         }
     }
