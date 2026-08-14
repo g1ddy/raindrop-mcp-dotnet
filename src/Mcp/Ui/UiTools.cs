@@ -16,17 +16,13 @@ public class UiTools
 {
     public const string ExplorerUri = "ui://raindrop/explorer";
     private readonly IRaindropsApi _raindropsApi;
-    private readonly IHtmlRenderingService _htmlRenderingService;
-    private readonly IUiCacheService _uiCacheService;
     private static readonly HashSet<string> ValidSortOptions = new(
         new[] { "created", "-created", "title", "-title", "domain", "-domain", "sort", "score" }
     );
 
-    public UiTools(IRaindropsApi raindropsApi, IHtmlRenderingService htmlRenderingService, IUiCacheService uiCacheService)
+    public UiTools(IRaindropsApi raindropsApi)
     {
         _raindropsApi = raindropsApi;
-        _htmlRenderingService = htmlRenderingService;
-        _uiCacheService = uiCacheService;
     }
 
     [McpServerTool(Name = "visualize_bookmarks", Title = "Visualize Bookmarks"), Description("Searches for bookmarks and displays them in a visual, read-only UI grid for the human user. Use this instead of list_bookmarks when the user wants to visually explore their bookmarks.")]
@@ -59,15 +55,39 @@ public class UiTools
 
         var bookmarks = response.Items ?? Array.Empty<Raindrop>();
 
-        var html = await _htmlRenderingService.RenderBookmarksAsync(bookmarks);
-        _uiCacheService.StoreHtml(ExplorerUri, html);
+        var items = new List<ExplorerBookmarkSummary>(bookmarks.Count);
+        foreach (var bookmark in bookmarks)
+        {
+            items.Add(new ExplorerBookmarkSummary
+            {
+                Id = bookmark.Id,
+                Title = bookmark.Title,
+                Link = bookmark.Link,
+                Domain = bookmark.Domain,
+                Excerpt = bookmark.Excerpt,
+                Tags = bookmark.Tags
+            });
+        }
+
+        var result = new ExplorerResult
+        {
+            CollectionId = collectionId,
+            Search = search,
+            Sort = sort,
+            Page = page,
+            PerPage = perPage,
+            Nested = nested,
+            Count = items.Count,
+            Items = items
+        };
 
         return new CallToolResult
         {
             Content = new List<ContentBlock>
             {
-                new TextContentBlock { Text = $"Opening the Visual Bookmark Explorer...\nFound {bookmarks.Count} bookmarks." }
-            }
+                new TextContentBlock { Text = $"Opening the Visual Bookmark Explorer...\nFound {items.Count} bookmarks." }
+            },
+            StructuredContent = System.Text.Json.JsonSerializer.SerializeToElement(result)
         };
     }
 
@@ -77,14 +97,43 @@ public class UiTools
         [Description("ID of the bookmark to retrieve")] long bookmarkId,
         CancellationToken cancellationToken = default)
     {
-        var rawData = await _raindropsApi.GetAsync(bookmarkId, cancellationToken);
-        var jsonText = System.Text.Json.JsonSerializer.Serialize(rawData);
-        return new CallToolResult
+        try
         {
-            Content = new List<ContentBlock>
+            var response = await _raindropsApi.GetAsync(bookmarkId, cancellationToken);
+            var rawData = response.Item;
+
+            var details = new ExplorerBookmarkDetails
             {
-                new TextContentBlock { Text = jsonText }
-            }
-        };
+                Id = rawData.Id,
+                Title = rawData.Title,
+                Link = rawData.Link,
+                Domain = rawData.Domain,
+                Excerpt = rawData.Excerpt,
+                Note = rawData.Note,
+                Tags = rawData.Tags,
+                Created = rawData.Created
+            };
+
+            return new CallToolResult
+            {
+                Content = new List<ContentBlock>
+                {
+                    new TextContentBlock { Text = $"Fetched details for bookmark {bookmarkId}." }
+                },
+                StructuredContent = System.Text.Json.JsonSerializer.SerializeToElement(details)
+            };
+        }
+        catch (Exception)
+        {
+            return new CallToolResult
+            {
+                IsError = true,
+                Content = new List<ContentBlock>
+                {
+                    new TextContentBlock { Text = $"Failed to fetch details for bookmark {bookmarkId}." }
+                },
+                StructuredContent = System.Text.Json.JsonSerializer.SerializeToElement(new ExplorerErrorResult { Error = "Failed to fetch bookmark details." })
+            };
+        }
     }
 }

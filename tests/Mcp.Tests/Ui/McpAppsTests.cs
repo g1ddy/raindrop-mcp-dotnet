@@ -29,9 +29,7 @@ public class McpAppsTests
     public void UiResourcesUseTheMcpAppHtmlProfile()
     {
         var hello = HelloUi.GetHelloUi();
-        var cache = new UiCacheService();
-        cache.StoreHtml(UiTools.ExplorerUri, "<html>explorer</html>");
-        var explorer = new UiResources(cache).GetExplorerUi();
+        var explorer = new UiResources().GetExplorerUi();
 
         Assert.Equal(McpApps.HtmlMimeType, hello.MimeType);
         Assert.Equal(McpApps.HtmlMimeType, explorer.MimeType);
