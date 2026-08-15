@@ -133,6 +133,10 @@ public class UiTools
                 StructuredContent = System.Text.Json.JsonSerializer.SerializeToElement(details, serializerOptions)
             };
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception)
         {
             var serializerOptions = new System.Text.Json.JsonSerializerOptions
