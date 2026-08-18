@@ -39,6 +39,8 @@
     <Content Update="server.json">
       <Pack>false</Pack>
     </Content>
+    <!-- Embed the static Explorer App HTML artifact -->
+    <EmbeddedResource Include="Ui\Artifacts\Explorer.html" />
   </ItemGroup>
 
   <Target Name="InjectVersionIntoServerJson" BeforeTargets="GenerateNuspec" DependsOnTargets="MinVer">

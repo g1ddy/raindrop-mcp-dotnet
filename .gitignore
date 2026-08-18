@@ -61,3 +61,6 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+ui-build/
+src/Mcp/Ui/Static/node_modules/
+src/Mcp/Ui/Static/dist/
