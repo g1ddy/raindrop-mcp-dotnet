@@ -64,7 +64,22 @@ public static class RaindropServiceCollectionExtensions
         var retryPolicy = HttpPolicyExtensions
             .HandleTransientHttpError() // Handles 5xx and 408
             .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
-            .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+            .WaitAndRetryAsync(
+                3,
+                (retryAttempt, response, _) =>
+                {
+                    var retryAfter = response.Result?.Headers.RetryAfter;
+                    if (retryAfter?.Delta is { } delta)
+                        return delta;
+
+                    if (retryAfter?.Date is { } date)
+                        return date > DateTimeOffset.UtcNow ? date - DateTimeOffset.UtcNow : TimeSpan.Zero;
+
+                    // Exponential backoff with jitter avoids synchronized retries across clients.
+                    return TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)) +
+                        TimeSpan.FromMilliseconds(Random.Shared.Next(0, 500));
+                },
+                (_, _, _, _) => Task.CompletedTask);
 
         void AddClient<T>(RefitSettings refitSettings) where T : class
         {

@@ -16,27 +16,40 @@ app.ontoolresult = (result) => {
     }
 };
 
-window.loadDetails = async (id) => {
+app.ontoolcancelled = () => {
+    const statusEl = document.getElementById("status");
+    statusEl.style.display = "block";
+    statusEl.textContent = "Bookmark loading was cancelled.";
+};
+
+async function loadDetails(id, button) {
+    const detailsBlock = document.getElementById(`details-${id}`);
+    button.disabled = true;
+    button.textContent = "Loading…";
+    detailsBlock.textContent = "Loading bookmark details…";
+    detailsBlock.style.display = "block";
+
     try {
         const response = await app.callServerTool({ name: "fetch_bookmark_details", arguments: { bookmarkId: id } });
-        const detailsBlock = document.getElementById(`details-${id}`);
-        if (response && response.structuredContent) {
+        if (response?.isError) {
+            detailsBlock.textContent = response.content?.[0]?.text || "Failed to fetch bookmark details.";
+        } else if (response?.structuredContent) {
             detailsBlock.innerText = JSON.stringify(response.structuredContent, null, 2);
         } else {
-            detailsBlock.innerText = JSON.stringify(response.content, null, 2);
+            detailsBlock.textContent = "No bookmark details were returned.";
         }
-        detailsBlock.style.display = "block";
     } catch (err) {
         console.error("Error loading details:", err);
-        const detailsBlock = document.getElementById(`details-${id}`);
-        detailsBlock.innerText = `Error: ${err.message}`;
-        detailsBlock.style.display = "block";
+        detailsBlock.textContent = `Unable to load details: ${err instanceof Error ? err.message : "Unknown error"}`;
+    } finally {
+        button.disabled = false;
+        button.textContent = "Load Details";
     }
-};
+}
 
 function renderBookmarks(structuredContent) {
     const container = document.getElementById("bookmarks-container");
-    container.innerHTML = "";
+    container.replaceChildren();
 
     let bookmarks = structuredContent;
     // Handle both direct array and wrapped pagination objects
@@ -45,7 +58,9 @@ function renderBookmarks(structuredContent) {
     }
 
     if (!Array.isArray(bookmarks) || bookmarks.length === 0) {
-        container.innerHTML = "<p>No bookmarks to display.</p>";
+        const empty = document.createElement("p");
+        empty.textContent = "No bookmarks to display.";
+        container.appendChild(empty);
         return;
     }
 
@@ -110,7 +125,7 @@ function renderBookmarks(structuredContent) {
         const detailsBtn = document.createElement("button");
         detailsBtn.className = "outline";
         detailsBtn.textContent = "Load Details";
-        detailsBtn.onclick = () => window.loadDetails(bookmark.id);
+        detailsBtn.addEventListener("click", () => loadDetails(bookmark.id, detailsBtn));
         footer.appendChild(detailsBtn);
 
         article.appendChild(footer);
@@ -130,5 +145,3 @@ app.connect().catch(err => {
     statusEl.innerText = `Failed to connect: ${err.message}`;
     console.error("Connection error:", err);
 });
-
-window.mcpApp = app;
