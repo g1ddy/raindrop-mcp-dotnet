@@ -10,6 +10,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <!-- MCP Apps is experimental in the SDK and requires an explicit opt-in. -->
     <NoWarn>$(NoWarn);MCPEXP003</NoWarn>
+    <NoWarn>$(NoWarn);MCPEXP001;MCPEXP002</NoWarn>
 
     <!-- Set up the NuGet package to be an MCP server -->
     <PackAsTool>true</PackAsTool>
@@ -64,6 +65,7 @@
     <!-- <PackageReference Include="ModelContextProtocol.AspNetCore" Version="0.3.0-preview.3" /> -->
     <PackageReference Include="ModelContextProtocol" Version="2.2.0" />
     <PackageReference Include="ModelContextProtocol.Extensions.Apps" Version="2.2.0" />
+    <PackageReference Include="ModelContextProtocol.Extensions.Tasks" Version="2.2.0" />
     <PackageReference Include="Refit.HttpClientFactory" Version="15.0.0" />
     <PackageReference Include="Refit.Reflection" Version="15.0.0" />
     <PackageReference Include="MinVer" Version="7.0.0" PrivateAssets="all" />

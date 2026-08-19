@@ -10,6 +10,7 @@ using Mcp.Highlights;
 using Mcp.Filters;
 using Mcp.Tags;
 using Mcp.User;
+using Mcp.Analytics;
 using Polly;
 using Polly.Extensions.Http;
 
@@ -34,8 +35,14 @@ public static class RaindropServiceCollectionExtensions
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        services.AddOptions<LibraryAnalyticsOptions>()
+            .Bind(configuration.GetSection("Analytics"))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
         services.AddSingleton<RaindropClientConfig>();
         services.AddSingleton<IRaindropCacheService, RaindropCacheService>();
+        services.AddTransient<ILibraryAnalyticsService, LibraryAnalyticsService>();
 
         var settings = new RefitSettings
         {
