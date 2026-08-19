@@ -1,13 +1,33 @@
 using Mcp.Collections;
 using Mcp.Raindrops;
+using Microsoft.Extensions.Options;
 
 namespace Mcp.Analytics;
 
-public sealed class LibraryAnalyticsService(
-    ICollectionsApi collectionsApi,
-    IRaindropsApi raindropsApi) : ILibraryAnalyticsService
+public sealed class LibraryAnalyticsService : ILibraryAnalyticsService
 {
     private const int PageSize = 50;
+    private readonly ICollectionsApi collectionsApi;
+    private readonly IRaindropsApi raindropsApi;
+    private readonly int maximumPages;
+
+    public LibraryAnalyticsService(
+        ICollectionsApi collectionsApi,
+        IRaindropsApi raindropsApi,
+        IOptions<LibraryAnalyticsOptions> options)
+        : this(collectionsApi, raindropsApi, options.Value.MaximumPages)
+    {
+    }
+
+    internal LibraryAnalyticsService(
+        ICollectionsApi collectionsApi,
+        IRaindropsApi raindropsApi,
+        int maximumPages = LibraryAnalyticsOptions.DefaultMaximumPages)
+    {
+        this.collectionsApi = collectionsApi;
+        this.raindropsApi = raindropsApi;
+        this.maximumPages = maximumPages;
+    }
 
     public async Task<LibraryAnalyticsReport> AnalyzeAsync(
         int collectionId,
@@ -172,6 +192,12 @@ public sealed class LibraryAnalyticsService(
             {
                 diagnostics.Add($"Bookmark page {page - 1} repeated previously analyzed bookmark IDs.");
                 return (aggregate, page, false, "repeated_page");
+            }
+
+            if (page >= maximumPages)
+            {
+                diagnostics.Add($"Bookmark analysis stopped at the configured safety limit of {maximumPages} pages.");
+                return (aggregate, page, false, "safety_limit_reached");
             }
         }
     }

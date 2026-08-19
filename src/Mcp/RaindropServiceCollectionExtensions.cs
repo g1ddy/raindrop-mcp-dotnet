@@ -35,6 +35,11 @@ public static class RaindropServiceCollectionExtensions
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        services.AddOptions<LibraryAnalyticsOptions>()
+            .Bind(configuration.GetSection("Analytics"))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
         services.AddSingleton<RaindropClientConfig>();
         services.AddSingleton<IRaindropCacheService, RaindropCacheService>();
         services.AddTransient<ILibraryAnalyticsService, LibraryAnalyticsService>();

@@ -160,6 +160,37 @@ public class LibraryAnalyticsServiceTests
         Assert.Contains(report.Diagnostics, diagnostic => diagnostic.Contains("repeated", StringComparison.OrdinalIgnoreCase));
     }
 
+    [Fact]
+    public async Task AnalyzeStopsAtConfiguredPageLimitAndMarksReportPartial()
+    {
+        var collectionsApi = new Mock<ICollectionsApi>(MockBehavior.Strict);
+        var raindropsApi = new Mock<IRaindropsApi>(MockBehavior.Strict);
+        collectionsApi.Setup(api => api.ListAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ItemsResponse<Collection>(true, []));
+        collectionsApi.Setup(api => api.ListChildrenAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ItemsResponse<Collection>(true, []));
+
+        SetupPage(raindropsApi, 0, 0, null, Enumerable.Range(1, 50)
+            .Select(id => Bookmark(id, -1, "example.com", []))
+            .ToList());
+        SetupPage(raindropsApi, 0, 1, null, Enumerable.Range(51, 50)
+            .Select(id => Bookmark(id, -1, "example.com", []))
+            .ToList());
+
+        var service = new LibraryAnalyticsService(collectionsApi.Object, raindropsApi.Object, maximumPages: 2);
+
+        var report = await service.AnalyzeAsync(0, CancellationToken.None);
+
+        Assert.False(report.Scope.IsComplete);
+        Assert.Equal("safety_limit_reached", report.Scope.TerminationReason);
+        Assert.Equal(2, report.Scope.PagesFetched);
+        Assert.Equal(100, report.Summary.BookmarksAnalyzed);
+        Assert.Contains(report.Diagnostics, diagnostic => diagnostic.Contains("2 pages", StringComparison.Ordinal));
+        raindropsApi.Verify(api => api.ListAsync(
+            0, null, "created", It.IsAny<int>(), 50, null, It.IsAny<CancellationToken>()),
+            Times.Exactly(2));
+    }
+
     private static Raindrop Bookmark(
         int id,
         int collectionId,
