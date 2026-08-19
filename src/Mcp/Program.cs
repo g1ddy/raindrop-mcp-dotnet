@@ -3,8 +3,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Extensions.Apps;
+using ModelContextProtocol.Extensions.Tasks;
 
 using Mcp;
+using Mcp.Analytics;
 
 [assembly: InternalsVisibleTo("Mcp.Benchmarks")]
 [assembly: InternalsVisibleTo("RaindropMcp.Tests")]
@@ -33,6 +35,7 @@ builder.Services
             Create new collections using the parent field for subcollections.
             Merge collections with both the 'to' parameter and 'ids' array.
             Special IDs: 0 (all), -1 (unsorted), -99 (trash).
+            Use analyze_library for a complete collection, tag, and domain distribution report; task-capable clients can run it as a long-running task.
             Update bookmarks in bulk by explicit ID and verify counts before and after changes.
             Renderable functions like RenderTable, RenderTree and RenderChart can visualize results.
         """;
@@ -42,7 +45,15 @@ builder.Services
     .WithPromptsFromAssembly()
     .WithToolsFromAssembly()
     .WithResourcesFromAssembly()
-    .WithMcpApps();
+    .WithMcpApps()
+    .WithTasks(
+        new InMemoryMcpTaskStore
+        {
+            DefaultPollIntervalMs = 1000,
+            DefaultTimeToLive = TimeSpan.FromMinutes(30)
+        },
+        options => options.ExecutionModeSelector = request =>
+            LibraryAnalyticsTaskPolicy.GetExecutionMode(request.Params?.Name));
 
 var app = builder.Build();
 
