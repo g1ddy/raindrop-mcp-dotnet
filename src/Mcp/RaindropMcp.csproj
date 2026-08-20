@@ -40,9 +40,19 @@
     <Content Update="server.json">
       <Pack>false</Pack>
     </Content>
-    <!-- Embed the static Explorer App HTML artifact -->
-    <EmbeddedResource Include="Ui\Artifacts\Explorer.html" />
+    <!-- Embed the generated single-file App without checking the large bundle into source control. -->
+    <EmbeddedResource Include="Ui\Static\dist\index.html">
+      <LogicalName>RaindropMcp.Ui.Artifacts.Explorer.html</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
+
+  <Target Name="BuildMcpApp"
+          BeforeTargets="PrepareResourceNames"
+          Inputs="Ui\Static\index.html;Ui\Static\main.js;Ui\Static\package.json;Ui\Static\package-lock.json;Ui\Static\vite.config.js"
+          Outputs="Ui\Static\dist\index.html">
+    <Exec WorkingDirectory="Ui\Static" Command="npm ci" />
+    <Exec WorkingDirectory="Ui\Static" Command="npm run build" />
+  </Target>
 
   <Target Name="InjectVersionIntoServerJson" BeforeTargets="GenerateNuspec" DependsOnTargets="MinVer">
     <PropertyGroup>

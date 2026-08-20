@@ -98,7 +98,7 @@ App state is instance-local. A notification replaces or updates only that instan
 ### Shared infrastructure
 
 - [ ] Add reusable result-schema validation helpers or per-App validators.
-- [ ] Add a repeatable frontend build verification command in CI.
+- [x] Build the frontend in CI and before .NET resource compilation. The generated single-file HTML remains ignored rather than being committed, so dependency bundles do not create large source diffs.
 - [ ] Add CSP and external-reference assertions for every App artifact.
 - [ ] Add publish and NuGet package artifact tests.
 - [ ] Document supported host/version combinations.
