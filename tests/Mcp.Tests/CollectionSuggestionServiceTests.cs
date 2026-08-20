@@ -117,6 +117,114 @@ public class CollectionSuggestionServiceTests
         _api.Verify(api => api.ListAsync(0, null, null, 0, 50, true, It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
+    [Fact]
+    public async Task SuggestAsync_ExcludesQueriedBookmarkFromOwnTrainingDocument_DomainSignal()
+    {
+        var collection1 = new Collection { Id = 1, Title = "Collection One" };
+        var collection2 = new Collection { Id = 2, Title = "Collection Two" };
+
+        var queriedBookmark = new Raindrop
+        {
+            Id = 10,
+            Domain = "unique-domain.com",
+            Collection = new IdRef { Id = collection1.Id }
+        };
+        var otherBookmark = new Raindrop
+        {
+            Id = 20,
+            Domain = "unique-domain.com",
+            Collection = new IdRef { Id = collection2.Id }
+        };
+
+        SetupLibrary([queriedBookmark, otherBookmark]);
+
+        var suggestions = await _service.SuggestAsync(queriedBookmark, [collection1, collection2], 2, CancellationToken.None);
+
+        Assert.Single(suggestions);
+        Assert.Equal(collection2.Id, suggestions[0].Collection.Id);
+    }
+
+    [Fact]
+    public async Task SuggestAsync_ExcludesQueriedBookmarkFromOwnTrainingDocument_TagSignal()
+    {
+        var collection1 = new Collection { Id = 1, Title = "Collection One" };
+        var collection2 = new Collection { Id = 2, Title = "Collection Two" };
+
+        var queriedBookmark = new Raindrop
+        {
+            Id = 10,
+            Tags = ["unique-tag"],
+            Collection = new IdRef { Id = collection1.Id }
+        };
+        var otherBookmark = new Raindrop
+        {
+            Id = 20,
+            Tags = ["unique-tag"],
+            Collection = new IdRef { Id = collection2.Id }
+        };
+
+        SetupLibrary([queriedBookmark, otherBookmark]);
+
+        var suggestions = await _service.SuggestAsync(queriedBookmark, [collection1, collection2], 2, CancellationToken.None);
+
+        Assert.Single(suggestions);
+        Assert.Equal(collection2.Id, suggestions[0].Collection.Id);
+    }
+
+    [Fact]
+    public async Task SuggestAsync_ExcludesQueriedBookmarkFromOwnTrainingDocument_LexicalSignal()
+    {
+        var collection1 = new Collection { Id = 1, Title = "Alpha" };
+        var collection2 = new Collection { Id = 2, Title = "Beta" };
+
+        var queriedBookmark = new Raindrop
+        {
+            Id = 10,
+            Title = "Quantum Computing Guide",
+            Collection = new IdRef { Id = collection1.Id }
+        };
+        var otherBookmark = new Raindrop
+        {
+            Id = 20,
+            Title = "Quantum Computing Basics",
+            Collection = new IdRef { Id = collection2.Id }
+        };
+
+        SetupLibrary([queriedBookmark, otherBookmark]);
+
+        var suggestions = await _service.SuggestAsync(queriedBookmark, [collection1, collection2], 2, CancellationToken.None);
+
+        Assert.Single(suggestions);
+        Assert.Equal(collection2.Id, suggestions[0].Collection.Id);
+    }
+
+    [Fact]
+    public async Task SuggestAsync_DoesNotExcludeWhenBookmarkIdIsZeroOrDifferent()
+    {
+        var collection1 = new Collection { Id = 1, Title = "Alpha" };
+        var collection2 = new Collection { Id = 2, Title = "Beta" };
+
+        var storedBookmark = new Raindrop
+        {
+            Id = 10,
+            Title = "Quantum Computing Guide",
+            Collection = new IdRef { Id = collection1.Id }
+        };
+
+        SetupLibrary([storedBookmark]);
+
+        var newBookmarkQuery = new Raindrop
+        {
+            Id = 0,
+            Title = "Quantum Computing Guide"
+        };
+
+        var suggestions = await _service.SuggestAsync(newBookmarkQuery, [collection1, collection2], 2, CancellationToken.None);
+
+        Assert.Single(suggestions);
+        Assert.Equal(collection1.Id, suggestions[0].Collection.Id);
+    }
+
     private void SetupLibrary(IReadOnlyList<Raindrop> bookmarks)
     {
         _api.Setup(api => api.ListAsync(0, null, null, 0, 50, true, It.IsAny<CancellationToken>()))

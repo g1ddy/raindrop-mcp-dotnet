@@ -42,10 +42,12 @@ internal sealed partial class CollectionSuggestionService(
         var queryTags = NormalizeTags(bookmark.Tags);
         var queryDomain = Normalize(bookmark.Domain);
 
+        index.Bookmarks.TryGetValue(bookmark.Id, out var indexedBookmark);
+
         return candidates.Values
             .Select(collection => new CollectionSuggestion(
                 collection,
-                Score(collection.Id, queryTerms, queryTags, queryDomain, index)))
+                Score(collection.Id, queryTerms, queryTags, queryDomain, index, indexedBookmark)))
             .Where(suggestion => suggestion.Score > 0)
             .OrderByDescending(suggestion => suggestion.Score)
             .ThenBy(suggestion => suggestion.Collection.Id)
@@ -62,10 +64,11 @@ internal sealed partial class CollectionSuggestionService(
         var terms = candidates.ToDictionary(
             pair => pair.Key,
             pair => CountTerms(Tokenize(pair.Value.Title, pair.Value.Description)));
-        var tags = candidates.Keys.ToDictionary(id => id, _ => new HashSet<string>(StringComparer.Ordinal));
+        var tags = candidates.Keys.ToDictionary(id => id, _ => new Dictionary<string, int>(StringComparer.Ordinal));
         var domains = candidates.Keys.ToDictionary(id => id, _ => new Dictionary<string, int>(StringComparer.Ordinal));
         var domainTotals = new Dictionary<string, int>(StringComparer.Ordinal);
         var seenBookmarkIds = new HashSet<long>();
+        var indexedBookmarks = new Dictionary<long, IndexedBookmark>();
 
         for (var page = 0; ; page++)
         {
@@ -83,14 +86,31 @@ internal sealed partial class CollectionSuggestionService(
                 if (bookmark.Collection is not { Id: var collectionId } || !candidates.ContainsKey(collectionId))
                     continue;
 
-                AddTermCounts(terms[collectionId], TokenizeBookmark(bookmark));
-                tags[collectionId].UnionWith(NormalizeTags(bookmark.Tags));
+                var bookmarkTerms = TokenizeBookmark(bookmark);
+                var bookmarkTags = NormalizeTags(bookmark.Tags);
+                var bookmarkDomain = Normalize(bookmark.Domain);
 
-                var domain = Normalize(bookmark.Domain);
-                if (domain is null)
-                    continue;
-                Increment(domains[collectionId], domain);
-                Increment(domainTotals, domain);
+                AddTermCounts(terms[collectionId], bookmarkTerms);
+                foreach (var tag in bookmarkTags)
+                {
+                    Increment(tags[collectionId], tag);
+                }
+
+                if (bookmarkDomain is not null)
+                {
+                    Increment(domains[collectionId], bookmarkDomain);
+                    Increment(domainTotals, bookmarkDomain);
+                }
+
+                if (bookmark.Id != 0)
+                {
+                    indexedBookmarks[bookmark.Id] = new IndexedBookmark(
+                        bookmark.Id,
+                        collectionId,
+                        bookmarkTerms,
+                        bookmarkTags,
+                        bookmarkDomain);
+                }
             }
 
             if (response.Items.Count < PageSize || newBookmarks == 0)
@@ -105,7 +125,7 @@ internal sealed partial class CollectionSuggestionService(
         var features = candidates.Keys.ToDictionary(
             id => id,
             id => new CollectionFeatures(terms[id], tags[id], domains[id]));
-        return new CollectionSuggestionIndex(features, documentFrequencies, candidates.Count, domainTotals);
+        return new CollectionSuggestionIndex(features, documentFrequencies, candidates.Count, domainTotals, indexedBookmarks);
     }
 
     private static double Score(
@@ -113,55 +133,151 @@ internal sealed partial class CollectionSuggestionService(
         IReadOnlyDictionary<string, int> queryTerms,
         IReadOnlySet<string> queryTags,
         string? queryDomain,
-        CollectionSuggestionIndex index)
+        CollectionSuggestionIndex index,
+        IndexedBookmark? indexedBookmark)
     {
         if (!index.Collections.TryGetValue(collectionId, out var features))
             return 0;
 
-        var lexical = TfIdfCosine(queryTerms, features.Terms, index.DocumentFrequencies, index.DocumentCount);
-        var tag = Jaccard(queryTags, features.Tags);
-        var domain = queryDomain is not null && index.DomainTotals.TryGetValue(queryDomain, out var total)
-            ? (double)features.Domains.GetValueOrDefault(queryDomain) / total
-            : 0;
+        var isTargetCollection = indexedBookmark != null && collectionId == indexedBookmark.CollectionId;
+
+        var lexical = TfIdfCosine(queryTerms, collectionId, features, index, indexedBookmark);
+        var tag = Jaccard(queryTags, features.Tags, isTargetCollection ? indexedBookmark : null);
+
+        double domain = 0;
+        if (queryDomain is not null && index.DomainTotals.TryGetValue(queryDomain, out var total))
+        {
+            var effectiveTotal = queryDomain == indexedBookmark?.Domain ? total - 1 : total;
+            if (effectiveTotal > 0)
+            {
+                var domainCount = features.Domains.GetValueOrDefault(queryDomain);
+                var effectiveDomainCount = isTargetCollection && queryDomain == indexedBookmark?.Domain
+                    ? domainCount - 1
+                    : domainCount;
+                domain = (double)effectiveDomainCount / effectiveTotal;
+            }
+        }
+
         return LexicalWeight * lexical + TagWeight * tag + DomainWeight * domain;
     }
 
     private static double TfIdfCosine(
         IReadOnlyDictionary<string, int> left,
-        IReadOnlyDictionary<string, int> right,
-        IReadOnlyDictionary<string, int> documentFrequencies,
-        int documentCount)
+        int collectionId,
+        CollectionFeatures features,
+        CollectionSuggestionIndex index,
+        IndexedBookmark? indexedBookmark)
     {
+        var isTargetCollection = indexedBookmark != null && collectionId == indexedBookmark.CollectionId;
+        IReadOnlyDictionary<string, int>? targetTerms = indexedBookmark != null && index.Collections.TryGetValue(indexedBookmark.CollectionId, out var targetFeatures)
+            ? targetFeatures.Terms
+            : null;
+
         double dot = 0, leftMagnitude = 0, rightMagnitude = 0;
+
         foreach (var (term, count) in left)
         {
-            var weight = count * InverseDocumentFrequency(term, documentFrequencies, documentCount);
+            var docFreq = GetEffectiveDocFreq(term, targetTerms, indexedBookmark, index.DocumentFrequencies);
+            var weight = count * InverseDocumentFrequency(term, docFreq, index.DocumentCount);
             leftMagnitude += weight * weight;
-            if (right.TryGetValue(term, out var rightCount))
-                dot += weight * rightCount * InverseDocumentFrequency(term, documentFrequencies, documentCount);
+
+            var rightCount = GetEffectiveRightCount(term, isTargetCollection, features.Terms, indexedBookmark);
+            if (rightCount > 0)
+            {
+                dot += weight * rightCount * InverseDocumentFrequency(term, docFreq, index.DocumentCount);
+            }
         }
 
-        foreach (var (term, count) in right)
+        foreach (var (term, _) in features.Terms)
         {
-            var weight = count * InverseDocumentFrequency(term, documentFrequencies, documentCount);
-            rightMagnitude += weight * weight;
+            var rightCount = GetEffectiveRightCount(term, isTargetCollection, features.Terms, indexedBookmark);
+            if (rightCount > 0)
+            {
+                var docFreq = GetEffectiveDocFreq(term, targetTerms, indexedBookmark, index.DocumentFrequencies);
+                var weight = rightCount * InverseDocumentFrequency(term, docFreq, index.DocumentCount);
+                rightMagnitude += weight * weight;
+            }
         }
 
         return leftMagnitude == 0 || rightMagnitude == 0 ? 0 : dot / Math.Sqrt(leftMagnitude * rightMagnitude);
     }
 
+    private static int GetEffectiveRightCount(
+        string term,
+        bool isTargetCollection,
+        IReadOnlyDictionary<string, int> terms,
+        IndexedBookmark? indexedBookmark)
+    {
+        var count = terms.GetValueOrDefault(term);
+        if (isTargetCollection && indexedBookmark != null)
+        {
+            count -= indexedBookmark.Terms.GetValueOrDefault(term);
+        }
+        return Math.Max(0, count);
+    }
+
+    private static int GetEffectiveDocFreq(
+        string term,
+        IReadOnlyDictionary<string, int>? targetTerms,
+        IndexedBookmark? indexedBookmark,
+        IReadOnlyDictionary<string, int> documentFrequencies)
+    {
+        var docFreq = documentFrequencies.GetValueOrDefault(term);
+        if (indexedBookmark != null && targetTerms != null)
+        {
+            var totalInTarget = targetTerms.GetValueOrDefault(term);
+            var inBookmark = indexedBookmark.Terms.GetValueOrDefault(term);
+            if (totalInTarget > 0 && totalInTarget == inBookmark)
+            {
+                docFreq--;
+            }
+        }
+        return Math.Max(0, docFreq);
+    }
+
     private static double InverseDocumentFrequency(
         string term,
-        IReadOnlyDictionary<string, int> documentFrequencies,
+        int docFreq,
         int documentCount) =>
-        Math.Log((documentCount + 1d) / (documentFrequencies.GetValueOrDefault(term) + 1d)) + 1d;
+        Math.Log((documentCount + 1d) / (docFreq + 1d)) + 1d;
 
-    private static double Jaccard(IReadOnlySet<string> left, IReadOnlySet<string> right)
+    private static double Jaccard(
+        IReadOnlySet<string> left,
+        IReadOnlyDictionary<string, int> right,
+        IndexedBookmark? targetIndexedBookmark)
     {
         if (left.Count == 0 || right.Count == 0)
             return 0;
-        var intersection = left.Count(right.Contains);
-        return (double)intersection / (left.Count + right.Count - intersection);
+
+        int effectiveRightCount = 0;
+        int intersection = 0;
+
+        if (targetIndexedBookmark is null)
+        {
+            effectiveRightCount = right.Count;
+            intersection = left.Count(right.ContainsKey);
+        }
+        else
+        {
+            foreach (var (tag, count) in right)
+            {
+                var remainingCount = count - (targetIndexedBookmark.Tags.Contains(tag) ? 1 : 0);
+                if (remainingCount > 0)
+                {
+                    effectiveRightCount++;
+                    if (left.Contains(tag))
+                    {
+                        intersection++;
+                    }
+                }
+            }
+        }
+
+        if (effectiveRightCount == 0)
+            return 0;
+
+        var union = left.Count + effectiveRightCount - intersection;
+        return union <= 0 ? 0 : (double)intersection / union;
     }
 
     private static Dictionary<string, int> TokenizeBookmark(Raindrop bookmark) =>
