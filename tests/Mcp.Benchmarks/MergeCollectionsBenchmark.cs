@@ -1,5 +1,6 @@
 using BenchmarkDotNet.Attributes;
 using Mcp.Collections;
+using Mcp.Collections.Suggestions;
 using Mcp.Raindrops;
 using Mcp.Common;
 using Moq;
@@ -37,7 +38,12 @@ public class MergeCollectionsBenchmark : RaindropBenchmarkBase
             .ReturnsAsync(new SuccessResponse(true));
 
         var options = Options.Create(new RaindropOptions { ApiToken = "benchmark-token" });
-        _tools = new CollectionsTools(_collectionsApiMock.Object, _raindropsApiMock.Object, new RaindropCacheService(), options);
+        _tools = new CollectionsTools(
+            _collectionsApiMock.Object,
+            _raindropsApiMock.Object,
+            new RaindropCacheService(),
+            Mock.Of<ICollectionSuggestionService>(),
+            options);
     }
 
     [Benchmark]

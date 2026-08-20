@@ -1,4 +1,5 @@
 using Mcp.Collections;
+using Mcp.Collections.Suggestions;
 using Mcp.Raindrops;
 using Mcp.Common;
 using ModelContextProtocol.Server;
@@ -19,6 +20,7 @@ public class CollectionsCachingTests : IDisposable
     private readonly Mock<ICollectionsApi> _collectionsApiMock;
     private readonly Mock<IRaindropsApi> _raindropsApiMock;
     private readonly Mock<McpServer> _mcpServerMock;
+    private readonly Mock<ICollectionSuggestionService> _suggestionServiceMock;
     private readonly RaindropCacheService _cacheService;
     private readonly CollectionsTools _tools;
 
@@ -27,10 +29,16 @@ public class CollectionsCachingTests : IDisposable
         _collectionsApiMock = new Mock<ICollectionsApi>();
         _raindropsApiMock = new Mock<IRaindropsApi>();
         _mcpServerMock = new Mock<McpServer>();
+        _suggestionServiceMock = new Mock<ICollectionSuggestionService>();
         _cacheService = new RaindropCacheService();
 
         var options = Options.Create(new RaindropOptions { ApiToken = "dummy-token" });
-        _tools = new CollectionsTools(_collectionsApiMock.Object, _raindropsApiMock.Object, _cacheService, options);
+        _tools = new CollectionsTools(
+            _collectionsApiMock.Object,
+            _raindropsApiMock.Object,
+            _cacheService,
+            _suggestionServiceMock.Object,
+            options);
 
         // Setup default responses
         _collectionsApiMock.Setup(x => x.ListAsync(It.IsAny<CancellationToken>()))
@@ -42,22 +50,17 @@ public class CollectionsCachingTests : IDisposable
         _raindropsApiMock.Setup(x => x.GetAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ItemResponse<Raindrop>(true, new Raindrop { Id = 123, Title = "Test", Link = "url" }));
 
+        _suggestionServiceMock.Setup(x => x.SuggestAsync(
+                It.IsAny<Raindrop>(),
+                It.IsAny<IReadOnlyCollection<Collection>>(),
+                3,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync([new CollectionSuggestion(new Collection { Id = 1, Title = "Tech" }, 1)]);
         _mcpServerMock.Setup(x => x.ClientCapabilities)
             .Returns(new ClientCapabilities
             {
-                Sampling = new SamplingCapability(),
                 Elicitation = new ElicitationCapability { Form = new FormElicitationCapability() }
             });
-
-        var llmResponse = new CreateMessageResult
-        {
-            Role = Role.Assistant,
-            Content = [new TextContentBlock { Text = "Tech" }],
-            Model = "test-model"
-        };
-
-        _mcpServerMock.Setup(x => x.SendRequestAsync(It.Is<JsonRpcRequest>(r => r.Method == "sampling/createMessage"), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new JsonRpcResponse { Result = JsonSerializer.SerializeToNode(llmResponse) });
 
         var elicitResult = new ElicitResult
         {

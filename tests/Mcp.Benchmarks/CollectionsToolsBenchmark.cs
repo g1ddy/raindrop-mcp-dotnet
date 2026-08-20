@@ -1,5 +1,6 @@
 using BenchmarkDotNet.Attributes;
 using Mcp.Collections;
+using Mcp.Collections.Suggestions;
 using Mcp.Raindrops;
 using Mcp.Common;
 using ModelContextProtocol.Server;
@@ -23,6 +24,7 @@ public class CollectionsToolsBenchmark : RaindropBenchmarkBase
     private Mock<McpServer> _mcpServerMock = null!;
     private Mock<ICollectionsApi> _collectionsApiMock = null!;
     private Mock<IRaindropsApi> _raindropsApiMock = null!;
+    private Mock<ICollectionSuggestionService> _suggestionServiceMock = null!;
     private List<Collection> _largeCollectionList = null!;
 
     [Params(100, 1000)]
@@ -35,6 +37,7 @@ public class CollectionsToolsBenchmark : RaindropBenchmarkBase
         _collectionsApiMock = new Mock<ICollectionsApi>();
         _raindropsApiMock = new Mock<IRaindropsApi>();
         _mcpServerMock = new Mock<McpServer>();
+        _suggestionServiceMock = new Mock<ICollectionSuggestionService>();
 
         // Generate a large list of collections
         _largeCollectionList = new List<Collection>();
@@ -59,26 +62,39 @@ public class CollectionsToolsBenchmark : RaindropBenchmarkBase
             .ReturnsAsync(new ItemsResponse<Collection>(true, _largeCollectionList));
 
         // Setup McpServer
-         _mcpServerMock.Setup(x => x.ClientCapabilities)
+        _mcpServerMock.Setup(x => x.ClientCapabilities)
             .Returns(new ClientCapabilities
             {
-                Sampling = new SamplingCapability(),
                 Elicitation = new ElicitationCapability { Form = new FormElicitationCapability() }
             });
 
-        // Mock SendRequestAsync to return a valid response
-        var llmResponse = new CreateMessageResult
+        _suggestionServiceMock.Setup(x => x.SuggestAsync(
+                It.IsAny<Raindrop>(),
+                It.IsAny<IReadOnlyCollection<Collection>>(),
+                3,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(
+            [
+                new CollectionSuggestion(new Collection { Id = 1, Title = "Collection 1" }, 1),
+                new CollectionSuggestion(new Collection { Id = 2, Title = "Collection 2" }, 0.9),
+                new CollectionSuggestion(new Collection { Id = 3, Title = "Collection 3" }, 0.8)
+            ]);
+
+        var elicitResult = new ElicitResult
         {
-            Role = Role.Assistant,
-            Content = [new TextContentBlock { Text = "Collection 1 | Collection 2 | Collection 3" }],
-            Model = "test-model"
+            Action = "decline"
         };
 
         _mcpServerMock.Setup(x => x.SendRequestAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()))
-             .ReturnsAsync(new JsonRpcResponse { Result = JsonSerializer.SerializeToNode(llmResponse) });
+             .ReturnsAsync(new JsonRpcResponse { Result = JsonSerializer.SerializeToNode(elicitResult) });
 
         var options = Options.Create(new RaindropOptions { ApiToken = "benchmark-token" });
-        _tools = new CollectionsTools(_collectionsApiMock.Object, _raindropsApiMock.Object, new RaindropCacheService(), options);
+        _tools = new CollectionsTools(
+            _collectionsApiMock.Object,
+            _raindropsApiMock.Object,
+            new RaindropCacheService(),
+            _suggestionServiceMock.Object,
+            options);
     }
 
     [Benchmark]

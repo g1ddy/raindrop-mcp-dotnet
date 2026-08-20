@@ -5,6 +5,7 @@ using Refit;
 using System.Net.Http.Headers;
 using Mcp.Common;
 using Mcp.Collections;
+using Mcp.Collections.Suggestions;
 using Mcp.Raindrops;
 using Mcp.Highlights;
 using Mcp.Filters;
@@ -42,6 +43,8 @@ public static class RaindropServiceCollectionExtensions
 
         services.AddSingleton<RaindropClientConfig>();
         services.AddSingleton<IRaindropCacheService, RaindropCacheService>();
+        services.AddSingleton<CollectionSuggestionIndexCache>();
+        services.AddTransient<ICollectionSuggestionService, CollectionSuggestionService>();
         services.AddTransient<ILibraryAnalyticsService, LibraryAnalyticsService>();
 
         var settings = new RefitSettings
