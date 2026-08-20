@@ -10,6 +10,17 @@
 
 MCP Tasks remain experimental. This document defines the behavior implemented through the official .NET SDK Tasks extension so the library analytics engine does not invent a proprietary task protocol.
 
+## Related planning documents
+
+This document is one of four focused specifications:
+
+1. **Long-running Tasks (this document):** comprehensive `analyze_library` execution, lifecycle, storage, and conformance.
+2. **[Analytics dashboard](ANALYTICS_DASHBOARD.md):** the human-facing analytics result and static dashboard App.
+3. **[MCP Apps architecture](MCP_APPS.md):** shared resource, security, lifecycle, isolation, and packaging rules for every App.
+4. **[Link health](LINK_HEALTH.md):** deferred bookmark-health design and active-probing threat model.
+
+The documents deliberately separate execution from presentation. Tasks must work without an App, and Apps must not assume that they can poll or unwrap a Task.
+
 ## Objective
 
 Allow an MCP client to start a complete Raindrop library analysis without holding open a normal tool call. The server paginates through the selected bookmark scope, aggregates collection, tag, and domain statistics, supports cooperative cancellation, and retains the final `CallToolResult` for deferred retrieval. Factual progress updates are planned; SDK 2.2.0 currently relies on polling and does not provide server-push task status notifications.
@@ -21,6 +32,46 @@ analyze_library(collectionId?)
 ```
 
 The tool expresses user intent. Raindrop pagination, page size, retries, task TTL, polling, concurrency, and server safety limits are implementation details and are not tool arguments.
+
+## Design
+
+- Keep `analyze_library` model-facing and optionally task-backed.
+- Analyze the complete selected scope up to the configurable 1,000-page default safety limit rather than exposing pagination controls to the model.
+- Aggregate incrementally and retain bookmark IDs only where needed for deduplication.
+- Return the same text and structured result shape for synchronous and task-backed execution.
+- Report factual counts and phases; do not invent progress percentages without a reliable total.
+- Preserve successful pages as an explicitly partial report after exhausted API retries, while propagating cancellation.
+
+## Architecture
+
+```text
+tools/call analyze_library
+        |
+        +-- ordinary call ----------+
+        |                           |
+        +-- task opt-in -> SDK task | store -> tasks/get / tasks/cancel
+                                    |
+                                    v
+                         ILibraryAnalyticsService
+                                    |
+                   collections + sequential bookmark pages
+                                    |
+                                    v
+                         LibraryAnalyticsReport
+```
+
+The analytics service is independent of MCP Tasks protocol types. `WithTasks` owns protocol negotiation and task lifecycle adaptation; the service owns scope traversal, aggregation, cancellation checkpoints, and completeness metadata. The current in-memory store is a single-process implementation, not a durability guarantee.
+
+## Remaining work summary
+
+The detailed checklist appears under [Implementation checklist](#implementation-checklist). Remaining work falls into six groups:
+
+1. Bound diagnostics/results and add progress and deadline abstractions.
+2. Complete hierarchy, pagination, cancellation, normalization, and result-size tests.
+3. Verify `2026-07-28` Tasks negotiation and wire conformance with target hosts.
+4. Decide which task-store controls are SDK verification versus requirements for a future custom production store.
+5. Add task lifecycle, race, expiration, isolation, and secret-sanitization tests.
+6. Benchmark realistic libraries and tune limits, retries, deadlines, and polling.
 
 ## Non-goals
 
