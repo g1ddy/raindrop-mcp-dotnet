@@ -1,9 +1,9 @@
 using System.Buffers;
 using System.ComponentModel;
-using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 using Mcp.Common;
+using Mcp.Collections.Suggestions;
 using Mcp.Raindrops;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
@@ -11,15 +11,18 @@ using ModelContextProtocol.Server;
 namespace Mcp.Collections;
 
 [McpServerToolType]
-public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, IRaindropCacheService cacheService, IOptions<RaindropOptions> options) :
+public class CollectionsTools(
+    ICollectionsApi api,
+    IRaindropsApi raindropsApi,
+    IRaindropCacheService cacheService,
+    ICollectionSuggestionService suggestionService,
+    IOptions<RaindropOptions> options) :
     RaindropToolBase<ICollectionsApi>(api)
 {
-    private static readonly char[] _separators = ['|', '\n'];
-    private static readonly char[] _trimChars = ['-', '*', ' ', '\'', '"', '.'];
     private readonly IRaindropsApi _raindropsApi = raindropsApi;
     private readonly IRaindropCacheService _cacheService = cacheService;
+    private readonly ICollectionSuggestionService _suggestionService = suggestionService;
     private readonly string _cacheKey = options.Value.ApiToken;
-    private const int DefaultMaxTokens = 1000;
 
     private Task<ItemsResponse<Collection>> GetCachedCollectionsAsync(CancellationToken cancellationToken)
         => _cacheService.GetCollectionsAsync(_cacheKey, Api.ListAsync, cancellationToken);
@@ -45,6 +48,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, I
         if (response.Result)
         {
             await _cacheService.InvalidateCollectionsAsync(_cacheKey, cancellationToken);
+            _suggestionService.Invalidate();
         }
         return response;
     }
@@ -59,6 +63,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, I
         if (response.Result)
         {
             await _cacheService.InvalidateCollectionsAsync(_cacheKey, cancellationToken);
+            _suggestionService.Invalidate();
         }
         return response;
     }
@@ -71,6 +76,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, I
         if (response.Result)
         {
             await _cacheService.InvalidateCollectionsAsync(_cacheKey, cancellationToken);
+            _suggestionService.Invalidate();
         }
         return response;
     }
@@ -167,6 +173,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, I
         if (response.Result)
         {
             await _cacheService.InvalidateCollectionsAsync(_cacheKey, cancellationToken);
+            _suggestionService.Invalidate();
         }
         return response;
     }
@@ -196,98 +203,23 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, I
         {
             return new SuccessResponse(false);
         }
-        var collectionTitles = new Dictionary<string, Collection>(StringComparer.OrdinalIgnoreCase);
-        var promptBuilder = new StringBuilder();
-
-        var filteredCollections = collectionsResponse.Items
+        var candidateCollections = collectionsResponse.Items
             .Where(c => !string.IsNullOrEmpty(c.Title))
             .Where(c => c.Parent == null) // Filter out child collections
-            .OrderBy(c => c.Count)
-            .Take(25);
-
-        foreach (var c in filteredCollections)
-        {
-            // We've already filtered for null/empty title above
-            var title = Sanitize(c.Title!);
-            if (collectionTitles.TryAdd(title, c))
-            {
-                if (promptBuilder.Length > 0)
-                {
-                    promptBuilder.Append('\n');
-                }
-                promptBuilder.Append("- ");
-                promptBuilder.Append(title);
-            }
-        }
+            .ToList();
+        var collectionTitles = candidateCollections
+            .GroupBy(c => Sanitize(c.Title), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
 
         if (collectionTitles.Count == 0)
         {
             return new SuccessResponse(false);
         }
+        candidateCollections = collectionTitles.Values.ToList();
 
-        // 3. Use the LLM to get the top 3 suggestions
-        var prompt = $"""
-            Given the following bookmark:
-            - Title: {Sanitize(bookmark.Title)}
-            - URL: {Sanitize(bookmark.Link)}
-            - Excerpt: {Sanitize(bookmark.Excerpt)}
-
-            And the following list of collections:
-            {promptBuilder}
-
-            Please suggest the top 3 most relevant collections for this bookmark.
-            Return ONLY a pipe-separated list of the collection titles, exactly as they appear in the list above.
-            Do not include any explanations, numbering, or bullet points.
-            Example: Title1 | Title2 | Title3
-        """;
-
-        var sampleRequest = new CreateMessageRequestParams
-        {
-            MaxTokens = DefaultMaxTokens,
-            Messages =
-            [
-                new SamplingMessage
-                {
-                    Role = Role.User,
-                    Content = [new TextContentBlock { Text = prompt }]
-                }
-            ]
-        };
-
-        var llmResponse = await server.SampleAsync(sampleRequest, cancellationToken);
-        if (llmResponse?.Content?.FirstOrDefault() is not TextContentBlock textContent || string.IsNullOrWhiteSpace(textContent.Text))
-        {
-            return new SuccessResponse(false);
-        }
-
-        var suggestedTitles = new List<string>(3);
-        var altLookup = collectionTitles.GetAlternateLookup<ReadOnlySpan<char>>();
-        var textSpan = textContent.Text.AsSpan();
-
-        foreach (var range in textSpan.SplitAny(_separators))
-        {
-            var span = textSpan[range].Trim(_trimChars);
-            if (span.IsEmpty) continue;
-
-            if (altLookup.TryGetValue(span, out var collection))
-            {
-                bool isDistinct = true;
-                foreach (var t in suggestedTitles)
-                {
-                    if (span.SequenceEqual(t.AsSpan()))
-                    {
-                        isDistinct = false;
-                        break;
-                    }
-                }
-
-                if (isDistinct) // Ensure distinct
-                {
-                    suggestedTitles.Add(span.ToString());
-                    if (suggestedTitles.Count == 3) break;
-                }
-            }
-        }
+        // 3. Rank collections using deterministic lexical, tag, and domain signals.
+        var suggestions = await _suggestionService.SuggestAsync(bookmark, candidateCollections, 3, cancellationToken);
+        var suggestedTitles = suggestions.Select(suggestion => Sanitize(suggestion.Collection.Title)).ToList();
 
         if (suggestedTitles.Count == 0)
         {
@@ -337,6 +269,7 @@ public class CollectionsTools(ICollectionsApi api, IRaindropsApi raindropsApi, I
         if (updateResponse.Result)
         {
             await _cacheService.InvalidateCollectionsAsync(_cacheKey, cancellationToken);
+            _suggestionService.Invalidate();
         }
         return new SuccessResponse(updateResponse.Result);
     }

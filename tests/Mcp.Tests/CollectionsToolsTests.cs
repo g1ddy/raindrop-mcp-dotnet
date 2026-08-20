@@ -1,34 +1,39 @@
-using Mcp.Collections;
-using Mcp.Raindrops;
-using Mcp.Common;
-using ModelContextProtocol.Server;
-using ModelContextProtocol.Protocol;
-using Moq;
-using Xunit;
 using System.Text.Json;
-using Xunit.Abstractions;
 using System.Text.Json.Nodes;
+using Mcp.Collections;
+using Mcp.Collections.Suggestions;
+using Mcp.Common;
+using Mcp.Raindrops;
 using Microsoft.Extensions.Options;
+using ModelContextProtocol.Protocol;
+using ModelContextProtocol.Server;
+using Moq;
 
 namespace Mcp.Tests;
 
 [Collection("Sequential")]
 public class CollectionsToolsTests
 {
-    private readonly Mock<ICollectionsApi> _collectionsApiMock;
-    private readonly Mock<IRaindropsApi> _raindropsApiMock;
-    private readonly Mock<McpServer> _mcpServerMock;
+    private readonly Mock<ICollectionsApi> _collectionsApiMock = new();
+    private readonly Mock<IRaindropsApi> _raindropsApiMock = new();
+    private readonly Mock<ICollectionSuggestionService> _suggestionServiceMock = new();
+    private readonly Mock<McpServer> _mcpServerMock = new();
     private readonly CollectionsTools _tools;
-    private readonly ITestOutputHelper _output;
 
-    public CollectionsToolsTests(ITestOutputHelper output)
+    public CollectionsToolsTests()
     {
-        _output = output;
-        _collectionsApiMock = new Mock<ICollectionsApi>();
-        _raindropsApiMock = new Mock<IRaindropsApi>();
-        _mcpServerMock = new Mock<McpServer>();
         var options = Options.Create(new RaindropOptions { ApiToken = "dummy-token" });
-        _tools = new CollectionsTools(_collectionsApiMock.Object, _raindropsApiMock.Object, new RaindropCacheService(), options);
+        _tools = new CollectionsTools(
+            _collectionsApiMock.Object,
+            _raindropsApiMock.Object,
+            new RaindropCacheService(),
+            _suggestionServiceMock.Object,
+            options);
+        _mcpServerMock.Setup(server => server.ClientCapabilities)
+            .Returns(new ClientCapabilities
+            {
+                Elicitation = new ElicitationCapability { Form = new FormElicitationCapability() }
+            });
     }
 
     [Theory]
@@ -44,274 +49,97 @@ public class CollectionsToolsTests
     [InlineData("Line\u2029Break", "Line Break")]
     [InlineData(null, "")]
     [InlineData("", "")]
-    public void Sanitize_HandlesVariousCharacters(string? input, string expected)
-    {
-        // Act
-        var result = CollectionsTools.Sanitize(input);
+    public void Sanitize_HandlesVariousCharacters(string? input, string expected) =>
+        Assert.Equal(expected, CollectionsTools.Sanitize(input));
 
-        // Assert
-        Assert.Equal(expected, result);
+    [Fact]
+    public async Task SuggestCollectionForBookmarkAsync_ReturnsFalse_WhenClassifierHasNoSuggestions()
+    {
+        var bookmark = ArrangeBookmarkAndCollections();
+        _suggestionServiceMock
+            .Setup(service => service.SuggestAsync(bookmark, It.IsAny<IReadOnlyCollection<Collection>>(), 3, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([]);
+
+        var result = await _tools.SuggestCollectionForBookmarkAsync(_mcpServerMock.Object, bookmark.Id, CancellationToken.None);
+
+        Assert.False(result.Result);
+        _mcpServerMock.Verify(
+            server => server.SendRequestAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()),
+            Times.Never);
     }
 
     [Fact]
-    public async Task SuggestCollectionForBookmarkAsync_ReturnsFalse_WhenParsingFails()
+    public async Task SuggestCollectionForBookmarkAsync_MovesBookmarkToAcceptedSuggestion()
     {
-        // Arrange
-        long bookmarkId = 123;
-        var bookmark = new Raindrop { Id = bookmarkId, Title = "Test", Link = "url", Excerpt = "excerpt" };
-
-        _raindropsApiMock.Setup(x => x.GetAsync(bookmarkId, It.IsAny<CancellationToken>()))
+        var bookmark = ArrangeBookmarkAndCollections();
+        var tech = new Collection { Id = 1, Title = "Science, Tech & Nature" };
+        _suggestionServiceMock
+            .Setup(service => service.SuggestAsync(bookmark, It.IsAny<IReadOnlyCollection<Collection>>(), 3, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([new CollectionSuggestion(tech, 0.9)]);
+        SetupElicitation("Science, Tech & Nature");
+        _raindropsApiMock
+            .Setup(api => api.UpdateAsync(bookmark.Id, It.IsAny<Raindrop>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ItemResponse<Raindrop>(true, bookmark));
 
-        _collectionsApiMock.Setup(x => x.ListAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ItemsResponse<Collection>(true, new List<Collection>
-            {
-                new Collection { Id = 1, Title = "Tech" }
-            }));
+        var result = await _tools.SuggestCollectionForBookmarkAsync(_mcpServerMock.Object, bookmark.Id, CancellationToken.None);
 
-        var llmResponse = new CreateMessageResult
-        {
-            Role = Role.Assistant,
-            Content = [new TextContentBlock { Text = "This is a sentence, not a list." }],
-            Model = "test-model"
-        };
+        Assert.True(result.Result);
+        _raindropsApiMock.Verify(api => api.UpdateAsync(
+            bookmark.Id,
+            It.Is<Raindrop>(update => update.Collection != null && update.Collection.Id == tech.Id),
+            It.IsAny<CancellationToken>()));
+        _suggestionServiceMock.Verify(service => service.Invalidate(), Times.Once);
+    }
 
-        // Mock ClientCapabilities to support sampling
-        _mcpServerMock.Setup(x => x.ClientCapabilities)
-            .Returns(new ClientCapabilities
-            {
-                Sampling = new SamplingCapability(),
-                Elicitation = new ElicitationCapability { Form = new FormElicitationCapability() }
-            });
+    [Fact]
+    public async Task SuggestCollectionForBookmarkAsync_DoesNotMoveBookmarkWhenUserDeclines()
+    {
+        var bookmark = ArrangeBookmarkAndCollections();
+        var tech = new Collection { Id = 1, Title = "Tech" };
+        _suggestionServiceMock
+            .Setup(service => service.SuggestAsync(bookmark, It.IsAny<IReadOnlyCollection<Collection>>(), 3, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([new CollectionSuggestion(tech, 0.8)]);
+        SetupElicitation(null);
 
-        // Mock SendRequestAsync to return the LLM response
-        _mcpServerMock.Setup(x => x.SendRequestAsync(It.Is<JsonRpcRequest>(r => r.Method == "sampling/createMessage"), It.IsAny<CancellationToken>()))
+        var result = await _tools.SuggestCollectionForBookmarkAsync(_mcpServerMock.Object, bookmark.Id, CancellationToken.None);
+
+        Assert.False(result.Result);
+        _raindropsApiMock.Verify(
+            api => api.UpdateAsync(It.IsAny<long>(), It.IsAny<Raindrop>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    private Raindrop ArrangeBookmarkAndCollections()
+    {
+        var bookmark = new Raindrop { Id = 123, Title = "Test", Link = "https://example.com" };
+        _raindropsApiMock.Setup(api => api.GetAsync(bookmark.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ItemResponse<Raindrop>(true, bookmark));
+        _collectionsApiMock.Setup(api => api.ListAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ItemsResponse<Collection>(true,
+            [
+                new Collection { Id = 1, Title = "Science, Tech & Nature" },
+                new Collection { Id = 2, Title = "News" }
+            ]));
+        return bookmark;
+    }
+
+    private void SetupElicitation(string? selectedCollection)
+    {
+        _mcpServerMock.Setup(server => server.SendRequestAsync(
+                It.Is<JsonRpcRequest>(request => request.Method == "elicitation/create"),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(new JsonRpcResponse
             {
-                Result = JsonSerializer.SerializeToNode(llmResponse)
-            });
-
-        // Act
-        var result = await _tools.SuggestCollectionForBookmarkAsync(_mcpServerMock.Object, bookmarkId, CancellationToken.None);
-
-        // Assert
-        Assert.False(result.Result);
-    }
-
-    [Fact]
-    public async Task SuggestCollectionForBookmarkAsync_HandlesBulletPoints()
-    {
-        // Arrange
-        long bookmarkId = 123;
-        var bookmark = new Raindrop { Id = bookmarkId, Title = "Test", Link = "url", Excerpt = "excerpt" };
-
-        _raindropsApiMock.Setup(x => x.GetAsync(bookmarkId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ItemResponse<Raindrop>(true, bookmark));
-
-        _collectionsApiMock.Setup(x => x.ListAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ItemsResponse<Collection>(true, new List<Collection>
-            {
-                new Collection { Id = 1, Title = "Tech" },
-                new Collection { Id = 2, Title = "News" }
-            }));
-
-        var llmResponse = new CreateMessageResult
-        {
-            Role = Role.Assistant,
-            Content = [new TextContentBlock { Text = "- Tech\n- News" }],
-            Model = "test-model"
-        };
-
-        _mcpServerMock.Setup(x => x.ClientCapabilities)
-            .Returns(new ClientCapabilities
-            {
-                Sampling = new SamplingCapability(),
-                Elicitation = new ElicitationCapability { Form = new FormElicitationCapability() }
-            });
-
-        // Spy on SendRequestAsync
-        _mcpServerMock.Setup(x => x.SendRequestAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((JsonRpcRequest r, CancellationToken t) =>
-            {
-                _output.WriteLine($"Request Method: {r.Method}");
-
-                if (r.Method == "sampling/createMessage")
+                Result = JsonSerializer.SerializeToNode(new ElicitResult
                 {
-                    return new JsonRpcResponse
-                    {
-                        Result = JsonSerializer.SerializeToNode(llmResponse)
-                    };
-                }
-
-                if (r.Method == "elicitation/create") // or whatever the method was
-                {
-                    var elicitResult = new ElicitResult
-                    {
-                        Action = "accept",
-                        Content = new Dictionary<string, JsonElement>
+                    Action = selectedCollection is null ? "decline" : "accept",
+                    Content = selectedCollection is null
+                        ? null
+                        : new Dictionary<string, JsonElement>
                         {
-                            ["collectionName"] = JsonSerializer.SerializeToElement("Tech")
+                            ["collectionName"] = JsonSerializer.SerializeToElement(selectedCollection)
                         }
-                    };
-                    return new JsonRpcResponse
-                    {
-                        Result = JsonSerializer.SerializeToNode(elicitResult)
-                    };
-                }
-
-                // Return empty response for others to avoid NRE if possible, but clean inspection is goal.
-                return new JsonRpcResponse { Result = JsonNode.Parse("{}") };
+                })
             });
-
-        _raindropsApiMock.Setup(x => x.UpdateAsync(bookmarkId, It.IsAny<Raindrop>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ItemResponse<Raindrop>(true, bookmark));
-
-        // Act
-        var result = await _tools.SuggestCollectionForBookmarkAsync(_mcpServerMock.Object, bookmarkId, CancellationToken.None);
-
-        // Assert
-        Assert.True(result.Result);
-    }
-
-    [Fact]
-    public async Task SuggestCollectionForBookmarkAsync_HandlesPipeSeparatedList()
-    {
-        // Arrange
-        long bookmarkId = 123;
-        var bookmark = new Raindrop { Id = bookmarkId, Title = "Test", Link = "url", Excerpt = "excerpt" };
-
-        _raindropsApiMock.Setup(x => x.GetAsync(bookmarkId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ItemResponse<Raindrop>(true, bookmark));
-
-        _collectionsApiMock.Setup(x => x.ListAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ItemsResponse<Collection>(true, new List<Collection>
-            {
-                new Collection { Id = 1, Title = "Tech" },
-                new Collection { Id = 2, Title = "News" }
-            }));
-
-        var llmResponse = new CreateMessageResult
-        {
-            Role = Role.Assistant,
-            Content = [new TextContentBlock { Text = "Tech | News" }],
-            Model = "test-model"
-        };
-
-        _mcpServerMock.Setup(x => x.ClientCapabilities)
-            .Returns(new ClientCapabilities
-            {
-                Sampling = new SamplingCapability(),
-                Elicitation = new ElicitationCapability { Form = new FormElicitationCapability() }
-            });
-
-        _mcpServerMock.Setup(x => x.SendRequestAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((JsonRpcRequest r, CancellationToken t) =>
-            {
-                if (r.Method == "sampling/createMessage")
-                {
-                    return new JsonRpcResponse
-                    {
-                        Result = JsonSerializer.SerializeToNode(llmResponse)
-                    };
-                }
-
-                if (r.Method == "elicitation/create")
-                {
-                    var elicitResult = new ElicitResult
-                    {
-                        Action = "accept",
-                        Content = new Dictionary<string, JsonElement>
-                        {
-                            ["collectionName"] = JsonSerializer.SerializeToElement("Tech")
-                        }
-                    };
-                    return new JsonRpcResponse
-                    {
-                        Result = JsonSerializer.SerializeToNode(elicitResult)
-                    };
-                }
-
-                return new JsonRpcResponse { Result = JsonNode.Parse("{}") };
-            });
-
-        _raindropsApiMock.Setup(x => x.UpdateAsync(bookmarkId, It.IsAny<Raindrop>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ItemResponse<Raindrop>(true, bookmark));
-
-        // Act
-        var result = await _tools.SuggestCollectionForBookmarkAsync(_mcpServerMock.Object, bookmarkId, CancellationToken.None);
-
-        // Assert
-        Assert.True(result.Result);
-    }
-
-    [Fact]
-    public async Task SuggestCollectionForBookmarkAsync_HandlesCollectionWithComma()
-    {
-        // Arrange
-        long bookmarkId = 123;
-        var bookmark = new Raindrop { Id = bookmarkId, Title = "Test", Link = "url", Excerpt = "excerpt" };
-
-        _raindropsApiMock.Setup(x => x.GetAsync(bookmarkId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ItemResponse<Raindrop>(true, bookmark));
-
-        _collectionsApiMock.Setup(x => x.ListAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ItemsResponse<Collection>(true, new List<Collection>
-            {
-                new Collection { Id = 1, Title = "Science, Tech & Nature" },
-                new Collection { Id = 2, Title = "Other" }
-            }));
-
-        var llmResponse = new CreateMessageResult
-        {
-            Role = Role.Assistant,
-            Content = [new TextContentBlock { Text = "Science, Tech & Nature | Other" }],
-            Model = "test-model"
-        };
-
-        _mcpServerMock.Setup(x => x.ClientCapabilities)
-            .Returns(new ClientCapabilities
-            {
-                Sampling = new SamplingCapability(),
-                Elicitation = new ElicitationCapability { Form = new FormElicitationCapability() }
-            });
-
-        _mcpServerMock.Setup(x => x.SendRequestAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((JsonRpcRequest r, CancellationToken t) =>
-            {
-                if (r.Method == "sampling/createMessage")
-                {
-                    return new JsonRpcResponse
-                    {
-                        Result = JsonSerializer.SerializeToNode(llmResponse)
-                    };
-                }
-
-                if (r.Method == "elicitation/create")
-                {
-                    var elicitResult = new ElicitResult
-                    {
-                        Action = "accept",
-                        Content = new Dictionary<string, JsonElement>
-                        {
-                            ["collectionName"] = JsonSerializer.SerializeToElement("Science, Tech & Nature")
-                        }
-                    };
-                    return new JsonRpcResponse
-                    {
-                        Result = JsonSerializer.SerializeToNode(elicitResult)
-                    };
-                }
-
-                return new JsonRpcResponse { Result = JsonNode.Parse("{}") };
-            });
-
-        _raindropsApiMock.Setup(x => x.UpdateAsync(bookmarkId, It.IsAny<Raindrop>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ItemResponse<Raindrop>(true, bookmark));
-
-        // Act
-        var result = await _tools.SuggestCollectionForBookmarkAsync(_mcpServerMock.Object, bookmarkId, CancellationToken.None);
-
-        // Assert
-        Assert.True(result.Result);
     }
 }

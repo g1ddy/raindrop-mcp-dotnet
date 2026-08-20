@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Mcp.Common;
+using Mcp.Collections.Suggestions;
 using Mcp.Raindrops;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -21,7 +22,7 @@ public class RaindropsToolsPerformanceTests : IDisposable
         _apiMock = new Mock<IRaindropsApi>();
         _cacheService = new RaindropCacheService();
         var options = Options.Create(new RaindropOptions { ApiToken = "test-token-for-performance-testing-longer-string-to-make-hashing-sligtly-more-expensive" });
-        _tools = new RaindropsTools(_apiMock.Object, _cacheService, options);
+        _tools = new RaindropsTools(_apiMock.Object, _cacheService, Mock.Of<ICollectionSuggestionService>(), options);
     }
 
     [Fact]

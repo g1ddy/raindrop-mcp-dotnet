@@ -1,4 +1,5 @@
 using Mcp.Common;
+using Mcp.Collections.Suggestions;
 using Mcp.Raindrops;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -10,14 +11,16 @@ public class RaindropsChunkingTests
 {
     private readonly Mock<IRaindropsApi> _apiMock;
     private readonly Mock<IRaindropCacheService> _cacheMock;
+    private readonly Mock<ICollectionSuggestionService> _suggestionServiceMock;
     private readonly RaindropsTools _tools;
 
     public RaindropsChunkingTests()
     {
         _apiMock = new Mock<IRaindropsApi>();
         _cacheMock = new Mock<IRaindropCacheService>();
+        _suggestionServiceMock = new Mock<ICollectionSuggestionService>();
         var options = Options.Create(new RaindropOptions { ApiToken = "test-token" });
-        _tools = new RaindropsTools(_apiMock.Object, _cacheMock.Object, options);
+        _tools = new RaindropsTools(_apiMock.Object, _cacheMock.Object, _suggestionServiceMock.Object, options);
     }
 
     [Fact]
@@ -129,6 +132,7 @@ public class RaindropsChunkingTests
         Assert.Equal(100, result.Items.Count);
         // Cache SHOULD be invalidated if we successfully created ANY items (100 items here)
         _cacheMock.Verify(x => x.InvalidateAllAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+        _suggestionServiceMock.Verify(x => x.Invalidate(), Times.Once);
     }
 
     [Fact]
@@ -147,6 +151,7 @@ public class RaindropsChunkingTests
         Assert.True(result.Result);
         Assert.Equal(150, result.Items.Count);
         _cacheMock.Verify(x => x.InvalidateAllAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+        _suggestionServiceMock.Verify(x => x.Invalidate(), Times.Once);
     }
 
     private IEnumerable<Raindrop> CreateRaindrops(int count)

@@ -1,4 +1,5 @@
 using Mcp.Common;
+using Mcp.Collections.Suggestions;
 using Mcp.Raindrops;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -31,7 +32,11 @@ public class RaindropsChunkingBenchmark
             });
 
         var options = Options.Create(new RaindropOptions { ApiToken = "bench-token" });
-        var tool = new RaindropsTools(apiMock.Object, new RaindropCacheService(), options);
+        var tool = new RaindropsTools(
+            apiMock.Object,
+            new RaindropCacheService(),
+            Mock.Of<ICollectionSuggestionService>(),
+            options);
         var uniqueId = Guid.NewGuid().ToString("N");
         _output.WriteLine($"TestID: {uniqueId}");
 

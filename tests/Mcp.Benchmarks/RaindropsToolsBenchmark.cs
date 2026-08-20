@@ -1,6 +1,7 @@
 using BenchmarkDotNet.Attributes;
 using Mcp.Raindrops;
 using Mcp.Common;
+using Mcp.Collections.Suggestions;
 using Moq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,7 +29,11 @@ public class RaindropsToolsBenchmark : RaindropBenchmarkBase
             .ReturnsAsync(new ItemsResponse<Raindrop>(true, new List<Raindrop>()));
 
         var options = Options.Create(new RaindropOptions { ApiToken = "bench-token" });
-        _tools = new RaindropsTools(_raindropsApiMock.Object, new RaindropCacheService(), options);
+        _tools = new RaindropsTools(
+            _raindropsApiMock.Object,
+            new RaindropCacheService(),
+            Mock.Of<ICollectionSuggestionService>(),
+            options);
 
         _preAllocatedList = new List<Raindrop>(ItemCount);
         for (int i = 0; i < ItemCount; i++)

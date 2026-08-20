@@ -3,16 +3,22 @@ using ModelContextProtocol.Server;
 using Mcp.Common;
 using Mcp.Tags;
 using Mcp.Collections;
+using Mcp.Collections.Suggestions;
 
 using Microsoft.Extensions.Options;
 
 namespace Mcp.Raindrops;
 
 [McpServerToolType]
-public class RaindropsTools(IRaindropsApi api, IRaindropCacheService cacheService, IOptions<RaindropOptions> options) :
+public class RaindropsTools(
+    IRaindropsApi api,
+    IRaindropCacheService cacheService,
+    ICollectionSuggestionService suggestionService,
+    IOptions<RaindropOptions> options) :
     RaindropToolBase<IRaindropsApi>(api)
 {
     private readonly IRaindropCacheService _cacheService = cacheService;
+    private readonly ICollectionSuggestionService _suggestionService = suggestionService;
     private readonly string _cacheKey = options.Value.ApiToken;
     private static readonly HashSet<string> ValidSortOptions = new(
         new[] { "created", "-created", "title", "-title", "domain", "-domain", "sort", "score" }
@@ -27,7 +33,7 @@ public class RaindropsTools(IRaindropsApi api, IRaindropCacheService cacheServic
         var response = await Api.CreateAsync(payload, cancellationToken);
         if (response.Result)
         {
-            await _cacheService.InvalidateAllAsync(_cacheKey, cancellationToken);
+            await InvalidateCachesAsync(cancellationToken);
         }
         return response;
     }
@@ -49,7 +55,7 @@ public class RaindropsTools(IRaindropsApi api, IRaindropCacheService cacheServic
         var response = await Api.UpdateAsync(id, payload, cancellationToken);
         if (response.Result)
         {
-            await _cacheService.InvalidateAllAsync(_cacheKey, cancellationToken);
+            await InvalidateCachesAsync(cancellationToken);
         }
         return response;
     }
@@ -62,7 +68,7 @@ public class RaindropsTools(IRaindropsApi api, IRaindropCacheService cacheServic
         var response = await Api.DeleteAsync(id, cancellationToken);
         if (response.Result)
         {
-            await _cacheService.InvalidateAllAsync(_cacheKey, cancellationToken);
+            await InvalidateCachesAsync(cancellationToken);
         }
         return response;
     }
@@ -157,7 +163,7 @@ public class RaindropsTools(IRaindropsApi api, IRaindropCacheService cacheServic
         // Only invalidate if we actually created at least one item, even if not overall success
         if (allItems.Count > 0)
         {
-            await _cacheService.InvalidateAllAsync(_cacheKey, cancellationToken);
+            await InvalidateCachesAsync(cancellationToken);
         }
 
         return new ItemsResponse<Raindrop>(overallResult, allItems);
@@ -175,8 +181,14 @@ public class RaindropsTools(IRaindropsApi api, IRaindropCacheService cacheServic
         var response = await Api.UpdateManyAsync(collectionId, update, nested, search, cancellationToken);
         if (response.Result)
         {
-            await _cacheService.InvalidateAllAsync(_cacheKey, cancellationToken);
+            await InvalidateCachesAsync(cancellationToken);
         }
         return response;
+    }
+
+    private async Task InvalidateCachesAsync(CancellationToken cancellationToken)
+    {
+        _suggestionService.Invalidate();
+        await _cacheService.InvalidateAllAsync(_cacheKey, cancellationToken);
     }
 }
