@@ -192,6 +192,46 @@ public class LibraryAnalyticsServiceTests
     }
 
     [Fact]
+    public async Task AnalyzeReturnsPartialReportWhenTransportTimesOut()
+    {
+        var collectionsApi = new Mock<ICollectionsApi>(MockBehavior.Strict);
+        var raindropsApi = new Mock<IRaindropsApi>(MockBehavior.Strict);
+        collectionsApi.Setup(api => api.ListAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ItemsResponse<Collection>(true, []));
+        collectionsApi.Setup(api => api.ListChildrenAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ItemsResponse<Collection>(true, []));
+        SetupPage(raindropsApi, 0, 0, null, Enumerable.Range(1, 50)
+            .Select(id => Bookmark(id, -1, "example.com", []))
+            .ToList());
+        raindropsApi.Setup(api => api.ListAsync(
+                0, null, "created", 1, 50, null, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new TaskCanceledException("The HTTP request timed out."));
+
+        var service = new LibraryAnalyticsService(collectionsApi.Object, raindropsApi.Object);
+
+        var report = await service.AnalyzeAsync(0, CancellationToken.None);
+
+        Assert.False(report.Scope.IsComplete);
+        Assert.Equal("api_error", report.Scope.TerminationReason);
+        Assert.Equal(1, report.Scope.PagesFetched);
+        Assert.Equal(50, report.Summary.BookmarksAnalyzed);
+        Assert.Contains(report.Diagnostics, diagnostic => diagnostic.Contains("timed out", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task AnalyzePropagatesCallerCancellation()
+    {
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+        var service = new LibraryAnalyticsService(
+            Mock.Of<ICollectionsApi>(),
+            Mock.Of<IRaindropsApi>());
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            service.AnalyzeAsync(-1, cancellation.Token));
+    }
+
+    [Fact]
     public async Task AnalyzeContinuesBeyondFormerPageLimitUntilEndOfResults()
     {
         var collectionsApi = new Mock<ICollectionsApi>(MockBehavior.Strict);

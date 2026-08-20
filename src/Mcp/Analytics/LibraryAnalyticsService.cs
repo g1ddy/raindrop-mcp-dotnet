@@ -177,9 +177,14 @@ public sealed class LibraryAnalyticsService : ILibraryAnalyticsService
                     nested: collectionId > 0 ? true : null,
                     cancellationToken);
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
                 throw;
+            }
+            catch (OperationCanceledException)
+            {
+                diagnostics.Add($"Bookmark analysis stopped because Raindrop page {page} timed out.");
+                return (aggregate, page, false, "api_error");
             }
             catch (Exception)
             {
