@@ -161,7 +161,7 @@ public class LibraryAnalyticsServiceTests
     }
 
     [Fact]
-    public async Task AnalyzeStopsAtConfiguredPageLimitAndMarksReportPartial()
+    public async Task AnalyzeReturnsPartialReportWhenLaterPageFails()
     {
         var collectionsApi = new Mock<ICollectionsApi>(MockBehavior.Strict);
         var raindropsApi = new Mock<IRaindropsApi>(MockBehavior.Strict);
@@ -170,6 +170,105 @@ public class LibraryAnalyticsServiceTests
         collectionsApi.Setup(api => api.ListChildrenAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ItemsResponse<Collection>(true, []));
 
+        SetupPage(raindropsApi, 0, 0, null, Enumerable.Range(1, 50)
+            .Select(id => Bookmark(id, -1, "example.com", []))
+            .ToList());
+        raindropsApi.Setup(api => api.ListAsync(
+                0, null, "created", 1, 50, null, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new HttpRequestException("transient failure after retries"));
+
+        var service = new LibraryAnalyticsService(collectionsApi.Object, raindropsApi.Object);
+
+        var report = await service.AnalyzeAsync(0, CancellationToken.None);
+
+        Assert.False(report.Scope.IsComplete);
+        Assert.Equal("api_error", report.Scope.TerminationReason);
+        Assert.Equal(1, report.Scope.PagesFetched);
+        Assert.Equal(50, report.Summary.BookmarksAnalyzed);
+        Assert.Contains(report.Diagnostics, diagnostic => diagnostic.Contains("after retries", StringComparison.Ordinal));
+        raindropsApi.Verify(api => api.ListAsync(
+            0, null, "created", It.IsAny<int>(), 50, null, It.IsAny<CancellationToken>()),
+            Times.Exactly(2));
+    }
+
+    [Fact]
+    public async Task AnalyzeReturnsPartialReportWhenTransportTimesOut()
+    {
+        var collectionsApi = new Mock<ICollectionsApi>(MockBehavior.Strict);
+        var raindropsApi = new Mock<IRaindropsApi>(MockBehavior.Strict);
+        collectionsApi.Setup(api => api.ListAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ItemsResponse<Collection>(true, []));
+        collectionsApi.Setup(api => api.ListChildrenAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ItemsResponse<Collection>(true, []));
+        SetupPage(raindropsApi, 0, 0, null, Enumerable.Range(1, 50)
+            .Select(id => Bookmark(id, -1, "example.com", []))
+            .ToList());
+        raindropsApi.Setup(api => api.ListAsync(
+                0, null, "created", 1, 50, null, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new TaskCanceledException("The HTTP request timed out."));
+
+        var service = new LibraryAnalyticsService(collectionsApi.Object, raindropsApi.Object);
+
+        var report = await service.AnalyzeAsync(0, CancellationToken.None);
+
+        Assert.False(report.Scope.IsComplete);
+        Assert.Equal("api_error", report.Scope.TerminationReason);
+        Assert.Equal(1, report.Scope.PagesFetched);
+        Assert.Equal(50, report.Summary.BookmarksAnalyzed);
+        Assert.Contains(report.Diagnostics, diagnostic => diagnostic.Contains("timed out", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task AnalyzePropagatesCallerCancellation()
+    {
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+        var service = new LibraryAnalyticsService(
+            Mock.Of<ICollectionsApi>(),
+            Mock.Of<IRaindropsApi>());
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            service.AnalyzeAsync(-1, cancellation.Token));
+    }
+
+    [Fact]
+    public async Task AnalyzeContinuesBeyondFormerPageLimitUntilEndOfResults()
+    {
+        var collectionsApi = new Mock<ICollectionsApi>(MockBehavior.Strict);
+        var raindropsApi = new Mock<IRaindropsApi>(MockBehavior.Strict);
+        collectionsApi.Setup(api => api.ListAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ItemsResponse<Collection>(true, []));
+        collectionsApi.Setup(api => api.ListChildrenAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ItemsResponse<Collection>(true, []));
+
+        for (var page = 0; page < 21; page++)
+        {
+            var firstId = page * 50 + 1;
+            SetupPage(raindropsApi, 0, page, null, Enumerable.Range(firstId, 50)
+                .Select(id => Bookmark(id, -1, "example.com", []))
+                .ToList());
+        }
+        SetupPage(raindropsApi, 0, 21, null, []);
+
+        var service = new LibraryAnalyticsService(collectionsApi.Object, raindropsApi.Object);
+
+        var report = await service.AnalyzeAsync(0, CancellationToken.None);
+
+        Assert.True(report.Scope.IsComplete);
+        Assert.Equal("end_of_results", report.Scope.TerminationReason);
+        Assert.Equal(22, report.Scope.PagesFetched);
+        Assert.Equal(1_050, report.Summary.BookmarksAnalyzed);
+    }
+
+    [Fact]
+    public async Task AnalyzeStopsAtConfiguredPageLimitAndMarksReportPartial()
+    {
+        var collectionsApi = new Mock<ICollectionsApi>(MockBehavior.Strict);
+        var raindropsApi = new Mock<IRaindropsApi>(MockBehavior.Strict);
+        collectionsApi.Setup(api => api.ListAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ItemsResponse<Collection>(true, []));
+        collectionsApi.Setup(api => api.ListChildrenAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ItemsResponse<Collection>(true, []));
         SetupPage(raindropsApi, 0, 0, null, Enumerable.Range(1, 50)
             .Select(id => Bookmark(id, -1, "example.com", []))
             .ToList());
@@ -186,9 +285,6 @@ public class LibraryAnalyticsServiceTests
         Assert.Equal(2, report.Scope.PagesFetched);
         Assert.Equal(100, report.Summary.BookmarksAnalyzed);
         Assert.Contains(report.Diagnostics, diagnostic => diagnostic.Contains("2 pages", StringComparison.Ordinal));
-        raindropsApi.Verify(api => api.ListAsync(
-            0, null, "created", It.IsAny<int>(), 50, null, It.IsAny<CancellationToken>()),
-            Times.Exactly(2));
     }
 
     private static Raindrop Bookmark(

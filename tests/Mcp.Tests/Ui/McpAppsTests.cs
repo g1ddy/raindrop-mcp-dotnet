@@ -35,4 +35,33 @@ public class McpAppsTests
         Assert.Equal(McpApps.HtmlMimeType, explorer.MimeType);
         Assert.Equal(UiTools.ExplorerUri, explorer.Uri);
     }
+
+    [Fact]
+    public void ExplorerArtifactUsesSafeMcpAppLifecycleWithoutGlobalExposure()
+    {
+        var explorer = new UiResources().GetExplorerUi();
+
+        Assert.Contains("ontoolresult", explorer.Text, StringComparison.Ordinal);
+        Assert.Contains("ontoolcancelled", explorer.Text, StringComparison.Ordinal);
+        Assert.Contains("Loading bookmark details", explorer.Text, StringComparison.Ordinal);
+        Assert.DoesNotContain("window.mcpApp", explorer.Text, StringComparison.Ordinal);
+        Assert.DoesNotContain("window.loadDetails", explorer.Text, StringComparison.Ordinal);
+        Assert.True(
+            explorer.Text.IndexOf("ontoolresult", StringComparison.Ordinal) <
+            explorer.Text.LastIndexOf(".connect()", StringComparison.Ordinal),
+            "One-shot handlers must be registered before the MCP App connects.");
+    }
+
+    [Fact]
+    public void ExplorerResourceIsImmutableAcrossReads()
+    {
+        var resources = new UiResources();
+
+        var first = resources.GetExplorerUi();
+        var second = resources.GetExplorerUi();
+
+        Assert.Equal(first.Uri, second.Uri);
+        Assert.Equal(first.MimeType, second.MimeType);
+        Assert.Equal(first.Text, second.Text);
+    }
 }

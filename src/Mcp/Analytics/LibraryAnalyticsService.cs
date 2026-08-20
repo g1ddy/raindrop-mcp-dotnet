@@ -165,17 +165,38 @@ public sealed class LibraryAnalyticsService : ILibraryAnalyticsService
         while (true)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var response = await raindropsApi.ListAsync(
-                collectionId,
-                search: null,
-                sort: "created",
-                page,
-                perPage: PageSize,
-                nested: collectionId > 0 ? true : null,
-                cancellationToken);
+            Mcp.Common.ItemsResponse<Raindrop> response;
+            try
+            {
+                response = await raindropsApi.ListAsync(
+                    collectionId,
+                    search: null,
+                    sort: "created",
+                    page,
+                    perPage: PageSize,
+                    nested: collectionId > 0 ? true : null,
+                    cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (OperationCanceledException)
+            {
+                diagnostics.Add($"Bookmark analysis stopped because Raindrop page {page} timed out.");
+                return (aggregate, page, false, "api_error");
+            }
+            catch (Exception)
+            {
+                diagnostics.Add($"Bookmark analysis stopped because Raindrop page {page} could not be retrieved after retries.");
+                return (aggregate, page, false, "api_error");
+            }
 
             if (!response.Result)
-                throw new InvalidOperationException($"Raindrop did not return bookmark page {page}.");
+            {
+                diagnostics.Add($"Bookmark analysis stopped because Raindrop did not return bookmark page {page}.");
+                return (aggregate, page, false, "api_error");
+            }
 
             var newBookmarkCount = 0;
             foreach (var bookmark in response.Items)

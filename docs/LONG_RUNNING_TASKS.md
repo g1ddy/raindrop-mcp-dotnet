@@ -3,16 +3,27 @@
 ## Status
 
 - **Document status:** Proposed
-- **Target capability:** Experimental `io.modelcontextprotocol/tasks` task-augmented `tools/call`
+- **Target capability:** Experimental `io.modelcontextprotocol/tasks` task-augmented `tools/call` on MCP protocol `2026-07-28` or later
 - **Initial tool:** `analyze_library`
 - **MCP implementation:** `ModelContextProtocol.Extensions.Tasks` 2.2.0
-- **Current implementation status:** Implemented with the experimental `ModelContextProtocol.Extensions.Tasks` package; host support is negotiated at runtime
+- **Current implementation status:** Partially implemented with the experimental `ModelContextProtocol.Extensions.Tasks` package. The SDK adapter, polling, cancellation plumbing, and synchronous fallback are present; progress reporting, production-grade task storage, and end-to-end host conformance remain planned.
 
 MCP Tasks remain experimental. This document defines the behavior implemented through the official .NET SDK Tasks extension so the library analytics engine does not invent a proprietary task protocol.
 
+## Related planning documents
+
+This document is one of four focused specifications:
+
+1. **Long-running Tasks (this document):** comprehensive `analyze_library` execution, lifecycle, storage, and conformance.
+2. **[Analytics dashboard](ANALYTICS_DASHBOARD.md):** the human-facing analytics result and static dashboard App.
+3. **[MCP Apps architecture](MCP_APPS.md):** shared resource, security, lifecycle, isolation, and packaging rules for every App.
+4. **[Link health](LINK_HEALTH.md):** deferred bookmark-health design and active-probing threat model.
+
+The documents deliberately separate execution from presentation. Tasks must work without an App, and Apps must not assume that they can poll or unwrap a Task.
+
 ## Objective
 
-Allow an MCP client to start a complete Raindrop library analysis without holding open a normal tool call. The server will paginate through the selected bookmark scope, aggregate collection, tag, and domain statistics, publish task progress, support cancellation, and retain the final `CallToolResult` for deferred retrieval.
+Allow an MCP client to start a complete Raindrop library analysis without holding open a normal tool call. The server paginates through the selected bookmark scope, aggregates collection, tag, and domain statistics, supports cooperative cancellation, and retains the final `CallToolResult` for deferred retrieval. Factual progress updates are planned; SDK 2.2.0 currently relies on polling and does not provide server-push task status notifications.
 
 The first task-capable operation will be the model-facing tool:
 
@@ -21,6 +32,46 @@ analyze_library(collectionId?)
 ```
 
 The tool expresses user intent. Raindrop pagination, page size, retries, task TTL, polling, concurrency, and server safety limits are implementation details and are not tool arguments.
+
+## Design
+
+- Keep `analyze_library` model-facing and optionally task-backed.
+- Analyze the complete selected scope up to the configurable 1,000-page default safety limit rather than exposing pagination controls to the model.
+- Aggregate incrementally and retain bookmark IDs only where needed for deduplication.
+- Return the same text and structured result shape for synchronous and task-backed execution.
+- Report factual counts and phases; do not invent progress percentages without a reliable total.
+- Preserve successful pages as an explicitly partial report after exhausted API retries, while propagating cancellation.
+
+## Architecture
+
+```text
+tools/call analyze_library
+        |
+        +-- ordinary call ----------+
+        |                           |
+        +-- task opt-in -> SDK task | store -> tasks/get / tasks/cancel
+                                    |
+                                    v
+                         ILibraryAnalyticsService
+                                    |
+                   collections + sequential bookmark pages
+                                    |
+                                    v
+                         LibraryAnalyticsReport
+```
+
+The analytics service is independent of MCP Tasks protocol types. `WithTasks` owns protocol negotiation and task lifecycle adaptation; the service owns scope traversal, aggregation, cancellation checkpoints, and completeness metadata. The current in-memory store is a single-process implementation, not a durability guarantee.
+
+## Remaining work summary
+
+The detailed checklist appears under [Implementation checklist](#implementation-checklist). Remaining work falls into six groups:
+
+1. Bound diagnostics/results and add progress and deadline abstractions.
+2. Complete hierarchy, pagination, cancellation, normalization, and result-size tests.
+3. Verify `2026-07-28` Tasks negotiation and wire conformance with target hosts.
+4. Decide which task-store controls are SDK verification versus requirements for a future custom production store.
+5. Add task lifecycle, race, expiration, isolation, and secret-sanitization tests.
+6. Benchmark realistic libraries and tune limits, retries, deadlines, and polling.
 
 ## Non-goals
 
@@ -60,7 +111,7 @@ All other negative collection IDs are invalid.
 - Idempotent: `true`
 - Task support: `optional` during initial rollout; it may become `required` only after supported clients are verified and a migration plan exists
 
-When task augmentation is unavailable, the server may execute the same operation as a bounded normal tool call. A normal call must report clearly if a server safety limit prevents complete analysis.
+When task augmentation is unavailable, the server executes the same operation as a normal tool call. Analysis continues until Raindrop returns the end of the selected scope, cancellation is requested, an API failure remains after the configured retries, or the configured page safety limit is reached. The default is 1,000 pages of 50 bookmarks and configuration accepts at most 10,000 pages. A failed or safety-limited scan produces a clearly marked partial report containing the aggregates collected so far.
 
 ## Analysis scope
 
@@ -250,7 +301,7 @@ After completion, `tasks/get` returns a completed task containing exactly the se
 
 `tasks/cancel` will cancel the analyzer's cancellation token and prevent new API pages from starting. In-flight I/O receives the same token.
 
-The task transitions to `cancelled` before the cancellation response is returned and remains cancelled even if in-flight work later finishes. Partial aggregates are not returned as a successful completed result unless a future, separately specified feature explicitly supports partial cancellation results.
+Task cancellation is cooperative and eventually consistent. The SDK acknowledges `tasks/cancel`, marks a non-terminal in-memory task as cancelled, and signals the tool's cancellation token. Tools must pass that token to each API request and stop before starting another page. A terminal result wins races with late cancellation, and cancelled analyses do not return partial aggregates as a successful result.
 
 ### TTL and cleanup
 
@@ -286,9 +337,8 @@ The implementation will configure server-side limits rather than exposing them a
 
 - maximum concurrent analyses globally;
 - maximum concurrent analyses per requestor;
-- maximum bookmarks processed by a normal non-task call;
-- maximum bookmarks processed by a task;
-- overall analysis deadline;
+- a configurable page safety limit, defaulting to 1,000 and capped at 10,000 pages;
+- an optional overall analysis deadline;
 - Raindrop API retry and backoff policy;
 - maximum result and diagnostic sizes; and
 - task TTL bounds.
@@ -299,7 +349,7 @@ The analyzer will page sequentially unless measurements show that bounded concur
 
 Errors returned to clients will be sanitized. API tokens, request headers, internal stack traces, and raw exception messages must not appear in task status or results.
 
-The task will fail when the analyzer cannot produce a trustworthy report. A bounded normal invocation may return an explicitly partial report for a safety limit or deadline, but it must set completion metadata accurately.
+The task will fail when the analyzer cannot produce a trustworthy report. If Raindrop fails after retries, the analyzer returns an explicitly partial report with termination reason `api_error` and bounded, sanitized diagnostics; cancellation continues to propagate rather than being converted into a partial success.
 
 Transient API errors may be retried using the server's existing policy. Cancellation is not an error and must not be retried.
 
@@ -337,7 +387,9 @@ The in-memory store is appropriate for the current single-process stdio deployme
 - [x] Keep `collectionId` as the only public scope argument.
 - [x] Default omitted `collectionId` to `0`.
 - [x] Reject unsupported negative collection IDs.
-- [ ] Apply server-configured safety limits and deadlines.
+- [x] Continue pagination up to the configurable page safety limit.
+- [x] Return a partial report when a bookmark page still fails after HTTP retries.
+- [ ] Apply an optional overall deadline and concurrency controls.
 - [x] Return a concise text summary plus structured analytics data.
 - [x] Clearly identify partial results in both text and structured output.
 - [x] Do not associate a UI resource in the initial tool implementation.
@@ -351,8 +403,9 @@ The in-memory store is appropriate for the current single-process stdio deployme
 - [ ] Test empty, short, multiple-full, exact-multiple, and terminal-empty pagination.
 - [x] Test duplicate bookmarks across pages.
 - [ ] Test cancellation between and during page requests.
-- [ ] Test API failure after successful pages.
-- [ ] Test safety-limit and deadline termination.
+- [x] Test API failure after successful pages.
+- [x] Test graceful partial results after page-retrieval failure.
+- [ ] Test deadline termination.
 - [ ] Test null, empty, repeated, and case-varied tags and domains.
 - [x] Test deterministic ordering and percentage calculations.
 - [ ] Test bounded diagnostics and result size.
@@ -361,7 +414,7 @@ The in-memory store is appropriate for the current single-process stdio deployme
 
 - [x] Identify a .NET MCP SDK package with task APIs.
 - [ ] Verify target hosts negotiate `tasks.requests.tools.call`.
-- [ ] Confirm SDK serialization against the `2025-11-25` protocol schema.
+- [ ] Confirm SDK serialization against the `2026-07-28` Tasks extension protocol used by SDK 2.2.0.
 - [ ] Decide whether `analyze_library` task support remains optional or becomes required.
 - [ ] Document fallback behavior for hosts without Tasks.
 - [ ] Add protocol conformance fixtures before advertising capabilities.
@@ -413,7 +466,7 @@ The in-memory store is appropriate for the current single-process stdio deployme
 
 - [ ] Benchmark representative small, medium, and large libraries.
 - [ ] Record API calls, elapsed time, allocations, and final result size.
-- [ ] Tune normal-call and task safety limits from measurements.
+- [ ] Tune the page limit, retries, concurrency, deadlines, and polling cadence from measurements.
 - [ ] Verify behavior when the library changes during pagination.
 - [ ] Verify host polling, cancellation, and result retrieval end to end.
 - [ ] Document that in-memory stdio tasks do not survive process termination.
@@ -425,23 +478,23 @@ The long-running task implementation is complete when:
 
 1. The model invokes `analyze_library` with no operational parameters.
 2. A task-capable host can request task augmentation and receive a prompt task handle.
-3. The server reports factual progress while continuing analysis independently of the initiating request.
+3. The server exposes factual task state through polling; future progress messages report counts rather than speculative percentages.
 4. The client can poll, cancel, and retrieve the final result using standard MCP methods.
 5. The final result is identical in shape to the normal tool result.
 6. Full-library analysis includes root and child collections plus all non-trash bookmarks.
 7. Selected-collection analysis includes the selected collection and descendants.
 8. Results distinguish direct and recursive collection distribution.
-9. Pagination, cancellation, deadlines, and safety limits are deterministic and tested.
+9. Pagination, retries, cancellation, deadlines, and graceful partial failure are deterministic and tested.
 10. Task ownership, TTL cleanup, concurrency limits, and secret handling satisfy this specification.
 11. The server advertises only task capabilities it actually implements.
-12. Hosts without Tasks retain a documented bounded normal-call behavior.
+12. Hosts without Tasks retain documented synchronous behavior that scans the same scope up to the configured safety limit and degrades gracefully after exhausted retries.
 
 ## Sources
 
 - .NET MCP Tasks documentation: https://github.com/modelcontextprotocol/csharp-sdk/blob/v2.2.0/docs/concepts/tasks/tasks.md
 - .NET MCP Tasks package: https://www.nuget.org/packages/ModelContextProtocol.Extensions.Tasks
-- MCP Tasks specification: https://modelcontextprotocol.io/specification/2025-11-25/basic/utilities/tasks
+- Tasks extension SEP-2663: https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/seps/2663-tasks-extension.md
 - MCP tool specification: https://modelcontextprotocol.io/specification/2025-11-25/server/tools
-- MCP progress specification: https://modelcontextprotocol.io/specification/2025-11-25/basic/utilities/progress
+- MCP Apps specification: https://github.com/modelcontextprotocol/ext-apps/blob/main/specification/draft/apps.mdx
 - Raindrop collections documentation: https://developer.raindrop.io/v1/collections
 - Raindrop multiple-bookmark API: https://developer.raindrop.io/v1/raindrops/multiple
