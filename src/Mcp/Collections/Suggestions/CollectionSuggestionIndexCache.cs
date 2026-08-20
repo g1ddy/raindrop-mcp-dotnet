@@ -39,9 +39,10 @@ internal sealed record CollectionSuggestionIndex(
     IReadOnlyDictionary<int, CollectionFeatures> Collections,
     IReadOnlyDictionary<string, int> DocumentFrequencies,
     int DocumentCount,
-    IReadOnlyDictionary<string, int> DomainTotals);
+    IReadOnlyDictionary<string, int> DomainTotals,
+    IReadOnlyDictionary<long, IndexedBookmark> Bookmarks);
 
 internal sealed record CollectionFeatures(
     IReadOnlyDictionary<string, int> Terms,
-    IReadOnlySet<string> Tags,
+    IReadOnlyDictionary<string, int> Tags,
     IReadOnlyDictionary<string, int> Domains);
