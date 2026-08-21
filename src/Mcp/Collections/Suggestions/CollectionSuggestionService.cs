@@ -49,6 +49,10 @@ internal sealed partial class CollectionSuggestionService(
                 var embeddings = await embeddingGenerator.GenerateAsync([canonicalString], null, cancellationToken);
                 queryEmbedding = embeddings.FirstOrDefault();
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch
             {
                 // Fallback to Phase 1 lexical logic if embedding generation fails

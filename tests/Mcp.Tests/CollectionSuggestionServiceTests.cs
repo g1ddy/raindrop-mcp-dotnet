@@ -329,4 +329,32 @@ public class CollectionSuggestionServiceTests
         Assert.Single(suggestions);
         Assert.Equal(matching.Id, suggestions[0].Collection.Id);
     }
+
+    [Fact]
+    public async Task SuggestAsync_PropagatesCancellationFromQueryEmbeddingGeneration()
+    {
+        var collection = new Collection { Id = 1, Title = "Development" };
+        SetupLibrary([]);
+        var cancellationTokenSource = new CancellationTokenSource();
+        cancellationTokenSource.Cancel();
+        var mockEmbeddings = new Mock<Microsoft.Extensions.AI.IEmbeddingGenerator<string, Microsoft.Extensions.AI.Embedding<float>>>();
+        mockEmbeddings
+            .Setup(generator => generator.GenerateAsync(
+                It.IsAny<IEnumerable<string>>(),
+                It.IsAny<Microsoft.Extensions.AI.EmbeddingGenerationOptions>(),
+                cancellationTokenSource.Token))
+            .ThrowsAsync(new OperationCanceledException(cancellationTokenSource.Token));
+        var service = new CollectionSuggestionService(
+            _api.Object,
+            new CollectionSuggestionIndexCache(),
+            Options.Create(new RaindropOptions { ApiToken = Guid.NewGuid().ToString() }),
+            mockEmbeddings.Object);
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            service.SuggestAsync(
+                new Raindrop { Title = "Query" },
+                [collection],
+                1,
+                cancellationTokenSource.Token));
+    }
 }
