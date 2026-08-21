@@ -33,7 +33,7 @@ Ranking is exact rather than approximate. Results are ordered by descending scor
 - External bookmark moves do not immediately invalidate the index; a restart or a successful mutation through this server rebuilds it.
 - Only top-level collections are candidates, preserving the previous tool behavior.
 
-### Phase 2: optional vector embeddings
+### Phase 2: optional vector embeddings — implemented
 
 Add an optional `IEmbeddingGenerator<string, Embedding<float>>` implementation through `Microsoft.Extensions.AI`.
 

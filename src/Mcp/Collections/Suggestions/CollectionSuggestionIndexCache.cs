@@ -45,4 +45,5 @@ internal sealed record CollectionSuggestionIndex(
 internal sealed record CollectionFeatures(
     IReadOnlyDictionary<string, int> Terms,
     IReadOnlyDictionary<string, int> Tags,
-    IReadOnlyDictionary<string, int> Domains);
+    IReadOnlyDictionary<string, int> Domains,
+    Microsoft.Extensions.AI.Embedding<float>? Centroid = null);

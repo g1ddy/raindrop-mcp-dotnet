@@ -14,6 +14,10 @@ using Mcp.User;
 using Mcp.Analytics;
 using Polly;
 using Polly.Extensions.Http;
+using LocalEmbeddings;
+using LocalEmbeddings.Options;
+using Microsoft.Extensions.AI;
+
 
 namespace Mcp;
 
@@ -46,6 +50,39 @@ public static class RaindropServiceCollectionExtensions
         services.AddSingleton<CollectionSuggestionIndexCache>();
         services.AddTransient<ICollectionSuggestionService, CollectionSuggestionService>();
         services.AddTransient<ILibraryAnalyticsService, LibraryAnalyticsService>();
+
+        if (configuration.GetSection("Raindrop").GetValue<bool>("EnableSemanticSuggestions", true))
+        {
+            // Note: because DI resolving fails if an interface isn't registered but is requested without nullability
+            // in some frameworks, we could use try-catch and NOT register it. However, the Microsoft DI container doesn't
+            // allow a factory to return null for AddSingleton<T> (where T is a reference type).
+            // The cleanest way is to just conditionally not register it! But what if a test needs it or it's requested?
+            // CollectionSuggestionService takes it as `IEmbeddingGenerator?`.
+            // So if we don't register it, DI injects null. Perfect!
+
+            // BUT! The LocalEmbeddingGenerator requires downloading models dynamically which might fail during the factory lambda
+            // if we put a try/catch inside it. Let's register it via a factory that returns null if instantiation fails?
+            // Microsoft DI throws if a factory returns null for a required service.
+            // Let's stick with the try-catch returning Dummy if it fails, and just ensure Dummy is safe.
+
+            services.AddSingleton<IEmbeddingGenerator<string, Embedding<float>>>(sp =>
+            {
+                var options = sp.GetRequiredService<IOptions<RaindropOptions>>().Value;
+                if (!options.EnableSemanticSuggestions) return new DummyEmbeddingGenerator();
+
+                try
+                {
+                    return new LocalEmbeddingGenerator(new LocalEmbeddingsOptions());
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to load LocalEmbeddingGenerator, falling back to dummy: {ex.Message}");
+                    return new DummyEmbeddingGenerator();
+                }
+            });
+        }
+
+
 
         var settings = new RefitSettings
         {

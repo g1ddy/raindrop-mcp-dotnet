@@ -7,7 +7,8 @@ namespace Mcp.Collections.Suggestions;
 internal sealed partial class CollectionSuggestionService(
     IRaindropsApi raindropsApi,
     CollectionSuggestionIndexCache cache,
-    IOptions<RaindropOptions> options) : ICollectionSuggestionService
+    IOptions<RaindropOptions> options,
+    Microsoft.Extensions.AI.IEmbeddingGenerator<string, Microsoft.Extensions.AI.Embedding<float>>? embeddingGenerator = null) : ICollectionSuggestionService
 {
     private const int PageSize = 50;
     private const double LexicalWeight = 0.60;
@@ -35,19 +36,36 @@ internal sealed partial class CollectionSuggestionService(
         if (candidates.Count == 0)
             return [];
 
-        var index = await cache.GetOrCreateAsync(
-            _cacheKey,
-            () => BuildIndexAsync(candidates, cancellationToken));
         var queryTerms = TokenizeBookmark(bookmark);
         var queryTags = NormalizeTags(bookmark.Tags);
         var queryDomain = Normalize(bookmark.Domain);
+        var canonicalString = CreateCanonicalString(bookmark);
+
+        Microsoft.Extensions.AI.Embedding<float>? queryEmbedding = null;
+        if (embeddingGenerator != null && !string.IsNullOrWhiteSpace(canonicalString))
+        {
+            try
+            {
+                var embeddings = await embeddingGenerator.GenerateAsync([canonicalString], null, cancellationToken);
+                queryEmbedding = embeddings.FirstOrDefault();
+            }
+            catch
+            {
+                // Fallback to Phase 1 lexical logic if embedding generation fails
+                queryEmbedding = null;
+            }
+        }
+
+        var index = await cache.GetOrCreateAsync(
+            _cacheKey,
+            () => BuildIndexAsync(candidates, cancellationToken));
 
         index.Bookmarks.TryGetValue(bookmark.Id, out var indexedBookmark);
 
         return candidates.Values
             .Select(collection => new CollectionSuggestion(
                 collection,
-                Score(collection.Id, queryTerms, queryTags, queryDomain, index, indexedBookmark)))
+                Score(collection.Id, queryTerms, queryTags, queryDomain, queryEmbedding, index, indexedBookmark)))
             .Where(suggestion => suggestion.Score > 0)
             .OrderByDescending(suggestion => suggestion.Score)
             .ThenBy(suggestion => suggestion.Collection.Id)
@@ -87,6 +105,7 @@ internal sealed partial class CollectionSuggestionService(
                     continue;
 
                 var bookmarkTerms = TokenizeBookmark(bookmark);
+                var canonicalString = CreateCanonicalString(bookmark);
                 var bookmarkTags = NormalizeTags(bookmark.Tags);
                 var bookmarkDomain = Normalize(bookmark.Domain);
 
@@ -109,7 +128,8 @@ internal sealed partial class CollectionSuggestionService(
                         collectionId,
                         bookmarkTerms,
                         bookmarkTags,
-                        bookmarkDomain);
+                        bookmarkDomain,
+                        canonicalString);
                 }
             }
 
@@ -122,9 +142,53 @@ internal sealed partial class CollectionSuggestionService(
             foreach (var term in documentTerms.Keys)
                 Increment(documentFrequencies, term);
 
+
         var features = candidates.Keys.ToDictionary(
             id => id,
             id => new CollectionFeatures(terms[id], tags[id], domains[id]));
+
+        if (embeddingGenerator != null)
+        {
+            var bookmarksList = indexedBookmarks.Values.ToList();
+            var canonicalStrings = bookmarksList.Select(b => b.CanonicalString).ToList();
+            if (canonicalStrings.Count > 0)
+            {
+                try
+                {
+                    var embeddings = await embeddingGenerator.GenerateAsync(canonicalStrings, null, cancellationToken);
+                    var vectors = embeddings.Select(e => e.Vector.ToArray()).ToList();
+
+                    if (vectors.Count == bookmarksList.Count)
+                    {
+                        var collectionVectors = new Dictionary<int, List<float[]>>();
+                        for (int i = 0; i < bookmarksList.Count; i++)
+                        {
+                            var b = bookmarksList[i];
+                            if (!collectionVectors.TryGetValue(b.CollectionId, out var list))
+                            {
+                                list = new List<float[]>();
+                                collectionVectors[b.CollectionId] = list;
+                            }
+                            list.Add(vectors[i]);
+                        }
+
+                        foreach (var kvp in collectionVectors)
+                        {
+                            if (features.TryGetValue(kvp.Key, out var oldFeatures))
+                            {
+                                var centroid = CalculateCentroid(kvp.Value);
+                                features[kvp.Key] = oldFeatures with { Centroid = new Microsoft.Extensions.AI.Embedding<float>(centroid) };
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    // Fallback to Phase 1: skip generating centroids if embedding generation fails
+                }
+            }
+        }
+
         return new CollectionSuggestionIndex(features, documentFrequencies, candidates.Count, domainTotals, indexedBookmarks);
     }
 
@@ -133,6 +197,7 @@ internal sealed partial class CollectionSuggestionService(
         IReadOnlyDictionary<string, int> queryTerms,
         IReadOnlySet<string> queryTags,
         string? queryDomain,
+        Microsoft.Extensions.AI.Embedding<float>? queryEmbedding,
         CollectionSuggestionIndex index,
         IndexedBookmark? indexedBookmark)
     {
@@ -158,7 +223,45 @@ internal sealed partial class CollectionSuggestionService(
             }
         }
 
-        return LexicalWeight * lexical + TagWeight * tag + DomainWeight * domain;
+
+        double semantic = 0;
+        double finalScore = 0;
+
+        if (queryEmbedding != null && features.Centroid != null)
+        {
+            semantic = CosineSimilarity(queryEmbedding.Vector.ToArray(), features.Centroid.Vector.ToArray());
+            // Blend Phase 2 Semantic with Phase 1 scores
+            finalScore = 0.5 * semantic + 0.3 * lexical + 0.1 * tag + 0.1 * domain;
+        }
+        else
+        {
+            // Fallback to pure Phase 1
+            finalScore = LexicalWeight * lexical + TagWeight * tag + DomainWeight * domain;
+        }
+
+        return finalScore;
+    }
+
+
+    private static double CosineSimilarity(float[] left, float[] right)
+    {
+        if (left.Length == 0 || right.Length == 0 || left.Length != right.Length)
+            return 0;
+
+        double dot = 0;
+        double leftMag = 0;
+        double rightMag = 0;
+
+        for (int i = 0; i < left.Length; i++)
+        {
+            dot += left[i] * right[i];
+            leftMag += left[i] * left[i];
+            rightMag += right[i] * right[i];
+        }
+
+        if (leftMag == 0 || rightMag == 0) return 0;
+
+        return dot / (Math.Sqrt(leftMag) * Math.Sqrt(rightMag));
     }
 
     private static double TfIdfCosine(
@@ -280,6 +383,17 @@ internal sealed partial class CollectionSuggestionService(
         return union <= 0 ? 0 : (double)intersection / union;
     }
 
+        private static string CreateCanonicalString(Raindrop bookmark)
+    {
+        var parts = new List<string>();
+        if (!string.IsNullOrWhiteSpace(bookmark.Title)) parts.Add(bookmark.Title);
+        if (!string.IsNullOrWhiteSpace(bookmark.Excerpt)) parts.Add(bookmark.Excerpt);
+        if (!string.IsNullOrWhiteSpace(bookmark.Note)) parts.Add(bookmark.Note);
+        if (bookmark.Tags?.Any() == true) parts.Add($"Tags: {string.Join(", ", bookmark.Tags)}");
+        if (!string.IsNullOrWhiteSpace(bookmark.Domain)) parts.Add($"Domain: {bookmark.Domain}");
+        return string.Join("\n", parts);
+    }
+
     private static Dictionary<string, int> TokenizeBookmark(Raindrop bookmark) =>
         CountTerms(Tokenize(bookmark.Title, bookmark.Link, bookmark.Excerpt, bookmark.Note, bookmark.Type, bookmark.Domain)
             .Concat(NormalizeTags(bookmark.Tags)));
@@ -294,6 +408,38 @@ internal sealed partial class CollectionSuggestionService(
 
     private static string? Normalize(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim().ToLowerInvariant();
+
+
+    private static float[] CalculateCentroid(List<float[]> vectors)
+    {
+        if (vectors.Count == 0) return Array.Empty<float>();
+
+        int dim = vectors[0].Length;
+        var centroid = new float[dim];
+
+        foreach (var v in vectors)
+        {
+            for (int i = 0; i < dim; i++)
+            {
+                centroid[i] += v[i];
+            }
+        }
+
+        for (int i = 0; i < dim; i++)
+        {
+            centroid[i] /= vectors.Count;
+        }
+
+        double mag = 0;
+        for (int i = 0; i < dim; i++) mag += centroid[i] * centroid[i];
+        if (mag > 0)
+        {
+            mag = Math.Sqrt(mag);
+            for (int i = 0; i < dim; i++) centroid[i] = (float)(centroid[i] / mag);
+        }
+
+        return centroid;
+    }
 
     private static Dictionary<string, int> CountTerms(IEnumerable<string> values)
     {

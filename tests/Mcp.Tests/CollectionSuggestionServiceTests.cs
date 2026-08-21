@@ -230,4 +230,55 @@ public class CollectionSuggestionServiceTests
         _api.Setup(api => api.ListAsync(0, null, null, 0, 50, true, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ItemsResponse<Raindrop>(true, bookmarks));
     }
+
+    [Fact]
+    public async Task SuggestAsync_UsesSemanticScoreWhenEmbeddingGeneratorIsPresent()
+    {
+        var development = new Collection { Id = 1, Title = "Dev" };
+        var cooking = new Collection { Id = 2, Title = "Food" };
+
+        var mockEmbeddings = new Mock<Microsoft.Extensions.AI.IEmbeddingGenerator<string, Microsoft.Extensions.AI.Embedding<float>>>();
+        mockEmbeddings.Setup(g => g.GenerateAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<Microsoft.Extensions.AI.EmbeddingGenerationOptions>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((IEnumerable<string> inputs, Microsoft.Extensions.AI.EmbeddingGenerationOptions options, CancellationToken ct) =>
+            {
+                var inputList = inputs.ToList();
+                var result = new Microsoft.Extensions.AI.GeneratedEmbeddings<Microsoft.Extensions.AI.Embedding<float>>();
+                foreach(var input in inputList)
+                {
+                    // Dev match gets a vector similar to query, Food gets orthogonal
+                    if (input.Contains("Food") || input.Contains("Pasta"))
+                        result.Add(new Microsoft.Extensions.AI.Embedding<float>(new float[] { 0, 1 }));
+                    else
+                        result.Add(new Microsoft.Extensions.AI.Embedding<float>(new float[] { 1, 0 }));
+                }
+                return result;
+            });
+
+        var serviceWithEmbeddings = new CollectionSuggestionService(
+            _api.Object,
+            new CollectionSuggestionIndexCache(),
+            Options.Create(new RaindropOptions { ApiToken = Guid.NewGuid().ToString() }),
+            mockEmbeddings.Object);
+
+        SetupLibrary(
+        [
+            new Raindrop
+            {
+                Id = 10, Title = ".NET DI",
+                Collection = new IdRef { Id = development.Id }
+            },
+            new Raindrop
+            {
+                Id = 11, Title = "Pasta",
+                Collection = new IdRef { Id = cooking.Id }
+            }
+        ]);
+
+        var query = new Raindrop { Title = "C# programming" }; // completely different lexically
+
+        var suggestions = await serviceWithEmbeddings.SuggestAsync(query, [development, cooking], 3, CancellationToken.None);
+
+        Assert.Equal(development.Id, suggestions[0].Collection.Id);
+        mockEmbeddings.Verify(g => g.GenerateAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<Microsoft.Extensions.AI.EmbeddingGenerationOptions>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+    }
 }
