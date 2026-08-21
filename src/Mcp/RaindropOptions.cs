@@ -20,4 +20,9 @@ public class RaindropOptions
     [Url]
     [RegularExpression(@"^(?i)https://.*", ErrorMessage = "BaseUrl must use HTTPS to prevent exposing the API token.")]
     public string BaseUrl { get; set; } = "https://api.raindrop.io/rest/v1";
+
+    /// <summary>
+    /// Whether to enable semantic collection suggestions using local embeddings (Phase 2).
+    /// </summary>
+    public bool EnableSemanticSuggestions { get; set; } = true;
 }
