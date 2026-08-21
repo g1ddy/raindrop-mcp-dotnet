@@ -281,4 +281,52 @@ public class CollectionSuggestionServiceTests
         Assert.Equal(development.Id, suggestions[0].Collection.Id);
         mockEmbeddings.Verify(g => g.GenerateAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<Microsoft.Extensions.AI.EmbeddingGenerationOptions>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
     }
+
+    [Fact]
+    public async Task SuggestAsync_ExcludesQueriedBookmarkFromOwnSemanticCentroid()
+    {
+        var current = new Collection { Id = 1, Title = "Current" };
+        var matching = new Collection { Id = 2, Title = "Matching" };
+        var queriedBookmark = new Raindrop
+        {
+            Id = 10,
+            Title = "Query",
+            Collection = new IdRef { Id = current.Id }
+        };
+
+        SetupLibrary(
+        [
+            queriedBookmark,
+            new Raindrop { Id = 20, Title = "Related", Collection = new IdRef { Id = matching.Id } }
+        ]);
+
+        var mockEmbeddings = new Mock<Microsoft.Extensions.AI.IEmbeddingGenerator<string, Microsoft.Extensions.AI.Embedding<float>>>();
+        mockEmbeddings
+            .Setup(generator => generator.GenerateAsync(
+                It.IsAny<IEnumerable<string>>(),
+                It.IsAny<Microsoft.Extensions.AI.EmbeddingGenerationOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync((IEnumerable<string> inputs, Microsoft.Extensions.AI.EmbeddingGenerationOptions _, CancellationToken _) =>
+            {
+                var embeddings = new Microsoft.Extensions.AI.GeneratedEmbeddings<Microsoft.Extensions.AI.Embedding<float>>();
+                foreach (var input in inputs)
+                {
+                    embeddings.Add(new Microsoft.Extensions.AI.Embedding<float>(
+                        input.Contains("Query") || input.Contains("Related")
+                            ? new float[] { 1, 0 }
+                            : new float[] { 0, 1 }));
+                }
+                return embeddings;
+            });
+        var service = new CollectionSuggestionService(
+            _api.Object,
+            new CollectionSuggestionIndexCache(),
+            Options.Create(new RaindropOptions { ApiToken = Guid.NewGuid().ToString() }),
+            mockEmbeddings.Object);
+
+        var suggestions = await service.SuggestAsync(queriedBookmark, [current, matching], 2, CancellationToken.None);
+
+        Assert.Single(suggestions);
+        Assert.Equal(matching.Id, suggestions[0].Collection.Id);
+    }
 }

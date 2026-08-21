@@ -164,6 +164,7 @@ internal sealed partial class CollectionSuggestionService(
                         for (int i = 0; i < bookmarksList.Count; i++)
                         {
                             var b = bookmarksList[i];
+                            indexedBookmarks[b.Id] = b with { Embedding = vectors[i] };
                             if (!collectionVectors.TryGetValue(b.CollectionId, out var list))
                             {
                                 list = new List<float[]>();
@@ -176,8 +177,14 @@ internal sealed partial class CollectionSuggestionService(
                         {
                             if (features.TryGetValue(kvp.Key, out var oldFeatures))
                             {
+                                var embeddingSum = CalculateSum(kvp.Value);
                                 var centroid = CalculateCentroid(kvp.Value);
-                                features[kvp.Key] = oldFeatures with { Centroid = new Microsoft.Extensions.AI.Embedding<float>(centroid) };
+                                features[kvp.Key] = oldFeatures with
+                                {
+                                    Centroid = new Microsoft.Extensions.AI.Embedding<float>(centroid),
+                                    EmbeddingSum = embeddingSum,
+                                    EmbeddingCount = kvp.Value.Count
+                                };
                             }
                         }
                     }
@@ -229,7 +236,10 @@ internal sealed partial class CollectionSuggestionService(
 
         if (queryEmbedding != null && features.Centroid != null)
         {
-            semantic = CosineSimilarity(queryEmbedding.Vector.ToArray(), features.Centroid.Vector.ToArray());
+            var centroid = isTargetCollection && indexedBookmark?.Embedding != null
+                ? CalculateLeaveOneOutCentroid(features, indexedBookmark.Embedding)
+                : features.Centroid.Vector.ToArray();
+            semantic = CosineSimilarity(queryEmbedding.Vector.ToArray(), centroid);
             // Blend Phase 2 Semantic with Phase 1 scores
             finalScore = 0.5 * semantic + 0.3 * lexical + 0.1 * tag + 0.1 * domain;
         }
@@ -262,6 +272,24 @@ internal sealed partial class CollectionSuggestionService(
         if (leftMag == 0 || rightMag == 0) return 0;
 
         return dot / (Math.Sqrt(leftMag) * Math.Sqrt(rightMag));
+    }
+
+    private static float[] CalculateLeaveOneOutCentroid(CollectionFeatures features, float[] excludedEmbedding)
+    {
+        if (features.EmbeddingSum is null || features.EmbeddingCount <= 1 ||
+            features.EmbeddingSum.Length != excludedEmbedding.Length)
+        {
+            return [];
+        }
+
+        var centroid = new float[features.EmbeddingSum.Length];
+        for (var i = 0; i < centroid.Length; i++)
+        {
+            centroid[i] = (features.EmbeddingSum[i] - excludedEmbedding[i]) / (features.EmbeddingCount - 1);
+        }
+
+        NormalizeVector(centroid);
+        return centroid;
     }
 
     private static double TfIdfCosine(
@@ -414,31 +442,40 @@ internal sealed partial class CollectionSuggestionService(
     {
         if (vectors.Count == 0) return Array.Empty<float>();
 
-        int dim = vectors[0].Length;
-        var centroid = new float[dim];
+        var centroid = CalculateSum(vectors);
 
-        foreach (var v in vectors)
-        {
-            for (int i = 0; i < dim; i++)
-            {
-                centroid[i] += v[i];
-            }
-        }
-
-        for (int i = 0; i < dim; i++)
+        for (int i = 0; i < centroid.Length; i++)
         {
             centroid[i] /= vectors.Count;
         }
 
+        NormalizeVector(centroid);
+        return centroid;
+    }
+
+    private static float[] CalculateSum(List<float[]> vectors)
+    {
+        var sum = new float[vectors[0].Length];
+        foreach (var vector in vectors)
+        {
+            for (var i = 0; i < sum.Length; i++)
+            {
+                sum[i] += vector[i];
+            }
+        }
+
+        return sum;
+    }
+
+    private static void NormalizeVector(float[] vector)
+    {
         double mag = 0;
-        for (int i = 0; i < dim; i++) mag += centroid[i] * centroid[i];
+        for (int i = 0; i < vector.Length; i++) mag += vector[i] * vector[i];
         if (mag > 0)
         {
             mag = Math.Sqrt(mag);
-            for (int i = 0; i < dim; i++) centroid[i] = (float)(centroid[i] / mag);
+            for (int i = 0; i < vector.Length; i++) vector[i] = (float)(vector[i] / mag);
         }
-
-        return centroid;
     }
 
     private static Dictionary<string, int> CountTerms(IEnumerable<string> values)

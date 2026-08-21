@@ -6,4 +6,5 @@ internal sealed record IndexedBookmark(
     IReadOnlyDictionary<string, int> Terms,
     IReadOnlySet<string> Tags,
     string? Domain,
-    string CanonicalString = "");
+    string CanonicalString = "",
+    float[]? Embedding = null);

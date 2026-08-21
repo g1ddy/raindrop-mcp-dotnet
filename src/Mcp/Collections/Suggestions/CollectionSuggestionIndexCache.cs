@@ -46,4 +46,6 @@ internal sealed record CollectionFeatures(
     IReadOnlyDictionary<string, int> Terms,
     IReadOnlyDictionary<string, int> Tags,
     IReadOnlyDictionary<string, int> Domains,
-    Microsoft.Extensions.AI.Embedding<float>? Centroid = null);
+    Microsoft.Extensions.AI.Embedding<float>? Centroid = null,
+    float[]? EmbeddingSum = null,
+    int EmbeddingCount = 0);
