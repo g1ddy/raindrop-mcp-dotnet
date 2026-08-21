@@ -34,6 +34,12 @@
           "description": "The base URL for the Raindrop.io API.",
           "isRequired": false,
           "defaultValue": "https://api.raindrop.io/rest/v1"
+        },
+        {
+          "name": "Raindrop:EnableSemanticSuggestions",
+          "description": "Whether to enable local semantic embeddings for collection suggestions.",
+          "isRequired": false,
+          "defaultValue": "true"
         }
       ]
     }
