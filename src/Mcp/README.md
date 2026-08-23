@@ -128,6 +128,10 @@ Once configured, you can interact with your bookmarks through your AI client.
 
 The client will automatically start the server to handle your request. Enjoy managing your bookmarks!
 
+### Long-Running Tasks
+The server supports the experimental MCP Tasks extension. Tools such as `analyze_library` can be executed as long-running background tasks.
+*Note: Long-running analytics tasks are stored in memory and remain available only while the MCP server process is running.*
+
 ## References
 
 - [Use MCP servers in VS Code (Preview)](https://code.visualstudio.com/docs/copilot/chat/mcp-servers)

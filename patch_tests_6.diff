@@ -1,0 +1,43 @@
+<<<<<<< SEARCH
+    [Fact]
+    public async Task C_NonAnalyticsToolsRemainSynchronous()
+    {
+        await using var host = await LibraryAnalyticsMcpTestHost.CreateAsync(TimeSpan.FromSeconds(60));
+
+        var ex = await Assert.ThrowsAsync<ModelContextProtocol.McpProtocolException>(async () =>
+        {
+            await host.Client.CallToolAsTaskAsync(new CallToolRequestParams
+            {
+                Name = "mock_synchronous_tool"
+            }, CancellationToken.None);
+        });
+
+        // The Task execution policy throws InvalidRequest for invalid execution modes
+        Assert.Equal(ModelContextProtocol.McpErrorCode.InvalidRequest, ex.ErrorCode);
+    }
+=======
+    [Fact]
+    public async Task C_NonAnalyticsToolsRemainSynchronous()
+    {
+        await using var host = await LibraryAnalyticsMcpTestHost.CreateAsync(TimeSpan.FromSeconds(60));
+
+        var result = await host.Client.CallToolAsync(new CallToolRequestParams
+        {
+            Name = "mock_synchronous_tool"
+        }, CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.NotEmpty(result.Content);
+
+        var ex = await Assert.ThrowsAsync<ModelContextProtocol.McpProtocolException>(async () =>
+        {
+            await host.Client.CallToolAsTaskAsync(new CallToolRequestParams
+            {
+                Name = "mock_synchronous_tool"
+            }, CancellationToken.None);
+        });
+
+        // The Task execution policy throws InvalidRequest for invalid execution modes
+        Assert.Equal(ModelContextProtocol.McpErrorCode.InvalidRequest, ex.ErrorCode);
+    }
+>>>>>>> REPLACE

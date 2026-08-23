@@ -1,0 +1,33 @@
+<<<<<<< SEARCH
+    [Fact]
+    public async Task C_NonAnalyticsToolsRemainSynchronous()
+    {
+        await using var host = await LibraryAnalyticsMcpTestHost.CreateAsync(TimeSpan.FromSeconds(60));
+
+        var ex = await Assert.ThrowsAsync<ModelContextProtocol.McpProtocolException>(async () =>
+        {
+            await host.Client.CallToolAsTaskAsync(new CallToolRequestParams
+            {
+                Name = "list_collections"
+            }, CancellationToken.None);
+        });
+
+        Assert.Equal(ModelContextProtocol.McpErrorCode.InvalidParams, ex.ErrorCode);
+    }
+=======
+    [Fact]
+    public async Task C_NonAnalyticsToolsRemainSynchronous()
+    {
+        await using var host = await LibraryAnalyticsMcpTestHost.CreateAsync(TimeSpan.FromSeconds(60));
+
+        var ex = await Assert.ThrowsAsync<ModelContextProtocol.McpProtocolException>(async () =>
+        {
+            await host.Client.CallToolAsTaskAsync(new CallToolRequestParams
+            {
+                Name = "mock_synchronous_tool"
+            }, CancellationToken.None);
+        });
+
+        Assert.Equal(ModelContextProtocol.McpErrorCode.InvalidParams, ex.ErrorCode);
+    }
+>>>>>>> REPLACE
