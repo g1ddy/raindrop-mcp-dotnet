@@ -1,0 +1,13 @@
+<<<<<<< SEARCH
+        var content = Assert.Single(toolResult.Content);
+        var textContent = Assert.IsType<TextContentBlock>(content);
+        Assert.Contains("error", textContent.Text);
+    }
+=======
+        var content = Assert.Single(toolResult.Content);
+        var textContent = Assert.IsType<TextContentBlock>(content);
+        Assert.Contains("error", textContent.Text);
+        Assert.DoesNotContain("SECRET_SENTINEL", textContent.Text);
+        Assert.DoesNotContain("Controlled error", textContent.Text);
+    }
+>>>>>>> REPLACE

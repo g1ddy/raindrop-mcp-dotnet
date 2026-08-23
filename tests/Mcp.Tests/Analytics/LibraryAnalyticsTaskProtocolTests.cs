@@ -63,15 +63,13 @@ public class LibraryAnalyticsTaskProtocolTests
     {
         await using var host = await LibraryAnalyticsMcpTestHost.CreateAsync(TimeSpan.FromSeconds(60));
 
-        var ex = await Assert.ThrowsAsync<ModelContextProtocol.McpProtocolException>(async () =>
+        var result = await host.Client.CallToolAsTaskAsync(new CallToolRequestParams
         {
-            await host.Client.CallToolAsTaskAsync(new CallToolRequestParams
-            {
-                Name = "list_collections"
-            }, CancellationToken.None);
-        });
+            Name = "mock_synchronous_tool"
+        }, CancellationToken.None);
 
-        Assert.Equal(ModelContextProtocol.McpErrorCode.InvalidParams, ex.ErrorCode);
+        Assert.False(result.IsTask);
+        Assert.Null(result.TaskCreated);
     }
 
     [Fact]
@@ -149,7 +147,7 @@ public class LibraryAnalyticsTaskProtocolTests
 
         await host.FakeAnalytics.StartedTcs.Task.WaitAsync(TimeSpan.FromSeconds(2));
 
-        host.FakeAnalytics.Fail(new InvalidOperationException("Controlled error"));
+        host.FakeAnalytics.Fail(new InvalidOperationException("Controlled error SECRET_SENTINEL"));
 
         await Task.Delay(100);
 
@@ -165,6 +163,8 @@ public class LibraryAnalyticsTaskProtocolTests
         var content = Assert.Single(toolResult.Content);
         var textContent = Assert.IsType<TextContentBlock>(content);
         Assert.Contains("error", textContent.Text);
+        Assert.DoesNotContain("SECRET_SENTINEL", textContent.Text);
+        Assert.DoesNotContain("Controlled error", textContent.Text);
     }
 
     [Fact]

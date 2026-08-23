@@ -9,9 +9,9 @@ using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Extensions.Tasks;
 using System.Text.Json;
 using System.IO.Pipelines;
+namespace RaindropMcp.Tests.Analytics;
 using System.Text.Json.Nodes;
 
-namespace RaindropMcp.Tests.Analytics;
 
 public sealed class LibraryAnalyticsMcpTestHost : IAsyncDisposable
 {
@@ -73,6 +73,7 @@ public sealed class LibraryAnalyticsMcpTestHost : IAsyncDisposable
                 _clientToServer.Reader.AsStream(),
                 _serverToClient.Writer.AsStream())
             .WithTools<LibraryAnalyticsTools>()
+            .WithTools<MockSynchronousTool>()
             .WithTasks(
                 TaskStore,
                 options => options.ExecutionModeSelector = request =>
@@ -114,5 +115,16 @@ public sealed class LibraryAnalyticsMcpTestHost : IAsyncDisposable
 
         _cts.Dispose();
         if (_provider != null) await _provider.DisposeAsync();
+    }
+}
+
+
+[McpServerToolType]
+public class MockSynchronousTool
+{
+    [McpServerTool(Name = "mock_synchronous_tool")]
+    public Task<CallToolResult> ExecuteAsync()
+    {
+        return Task.FromResult(new CallToolResult { Content = [new TextContentBlock { Text = "sync" }] });
     }
 }

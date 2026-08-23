@@ -465,7 +465,7 @@ The in-memory store is appropriate for the current single-process stdio deployme
 ### Phase 8: Operational validation
 
 - [x] Benchmark representative small, medium, and large libraries.
-- [x] Record API calls, elapsed time, allocations, and final result size.
+- [~] Record API calls, elapsed time, allocations, and final result size. (Recorded in PR, but fake API call counts and final result sizes not logged by benchmark output).
 - [~] Tune the page limit, retries, concurrency, deadlines, and polling cadence from measurements. (Deferred)
 - [~] Verify behavior when the library changes during pagination. (Deferred)
 - [x] Verify host polling, cancellation, and result retrieval end to end.
