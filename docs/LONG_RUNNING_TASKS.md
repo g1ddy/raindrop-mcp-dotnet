@@ -349,7 +349,7 @@ The analyzer will page sequentially unless measurements show that bounded concur
 
 Errors returned to clients will be sanitized. API tokens, request headers, internal stack traces, and raw exception messages must not appear in task status or results.
 
-The task will fail when the analyzer cannot produce a trustworthy report. If Raindrop fails after retries, the analyzer returns an explicitly partial report with termination reason `api_error` and bounded, sanitized diagnostics; cancellation continues to propagate rather than being converted into a partial success.
+An analyzer/tool execution failure produces a terminal `Completed` task containing `CallToolResult.IsError: true`. `Failed` is reserved for protocol, task-control, task-store, or other infrastructure failures that prevent a normal tool result from being produced. A partial but trustworthy report remains a successful `CallToolResult`, with completeness metadata indicating that it is partial. If Raindrop fails after retries, the analyzer returns an explicitly partial report with termination reason `api_error` and bounded, sanitized diagnostics; cancellation continues to propagate rather than being converted into a partial success.
 
 Transient API errors may be retried using the server's existing policy. Cancellation is not an error and must not be retried.
 
@@ -447,30 +447,30 @@ The in-memory store is appropriate for the current single-process stdio deployme
 
 ### Phase 7: Task protocol tests
 
-- [ ] Test capability and tool-level task negotiation.
-- [ ] Test normal calls when task support is optional.
-- [ ] Test rejection of augmentation for forbidden tools.
-- [ ] Test immediate task creation response.
-- [ ] Test every valid status transition and reject invalid transitions.
-- [ ] Test polling interval and timestamp updates.
-- [ ] Test completed, failed, and cancelled result retrieval.
-- [ ] Test cancellation races with in-flight completion.
-- [ ] Test TTL bounds and expiration.
-- [ ] Test requestor isolation and unguessable task IDs.
-- [ ] Test task-list pagination if supported.
-- [ ] Test rate and concurrency limits.
-- [ ] Test graceful shutdown behavior.
-- [ ] Test that secrets and internal exceptions never appear in status or results.
+- [x] Test capability and tool-level task negotiation.
+- [x] Test normal calls when task support is optional.
+- [x] Test rejection of augmentation for forbidden tools.
+- [x] Test immediate task creation response.
+- [x] Test every valid status transition and reject invalid transitions.
+- [x] Test polling interval and timestamp updates.
+- [x] Test completed, failed, and cancelled result retrieval.
+- [x] Test cancellation races with in-flight completion.
+- [x] Test TTL bounds and expiration.
+- [~] Test requestor isolation and unguessable task IDs. (Deferred until authenticated transport)
+- [~] Test task-list pagination if supported. (N/A)
+- [~] Test rate and concurrency limits. (Deferred)
+- [~] Test graceful shutdown behavior. (Deferred)
+- [x] Test that secrets and internal exceptions never appear in status or results.
 
 ### Phase 8: Operational validation
 
-- [ ] Benchmark representative small, medium, and large libraries.
-- [ ] Record API calls, elapsed time, allocations, and final result size.
-- [ ] Tune the page limit, retries, concurrency, deadlines, and polling cadence from measurements.
-- [ ] Verify behavior when the library changes during pagination.
-- [ ] Verify host polling, cancellation, and result retrieval end to end.
-- [ ] Document that in-memory stdio tasks do not survive process termination.
-- [ ] Add persistent execution only if restart durability becomes a requirement.
+- [x] Benchmark representative small, medium, and large libraries.
+- [x] Record API calls, elapsed time, allocations, and final result size.
+- [~] Tune the page limit, retries, concurrency, deadlines, and polling cadence from measurements. (Deferred)
+- [~] Verify behavior when the library changes during pagination. (Deferred)
+- [x] Verify host polling, cancellation, and result retrieval end to end.
+- [x] Document that in-memory stdio tasks do not survive process termination.
+- [~] Add persistent execution only if restart durability becomes a requirement. (Deferred)
 
 ## Acceptance criteria
 
